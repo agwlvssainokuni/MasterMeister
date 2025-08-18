@@ -28,9 +28,9 @@ import java.util.List;
  * 失敗時はok=false、data=null、error=エラーメッセージリスト
  * </p>
  *
- * @param <T> レスポンスデータの型
- * @param ok 処理成功フラグ
- * @param data レスポンス本体（成功時のみ）
+ * @param <T>   レスポンスデータの型
+ * @param ok    処理成功フラグ
+ * @param data  レスポンス本体（成功時のみ）
  * @param error エラーメッセージリスト（失敗時のみ）
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -42,7 +42,7 @@ public record ApiResponse<T>(
     /**
      * 成功レスポンスを作成する
      *
-     * @param <T> レスポンスデータの型
+     * @param <T>  レスポンスデータの型
      * @param data レスポンスデータ
      * @return 成功レスポンス
      */
@@ -53,7 +53,7 @@ public record ApiResponse<T>(
     /**
      * エラーレスポンスを作成する
      *
-     * @param <T> レスポンスデータの型
+     * @param <T>    レスポンスデータの型
      * @param errors エラーメッセージリスト
      * @return エラーレスポンス
      */
@@ -64,7 +64,7 @@ public record ApiResponse<T>(
     /**
      * エラーレスポンスを作成する（単一エラー）
      *
-     * @param <T> レスポンスデータの型
+     * @param <T>   レスポンスデータの型
      * @param error エラーメッセージ
      * @return エラーレスポンス
      */

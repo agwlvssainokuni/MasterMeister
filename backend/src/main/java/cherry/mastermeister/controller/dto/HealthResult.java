@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 /**
  * ヘルスチェック結果
  *
- * @param status アプリケーションステータス
- * @param timestamp チェック実行日時
+ * @param status      アプリケーションステータス
+ * @param timestamp   チェック実行日時
  * @param application アプリケーション名
  */
 public record HealthResult(

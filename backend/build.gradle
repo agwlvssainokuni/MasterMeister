@@ -1,8 +1,8 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'war'
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'war'
 }
 
 group = 'cherry.mastermeister'
@@ -12,6 +12,17 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:unchecked', '-Xlint:deprecation']
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 configurations {
@@ -31,43 +42,40 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
     // Database
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     runtimeOnly 'org.postgresql:postgresql'
-    
+
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
-    
+
     // Connection Pooling
     implementation 'com.zaxxer:HikariCP'
     
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    
+    // Apache Commons
+    implementation 'org.apache.commons:commons-lang3'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    
+
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
 // Frontend build integration
-task frontendNpmInstall(type: Exec) {
+tasks.register("frontendNpmInstall", Exec) {
     onlyIf { project.hasProperty('frontend') }
     workingDir '../frontend'
     commandLine 'npm', 'install'
 }
 
-task frontendBuild(type: Exec) {
+tasks.register("frontendBuild", Exec) {
     onlyIf { project.hasProperty('frontend') }
     workingDir '../frontend'
     commandLine 'npm', 'run', 'build'
