@@ -44,7 +44,7 @@ public class AuthController {
     private final UserDetailsService userDetailsService;
 
     public AuthController(
-            AuthenticationManager authenticationManager, 
+            AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             UserDetailsService userDetailsService
     ) {
@@ -85,7 +85,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResult>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         try {
             String refreshToken = request.refreshToken();
-            
+
             if (!jwtUtil.isRefreshToken(refreshToken)) {
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.error(List.of("Invalid refresh token")));

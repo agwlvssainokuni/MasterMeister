@@ -18,15 +18,15 @@ package cherry.mastermeister.config;
 
 import cherry.mastermeister.controller.AuthController;
 import cherry.mastermeister.controller.HealthController;
+import cherry.mastermeister.service.UserDetailsServiceImpl;
+import cherry.mastermeister.util.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import cherry.mastermeister.util.JwtUtil;
-import cherry.mastermeister.service.UserDetailsServiceImpl;
-import org.springframework.security.authentication.AuthenticationManager;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

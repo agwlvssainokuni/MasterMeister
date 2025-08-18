@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.controller.dto;
+package cherry.mastermeister.exception;
 
-import jakarta.validation.constraints.NotBlank;
+public class UserAlreadyExistsException extends RuntimeException {
 
-public record RefreshTokenRequest(
-        @NotBlank(message = "Refresh token is required")
-        String refreshToken
-) {
+    public UserAlreadyExistsException(String message) {
+        super(message);
+    }
+
+    public UserAlreadyExistsException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

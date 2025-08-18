@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.controller.dto;
+package cherry.mastermeister.exception;
 
-import jakarta.validation.constraints.NotBlank;
+public class UserNotFoundException extends RuntimeException {
 
-public record RefreshTokenRequest(
-        @NotBlank(message = "Refresh token is required")
-        String refreshToken
-) {
+    public UserNotFoundException(String message) {
+        super(message);
+    }
+
+    public UserNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
