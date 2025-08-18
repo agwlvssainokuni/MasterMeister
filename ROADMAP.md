@@ -90,11 +90,11 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
 
 ### Phase 2: Authentication & User Management (Weeks 3-4)
 
-#### 2.1 Core Authentication
+#### 2.1 Core Authentication ✅ COMPLETED
 - [x] Implement User entity and UserRepository
 - [x] Create Spring Security configuration with JWT
-- [ ] Build user registration API with email validation
-- [ ] Integrate MailPit for confirmation emails
+- [x] Build user registration API with email validation
+- [x] Integrate MailPit for confirmation emails
 
 #### 2.2 Admin Approval Workflow
 - [ ] Create admin dashboard for user approval
