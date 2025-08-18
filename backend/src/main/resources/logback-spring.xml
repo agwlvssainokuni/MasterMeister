@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2025 agwlvssainokuni
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- File Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/master-meister.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/master-meister.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    
+    <!-- Environment Profiles: Define root level and logger levels -->
+    <!-- Local Development Profile -->
+    <springProfile name="default">
+        <property name="root.level" value="INFO" />
+        <logger name="org.springframework" level="INFO" />
+        <logger name="org.springframework.security" level="INFO" />
+        <logger name="org.hibernate" level="DEBUG" />
+        <logger name="cherry.mastermeister" level="TRACE" />
+    </springProfile>
+    
+    <!-- Integration Test Environment -->
+    <springProfile name="dev">
+        <property name="root.level" value="WARN" />
+        <logger name="org.springframework" level="INFO" />
+        <logger name="org.springframework.security" level="INFO" />
+        <logger name="org.hibernate" level="DEBUG" />
+        <logger name="cherry.mastermeister" level="DEBUG" />
+    </springProfile>
+    
+    <!-- Staging Environment -->
+    <springProfile name="stg">
+        <property name="root.level" value="WARN" />
+        <logger name="org.springframework" level="INFO" />
+        <logger name="org.springframework.security" level="INFO" />
+        <logger name="org.hibernate" level="INFO" />
+        <logger name="cherry.mastermeister" level="INFO" />
+    </springProfile>
+    
+    <!-- Production Environment -->
+    <springProfile name="prd">
+        <property name="root.level" value="WARN" />
+        <logger name="org.springframework" level="INFO" />
+        <logger name="org.springframework.security" level="INFO" />
+        <logger name="org.hibernate" level="INFO" />
+        <logger name="cherry.mastermeister" level="INFO" />
+    </springProfile>
+    
+    <!-- Output Destination Profiles: Use root.level property -->
+    <!-- Console only output (default) -->
+    <springProfile name="!file &amp; !fileonly">
+        <root level="${root.level:-INFO}">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+    
+    <!-- Console + File output -->
+    <springProfile name="file">
+        <root level="${root.level:-INFO}">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+    
+    <!-- File only output -->
+    <springProfile name="fileonly">
+        <root level="${root.level:-INFO}">
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+</configuration>

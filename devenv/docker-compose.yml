@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  mailpit:
+    image: axllent/mailpit
+    container_name: mastermeister-mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+
+  mysql:
+    image: mysql:8.0
+    container_name: mastermeister-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=testdb
+      - MYSQL_USER=testuser
+      - MYSQL_PASSWORD=testpass
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: mastermeister-mariadb
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=testdb
+      - MYSQL_USER=testuser
+      - MYSQL_PASSWORD=testpass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  postgres:
+    image: postgres:15
+    container_name: mastermeister-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=testdb
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  mysql_data:
+  mariadb_data:
+  postgres_data:
