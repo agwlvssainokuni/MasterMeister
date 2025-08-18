@@ -92,7 +92,7 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
 
 #### 2.1 Core Authentication
 - [x] Implement User entity and UserRepository
-- [ ] Create Spring Security configuration with JWT
+- [x] Create Spring Security configuration with JWT
 - [ ] Build user registration API with email validation
 - [ ] Integrate MailPit for confirmation emails
 
