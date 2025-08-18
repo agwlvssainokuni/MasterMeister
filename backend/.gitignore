@@ -34,3 +34,6 @@ logs/
 *.db
 *.mv.db
 *.trace.db
+
+### Frontend build output ###
+src/main/resources/static/

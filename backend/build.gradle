@@ -59,3 +59,24 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// Frontend build integration
+task frontendNpmInstall(type: Exec) {
+    onlyIf { project.hasProperty('frontend') }
+    workingDir '../frontend'
+    commandLine 'npm', 'install'
+}
+
+task frontendBuild(type: Exec) {
+    onlyIf { project.hasProperty('frontend') }
+    workingDir '../frontend'
+    commandLine 'npm', 'run', 'build'
+    dependsOn frontendNpmInstall
+}
+
+// Ensure frontend is built before backend build when frontend property is set
+processResources {
+    if (project.hasProperty('frontend')) {
+        dependsOn frontendBuild
+    }
+}

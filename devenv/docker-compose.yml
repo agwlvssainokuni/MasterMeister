@@ -23,6 +23,7 @@ services:
       - MYSQL_PASSWORD=testpass
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./init-scripts/mysql:/docker-entrypoint-initdb.d
 
   mariadb:
     image: mariadb:10.11
@@ -36,6 +37,7 @@ services:
       - MYSQL_PASSWORD=testpass
     volumes:
       - mariadb_data:/var/lib/mysql
+      - ./init-scripts/mariadb:/docker-entrypoint-initdb.d
 
   postgres:
     image: postgres:15
@@ -48,6 +50,7 @@ services:
       - POSTGRES_PASSWORD=testpass
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts/postgresql:/docker-entrypoint-initdb.d
 
 volumes:
   mysql_data:
