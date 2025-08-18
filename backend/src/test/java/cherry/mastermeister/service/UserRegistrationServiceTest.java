@@ -44,13 +44,16 @@ class UserRegistrationServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private EmailService emailService;
+
     @InjectMocks
     private UserRegistrationService userRegistrationService;
 
     @Test
     void shouldRegisterUserSuccessfully() {
         UserRegistrationRequest request = new UserRegistrationRequest(
-                "testuser", "test@example.com", "password123", "Test User"
+                "testuser", "test@example.com", "password123", "Test User", "en"
         );
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
@@ -72,12 +75,18 @@ class UserRegistrationServiceTest {
         assertNotNull(result.message());
 
         verify(userRepository).save(any(User.class));
+        verify(emailService).sendEmailConfirmation(
+                eq("test@example.com"),
+                eq("testuser"),
+                anyString(),
+                eq("en")
+        );
     }
 
     @Test
     void shouldThrowExceptionWhenUsernameExists() {
         UserRegistrationRequest request = new UserRegistrationRequest(
-                "testuser", "test@example.com", "password123", "Test User"
+                "testuser", "test@example.com", "password123", "Test User", "en"
         );
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(new User()));
@@ -91,7 +100,7 @@ class UserRegistrationServiceTest {
     @Test
     void shouldThrowExceptionWhenEmailExists() {
         UserRegistrationRequest request = new UserRegistrationRequest(
-                "testuser", "test@example.com", "password123", "Test User"
+                "testuser", "test@example.com", "password123", "Test User", "en"
         );
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
@@ -101,5 +110,32 @@ class UserRegistrationServiceTest {
                 () -> userRegistrationService.registerUser(request));
 
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void shouldConfirmEmailAndSendNotificationWithUserLanguage() {
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("testuser");
+        user.setEmail("test@example.com");
+        user.setEmailConfirmed(false);
+        user.setEmailConfirmationToken("testtoken");
+        user.setPreferredLanguage("ja");
+
+        when(userRepository.findByEmailConfirmationToken("testtoken")).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        boolean result = userRegistrationService.confirmEmail("testtoken");
+
+        assertTrue(result);
+        assertTrue(user.isEmailConfirmed());
+        assertNull(user.getEmailConfirmationToken());
+        
+        verify(userRepository).save(user);
+        verify(emailService).sendEmailConfirmed(
+                eq("test@example.com"),
+                eq("testuser"),
+                eq("ja")
+        );
     }
 }

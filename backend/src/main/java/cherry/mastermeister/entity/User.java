@@ -58,6 +58,9 @@ public class User {
     @Column(name = "email_confirmation_token", length = 255)
     private String emailConfirmationToken;
 
+    @Column(name = "preferred_language", length = 5)
+    private String preferredLanguage = "en";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -136,6 +139,14 @@ public class User {
         this.emailConfirmationToken = emailConfirmationToken;
     }
 
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
+
+    public void setPreferredLanguage(String preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -190,6 +201,7 @@ public class User {
                 .append("status", status)
                 .append("role", role)
                 .append("emailConfirmed", emailConfirmed)
+                .append("preferredLanguage", preferredLanguage)
                 .append("createdAt", createdAt)
                 .append("updatedAt", updatedAt)
                 .toString();

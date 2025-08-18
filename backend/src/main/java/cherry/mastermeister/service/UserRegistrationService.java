@@ -35,11 +35,13 @@ public class UserRegistrationService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     private final SecureRandom secureRandom;
 
-    public UserRegistrationService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserRegistrationService(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
         this.secureRandom = new SecureRandom();
     }
 
@@ -60,10 +62,19 @@ public class UserRegistrationService {
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setFullName(request.fullName());
         user.setEmailConfirmationToken(emailConfirmationToken);
+        user.setPreferredLanguage(request.language() != null ? request.language() : "en");
         user.setStatus(User.UserStatus.PENDING);
         user.setRole(User.UserRole.USER);
 
         User savedUser = userRepository.save(user);
+
+        // メール確認用メール送信
+        emailService.sendEmailConfirmation(
+                savedUser.getEmail(),
+                savedUser.getUsername(),
+                emailConfirmationToken,
+                request.language()
+        );
 
         return new UserRegistrationResult(
                 savedUser.getId(),
@@ -82,6 +93,14 @@ public class UserRegistrationService {
                     user.setEmailConfirmed(true);
                     user.setEmailConfirmationToken(null);
                     userRepository.save(user);
+
+                    // メール確認完了通知送信
+                    emailService.sendEmailConfirmed(
+                            user.getEmail(),
+                            user.getUsername(),
+                            user.getPreferredLanguage()
+                    );
+
                     return true;
                 })
                 .orElseThrow(() -> new EmailConfirmationException("Invalid or expired confirmation token"));
