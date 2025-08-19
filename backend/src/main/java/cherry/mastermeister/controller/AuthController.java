@@ -16,17 +16,15 @@
 
 package cherry.mastermeister.controller;
 
-import cherry.mastermeister.controller.dto.ApiResponse;
-import cherry.mastermeister.controller.dto.LoginRequest;
-import cherry.mastermeister.controller.dto.LoginResult;
-import cherry.mastermeister.controller.dto.LogoutRequest;
-import cherry.mastermeister.controller.dto.RefreshTokenRequest;
+import cherry.mastermeister.controller.dto.*;
 import cherry.mastermeister.model.TokenPair;
+import cherry.mastermeister.service.AuditLogService;
 import cherry.mastermeister.service.RefreshTokenService;
 import cherry.mastermeister.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -50,21 +48,24 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
     private final RefreshTokenService refreshTokenService;
+    private final AuditLogService auditLogService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             UserDetailsService userDetailsService,
-            RefreshTokenService refreshTokenService
+            RefreshTokenService refreshTokenService,
+            AuditLogService auditLogService
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.refreshTokenService = refreshTokenService;
+        this.auditLogService = auditLogService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResult>> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginResult>> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password())
@@ -84,15 +85,21 @@ public class AuthController {
                     jwtUtil.getAccessTokenExpiration()
             );
 
+            // ログイン成功のログ記録
+            auditLogService.logLoginSuccess(userDetails.getUsername(), httpRequest);
+
             return ResponseEntity.ok(ApiResponse.success(result));
         } catch (Exception e) {
+            // ログイン失敗のログ記録
+            auditLogService.logLoginFailure(request.username(), e.getMessage(), httpRequest);
+
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(List.of("Invalid credentials")));
         }
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<LoginResult>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<ApiResponse<LoginResult>> refresh(@Valid @RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
         try {
             String refreshToken = request.refreshToken();
 
@@ -115,8 +122,20 @@ public class AuthController {
                     jwtUtil.getAccessTokenExpiration()
             );
 
+            // トークンリフレッシュ成功のログ記録
+            auditLogService.logTokenRefresh(userDetails.getUsername(), httpRequest);
+
             return ResponseEntity.ok(ApiResponse.success(result));
         } catch (Exception e) {
+            // トークンリフレッシュ失敗のログ記録
+            String username = null;
+            try {
+                username = jwtUtil.extractUsername(request.refreshToken());
+            } catch (Exception ignored) {
+                // トークンが無効な場合はusernameを取得できない
+            }
+            auditLogService.logTokenRefreshFailure(username, e.getMessage(), httpRequest);
+
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(List.of("Failed to refresh token")));
         }
@@ -126,25 +145,30 @@ public class AuthController {
     @Operation(summary = "Logout user", description = "Logout user and revoke refresh token")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200", 
+                    responseCode = "200",
                     description = "Successfully logged out"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "400", 
+                    responseCode = "400",
                     description = "Invalid refresh token")
     })
-    public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody LogoutRequest request) {
+    public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody LogoutRequest request, HttpServletRequest httpRequest) {
         try {
             String refreshToken = request.refreshToken();
-            
+
             if (!jwtUtil.isRefreshToken(refreshToken)) {
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.error(List.of("Invalid refresh token")));
             }
 
             String tokenId = jwtUtil.extractTokenId(refreshToken);
+            String username = jwtUtil.extractUsername(refreshToken);
+
             if (tokenId != null) {
                 refreshTokenService.revokeRefreshToken(tokenId);
             }
+
+            // ログアウト成功のログ記録
+            auditLogService.logLogout(username, httpRequest);
 
             return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
         } catch (Exception e) {

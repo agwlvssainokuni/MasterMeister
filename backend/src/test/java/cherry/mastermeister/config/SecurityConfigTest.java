@@ -20,8 +20,10 @@ import cherry.mastermeister.controller.AuthController;
 import cherry.mastermeister.controller.HealthController;
 import cherry.mastermeister.entity.User;
 import cherry.mastermeister.model.UserStatus;
+import cherry.mastermeister.repository.AuditLogRepository;
 import cherry.mastermeister.repository.RefreshTokenRepository;
 import cherry.mastermeister.repository.UserRepository;
+import cherry.mastermeister.service.AuditLogService;
 import cherry.mastermeister.service.RefreshTokenService;
 import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.util.JwtUtil;
@@ -42,8 +44,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {HealthController.class, AuthController.class})
-@Import({SecurityConfig.class, JwtUtil.class, UserDetailsServiceImpl.class, RefreshTokenService.class})
+@WebMvcTest({
+        HealthController.class,
+        AuthController.class
+})
+@Import({
+        SecurityConfig.class,
+        JwtUtil.class,
+        UserDetailsServiceImpl.class,
+        RefreshTokenService.class,
+        AuditLogService.class
+})
 class SecurityConfigTest {
 
     @Autowired
@@ -57,6 +68,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private RefreshTokenRepository refreshTokenRepository;
+
+    @MockitoBean
+    private AuditLogRepository auditLogRepository;
 
     @Test
     void shouldAllowHealthEndpoint() throws Exception {
