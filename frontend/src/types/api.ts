@@ -56,10 +56,12 @@ export interface UserSummaryResult {
   createdAt: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ApproveUserRequest {
   // No body required
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface RejectUserRequest {
   // No body required
 }

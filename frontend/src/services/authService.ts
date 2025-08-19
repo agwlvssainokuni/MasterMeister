@@ -18,6 +18,7 @@ import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
 import type {ApiResponse, LoginRequest, LoginResult, LogoutRequest} from '../types/api'
 import type {AuthState, LoginCredentials, User} from '../types/frontend'
+import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthState> {
@@ -89,11 +90,26 @@ class AuthService {
       }
     }
 
-    // TODO: Parse JWT to get user info
-    // For now, assume valid token means authenticated
+    // Check if token is expired
+    if (isTokenExpired(accessToken)) {
+      return {
+        isAuthenticated: false,
+        user: null,
+        accessToken: null,
+        refreshToken: null
+      }
+    }
+
+    // Extract user info from JWT
+    const userInfo = extractUserFromToken(accessToken)
+    const user: User | null = userInfo ? {
+      username: userInfo.username,
+      role: userInfo.role
+    } : null
+
     return {
-      isAuthenticated: true,
-      user: null, // Will be populated after implementing JWT parsing
+      isAuthenticated: !!userInfo,
+      user,
       accessToken,
       refreshToken
     }
