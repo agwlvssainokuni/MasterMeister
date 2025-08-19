@@ -44,7 +44,7 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = Map.of("type", "access");
         return createToken(claims, userDetails.getUsername(), expiration);
     }

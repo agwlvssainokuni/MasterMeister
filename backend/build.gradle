@@ -5,9 +5,6 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'cherry.mastermeister'
-version = '0.0.1-SNAPSHOT'
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -35,6 +32,18 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.boot:spring-boot-dependencies:3.5.4'
+    }
+    dependencies {
+        dependency 'io.jsonwebtoken:jjwt-api:0.12.3'
+        dependency 'io.jsonwebtoken:jjwt-impl:0.12.3'
+        dependency 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+        dependency 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -51,15 +60,18 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     // JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-api'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson'
 
     // Connection Pooling
     implementation 'com.zaxxer:HikariCP'
-    
+
     // Apache Commons
     implementation 'org.apache.commons:commons-lang3'
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

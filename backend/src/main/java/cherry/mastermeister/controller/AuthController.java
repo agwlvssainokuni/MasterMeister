@@ -61,7 +61,7 @@ public class AuthController {
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String accessToken = jwtUtil.generateToken(userDetails);
+            String accessToken = jwtUtil.generateAccessToken(userDetails);
             String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
@@ -99,7 +99,7 @@ public class AuthController {
                         .body(ApiResponse.error(List.of("Refresh token expired or invalid")));
             }
 
-            String newAccessToken = jwtUtil.generateToken(userDetails);
+            String newAccessToken = jwtUtil.generateAccessToken(userDetails);
             String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
 

@@ -18,35 +18,39 @@ package cherry.mastermeister.config;
 
 import cherry.mastermeister.controller.AuthController;
 import cherry.mastermeister.controller.HealthController;
+import cherry.mastermeister.entity.User;
+import cherry.mastermeister.repository.UserRepository;
 import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.util.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
+
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = {HealthController.class, AuthController.class})
-@Import({SecurityConfig.class})
+@Import({SecurityConfig.class, JwtUtil.class, UserDetailsServiceImpl.class})
 class SecurityConfigTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private JwtUtil jwtUtil;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @MockitoBean
-    private UserDetailsServiceImpl userDetailsService;
-
-    @MockitoBean
-    private AuthenticationManager authenticationManager;
+    private UserRepository userRepository;
 
     @Test
     void shouldAllowHealthEndpoint() throws Exception {
@@ -62,7 +66,17 @@ class SecurityConfigTest {
 
     @Test
     void shouldAllowAuthEndpoints() throws Exception {
-        mockMvc.perform(post("/api/auth/login"))
-                .andExpect(status().isBadRequest());
+        // Arrange
+        User user = new User();
+        user.setUsername("testuser");
+        user.setPassword(passwordEncoder.encode("testpass"));
+        user.setStatus(User.UserStatus.APPROVED);
+        when(userRepository.findByUsername(eq("testuser"))).thenReturn(Optional.of(user));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"testuser\",\"password\":\"testpass\"}"))
+                .andExpect(status().isOk());
     }
 }

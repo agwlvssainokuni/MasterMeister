@@ -16,7 +16,7 @@
   -->
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    
+
     <!-- Console Appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -24,7 +24,7 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
-    
+
     <!-- File Appender -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/master-meister.log</file>
@@ -39,64 +39,68 @@
             <totalSizeCap>100MB</totalSizeCap>
         </rollingPolicy>
     </appender>
-    
+
     <!-- Environment Profiles: Define root level and logger levels -->
     <!-- Local Development Profile -->
     <springProfile name="default">
-        <property name="root.level" value="INFO" />
-        <logger name="org.springframework" level="INFO" />
-        <logger name="org.springframework.security" level="INFO" />
-        <logger name="org.hibernate" level="DEBUG" />
-        <logger name="cherry.mastermeister" level="TRACE" />
+        <property name="root.level" value="INFO"/>
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.springframework.security" level="INFO"/>
+        <logger name="org.hibernate" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="cherry.mastermeister" level="TRACE"/>
     </springProfile>
-    
+
     <!-- Integration Test Environment -->
     <springProfile name="dev">
-        <property name="root.level" value="WARN" />
-        <logger name="org.springframework" level="INFO" />
-        <logger name="org.springframework.security" level="INFO" />
-        <logger name="org.hibernate" level="DEBUG" />
-        <logger name="cherry.mastermeister" level="DEBUG" />
+        <property name="root.level" value="WARN"/>
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.springframework.security" level="INFO"/>
+        <logger name="org.hibernate" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="cherry.mastermeister" level="DEBUG"/>
     </springProfile>
-    
+
     <!-- Staging Environment -->
     <springProfile name="stg">
-        <property name="root.level" value="WARN" />
-        <logger name="org.springframework" level="INFO" />
-        <logger name="org.springframework.security" level="INFO" />
-        <logger name="org.hibernate" level="INFO" />
-        <logger name="cherry.mastermeister" level="INFO" />
+        <property name="root.level" value="WARN"/>
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.springframework.security" level="INFO"/>
+        <logger name="org.hibernate" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="INFO"/>
+        <logger name="cherry.mastermeister" level="INFO"/>
     </springProfile>
-    
+
     <!-- Production Environment -->
     <springProfile name="prd">
-        <property name="root.level" value="WARN" />
-        <logger name="org.springframework" level="INFO" />
-        <logger name="org.springframework.security" level="INFO" />
-        <logger name="org.hibernate" level="INFO" />
-        <logger name="cherry.mastermeister" level="INFO" />
+        <property name="root.level" value="WARN"/>
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.springframework.security" level="INFO"/>
+        <logger name="org.hibernate" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="INFO"/>
+        <logger name="cherry.mastermeister" level="INFO"/>
     </springProfile>
-    
+
     <!-- Output Destination Profiles: Use root.level property -->
     <!-- Console only output (default) -->
     <springProfile name="!file &amp; !fileonly">
         <root level="${root.level:-INFO}">
-            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
-    
+
     <!-- Console + File output -->
     <springProfile name="file">
         <root level="${root.level:-INFO}">
-            <appender-ref ref="CONSOLE" />
-            <appender-ref ref="FILE" />
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
         </root>
     </springProfile>
-    
+
     <!-- File only output -->
     <springProfile name="fileonly">
         <root level="${root.level:-INFO}">
-            <appender-ref ref="FILE" />
+            <appender-ref ref="FILE"/>
         </root>
     </springProfile>
 </configuration>

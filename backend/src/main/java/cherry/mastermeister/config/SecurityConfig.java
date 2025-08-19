@@ -37,7 +37,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
@@ -48,19 +50,34 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
                         // Public endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/users/register").permitAll()
-                        .requestMatchers("/api/users/confirm-email").permitAll()
-                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/users/register", "/api/users/confirm-email",
+                                "/api/health"
+                        ).permitAll()
 
                         // Actuator endpoints (excluded from security)
                         .requestMatchers("/actuator/**").permitAll()
 
+                        // Swagger/OpenAPI endpoints
+                        .requestMatchers(
+                                "/api/v3/api-docs/**",
+                                "/api/swagger-ui/**",
+                                "/api/swagger-ui.html"
+                        ).permitAll()
+
                         // Static resources
-                        .requestMatchers("/", "/static/**", "/favicon.ico", "/manifest.json").permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/static/**",
+                                "/favicon.ico",
+                                "/manifest.json"
+                        ).permitAll()
 
                         // Admin endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/api/admin/**"
+                        ).hasRole("ADMIN")
 
                         // All other requests require authentication
                         .anyRequest().authenticated()
