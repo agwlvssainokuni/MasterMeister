@@ -1,0 +1,65 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// API DTOs - Backend 1:1 correspondence
+
+// Common Response
+export interface ApiResponse<T> {
+  success: boolean
+  data?: T
+  errors?: string[]
+}
+
+// AuthController
+export interface LoginRequest {
+  username: string
+  password: string
+}
+
+export interface LoginResult {
+  accessToken: string
+  refreshToken: string
+  username: string
+  role: string
+  expiresIn: number
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string
+}
+
+export interface LogoutRequest {
+  refreshToken: string
+}
+
+// AdminController
+export interface UserSummaryResult {
+  id: number
+  username: string
+  email: string
+  fullName: string
+  status: string
+  emailConfirmed: boolean
+  createdAt: string
+}
+
+export interface ApproveUserRequest {
+  // No body required
+}
+
+export interface RejectUserRequest {
+  // No body required
+}
