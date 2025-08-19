@@ -19,8 +19,14 @@ package cherry.mastermeister.controller;
 import cherry.mastermeister.controller.dto.ApiResponse;
 import cherry.mastermeister.controller.dto.LoginRequest;
 import cherry.mastermeister.controller.dto.LoginResult;
+import cherry.mastermeister.controller.dto.LogoutRequest;
 import cherry.mastermeister.controller.dto.RefreshTokenRequest;
+import cherry.mastermeister.model.TokenPair;
+import cherry.mastermeister.service.RefreshTokenService;
 import cherry.mastermeister.util.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,20 +43,24 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "User authentication operations")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
-            UserDetailsService userDetailsService
+            UserDetailsService userDetailsService,
+            RefreshTokenService refreshTokenService
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/login")
@@ -62,7 +72,7 @@ public class AuthController {
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String accessToken = jwtUtil.generateAccessToken(userDetails);
-            String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+            String refreshToken = refreshTokenService.createRefreshToken(userDetails);
 
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
 
@@ -71,7 +81,7 @@ public class AuthController {
                     refreshToken,
                     userDetails.getUsername(),
                     role,
-                    86400L
+                    jwtUtil.getAccessTokenExpiration()
             );
 
             return ResponseEntity.ok(ApiResponse.success(result));
@@ -94,27 +104,52 @@ public class AuthController {
             String username = jwtUtil.extractUsername(refreshToken);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (!jwtUtil.validateToken(refreshToken, userDetails)) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.error(List.of("Refresh token expired or invalid")));
-            }
-
-            String newAccessToken = jwtUtil.generateAccessToken(userDetails);
-            String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
+            TokenPair tokenPair = refreshTokenService.refreshTokens(refreshToken, userDetails);
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
 
             LoginResult result = new LoginResult(
-                    newAccessToken,
-                    newRefreshToken,
+                    tokenPair.accessToken(),
+                    tokenPair.refreshToken(),
                     userDetails.getUsername(),
                     role,
-                    86400L
+                    jwtUtil.getAccessTokenExpiration()
             );
 
             return ResponseEntity.ok(ApiResponse.success(result));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(List.of("Failed to refresh token")));
+        }
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Logout user", description = "Logout user and revoke refresh token")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200", 
+                    description = "Successfully logged out"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400", 
+                    description = "Invalid refresh token")
+    })
+    public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody LogoutRequest request) {
+        try {
+            String refreshToken = request.refreshToken();
+            
+            if (!jwtUtil.isRefreshToken(refreshToken)) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error(List.of("Invalid refresh token")));
+            }
+
+            String tokenId = jwtUtil.extractTokenId(refreshToken);
+            if (tokenId != null) {
+                refreshTokenService.revokeRefreshToken(tokenId);
+            }
+
+            return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(List.of("Failed to logout")));
         }
     }
 }
