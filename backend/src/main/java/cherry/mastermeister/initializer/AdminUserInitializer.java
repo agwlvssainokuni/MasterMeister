@@ -83,9 +83,9 @@ public class AdminUserInitializer implements ApplicationRunner {
         adminUser.setRole(UserRole.ADMIN);
         adminUser.setEmailConfirmed(true);
         adminUser.setPreferredLanguage(adminLanguage);
-        
+
         userRepository.save(adminUser);
-        
+
         log.trace("Admin user created: {} / {}", adminUsername, adminPassword);
     }
 }

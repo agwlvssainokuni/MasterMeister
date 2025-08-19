@@ -44,68 +44,68 @@ public class AdminController {
     }
 
     @GetMapping("/users/pending")
-    @Operation(summary = "Get pending user registrations", 
-               description = "Retrieve all users with PENDING status for admin approval")
+    @Operation(summary = "Get pending user registrations",
+            description = "Retrieve all users with PENDING status for admin approval")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200", 
-            description = "Successfully retrieved pending users"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403", 
-            description = "Access denied - admin role required")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved pending users"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - admin role required")
     })
     public ApiResponse<List<UserSummaryResult>> getPendingUsers() {
         List<UserSummary> pendingUsers = userService.getPendingUsers();
         List<UserSummaryResult> results = pendingUsers.stream()
                 .map(this::toResult)
                 .toList();
-        
+
         return ApiResponse.success(results);
     }
 
     @PostMapping("/users/{userId}/approve")
-    @Operation(summary = "Approve user registration", 
-               description = "Approve a pending user registration")
+    @Operation(summary = "Approve user registration",
+            description = "Approve a pending user registration")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200", 
-            description = "User approved successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404", 
-            description = "User not found"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400", 
-            description = "User is not in pending status"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403", 
-            description = "Access denied - admin role required")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "User approved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "User not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "User is not in pending status"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - admin role required")
     })
     public ApiResponse<String> approveUser(
-            @Parameter(description = "User ID to approve") 
+            @Parameter(description = "User ID to approve")
             @PathVariable Long userId) {
         userService.approveUser(userId);
         return ApiResponse.success("User approved successfully");
     }
 
     @PostMapping("/users/{userId}/reject")
-    @Operation(summary = "Reject user registration", 
-               description = "Reject a pending user registration")
+    @Operation(summary = "Reject user registration",
+            description = "Reject a pending user registration")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200", 
-            description = "User rejected successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404", 
-            description = "User not found"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400", 
-            description = "User is not in pending status"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403", 
-            description = "Access denied - admin role required")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "User rejected successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "User not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "User is not in pending status"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - admin role required")
     })
     public ApiResponse<String> rejectUser(
-            @Parameter(description = "User ID to reject") 
+            @Parameter(description = "User ID to reject")
             @PathVariable Long userId) {
         userService.rejectUser(userId);
         return ApiResponse.success("User rejected successfully");

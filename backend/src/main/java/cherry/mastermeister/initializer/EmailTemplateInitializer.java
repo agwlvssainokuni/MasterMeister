@@ -17,6 +17,7 @@
 package cherry.mastermeister.initializer;
 
 import cherry.mastermeister.entity.EmailTemplate;
+import cherry.mastermeister.model.TemplateType;
 import cherry.mastermeister.repository.EmailTemplateRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -53,7 +54,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
     }
 
     private void initializeDefaultTemplates() {
-        initializeTemplate(EmailTemplate.TemplateType.EMAIL_CONFIRMATION, "en", 
+        initializeTemplate(TemplateType.EMAIL_CONFIRMATION, "en",
                 "MasterMeister - Email Confirmation Required",
                 """
                 Dear {username},
@@ -69,7 +70,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeister Team
                 """);
 
-        initializeTemplate(EmailTemplate.TemplateType.EMAIL_CONFIRMATION, "ja", 
+        initializeTemplate(TemplateType.EMAIL_CONFIRMATION, "ja",
                 "MasterMeister - メールアドレス確認が必要です",
                 """
                 {username} 様
@@ -84,7 +85,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeisterチーム
                 """);
 
-        initializeTemplate(EmailTemplate.TemplateType.EMAIL_CONFIRMED, "en", 
+        initializeTemplate(TemplateType.EMAIL_CONFIRMED, "en",
                 "MasterMeister - Email Address Confirmed",
                 """
                 Dear {username},
@@ -98,7 +99,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeister Team
                 """);
 
-        initializeTemplate(EmailTemplate.TemplateType.EMAIL_CONFIRMED, "ja", 
+        initializeTemplate(TemplateType.EMAIL_CONFIRMED, "ja",
                 "MasterMeister - メールアドレス確認完了",
                 """
                 {username} 様
@@ -111,7 +112,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeisterチーム
                 """);
 
-        initializeTemplate(EmailTemplate.TemplateType.ACCOUNT_APPROVED, "en", 
+        initializeTemplate(TemplateType.ACCOUNT_APPROVED, "en",
                 "MasterMeister - Account Approved",
                 """
                 Dear {username},
@@ -124,7 +125,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeister Team
                 """);
 
-        initializeTemplate(EmailTemplate.TemplateType.ACCOUNT_APPROVED, "ja", 
+        initializeTemplate(TemplateType.ACCOUNT_APPROVED, "ja",
                 "MasterMeister - アカウント承認完了",
                 """
                 {username} 様
@@ -136,7 +137,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeisterチーム
                 """);
 
-        initializeTemplate(EmailTemplate.TemplateType.ACCOUNT_REJECTED, "en", 
+        initializeTemplate(TemplateType.ACCOUNT_REJECTED, "en",
                 "MasterMeister - Account Registration Rejected",
                 """
                 Dear {username},
@@ -149,7 +150,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeister Team
                 """);
 
-        initializeTemplate(EmailTemplate.TemplateType.ACCOUNT_REJECTED, "ja", 
+        initializeTemplate(TemplateType.ACCOUNT_REJECTED, "ja",
                 "MasterMeister - アカウント登録却下",
                 """
                 {username} 様
@@ -162,7 +163,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 """);
     }
 
-    private void initializeTemplate(EmailTemplate.TemplateType templateType, String languageCode, String subject, String body) {
+    private void initializeTemplate(TemplateType templateType, String languageCode, String subject, String body) {
         if (!emailTemplateRepository.existsByTemplateTypeAndLanguageCode(templateType, languageCode)) {
             EmailTemplate template = new EmailTemplate();
             template.setTemplateType(templateType);

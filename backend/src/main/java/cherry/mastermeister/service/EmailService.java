@@ -17,6 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.EmailTemplate;
+import cherry.mastermeister.model.TemplateType;
 import cherry.mastermeister.repository.EmailTemplateRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -53,25 +54,25 @@ public class EmailService {
                 "confirmationUrl", confirmationUrl
         );
 
-        sendTemplatedEmail(EmailTemplate.TemplateType.EMAIL_CONFIRMATION, toAddress, variables, language);
+        sendTemplatedEmail(TemplateType.EMAIL_CONFIRMATION, toAddress, variables, language);
     }
 
     public void sendEmailConfirmed(String toAddress, String username, String language) {
         Map<String, String> variables = Map.of("username", username);
-        sendTemplatedEmail(EmailTemplate.TemplateType.EMAIL_CONFIRMED, toAddress, variables, language);
+        sendTemplatedEmail(TemplateType.EMAIL_CONFIRMED, toAddress, variables, language);
     }
 
     public void sendAccountApproved(String toAddress, String username, String language) {
         Map<String, String> variables = Map.of("username", username);
-        sendTemplatedEmail(EmailTemplate.TemplateType.ACCOUNT_APPROVED, toAddress, variables, language);
+        sendTemplatedEmail(TemplateType.ACCOUNT_APPROVED, toAddress, variables, language);
     }
 
     public void sendAccountRejected(String toAddress, String username, String language) {
         Map<String, String> variables = Map.of("username", username);
-        sendTemplatedEmail(EmailTemplate.TemplateType.ACCOUNT_REJECTED, toAddress, variables, language);
+        sendTemplatedEmail(TemplateType.ACCOUNT_REJECTED, toAddress, variables, language);
     }
 
-    private void sendTemplatedEmail(EmailTemplate.TemplateType templateType, String toAddress, Map<String, String> variables, String language) {
+    private void sendTemplatedEmail(TemplateType templateType, String toAddress, Map<String, String> variables, String language) {
         String lang = language != null ? language : defaultLanguage;
 
         EmailTemplate template = emailTemplateRepository
