@@ -16,6 +16,8 @@
 
 package cherry.mastermeister.entity;
 
+import cherry.mastermeister.model.UserRole;
+import cherry.mastermeister.model.UserStatus;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -205,17 +207,5 @@ public class User {
                 .append("createdAt", createdAt)
                 .append("updatedAt", updatedAt)
                 .toString();
-    }
-
-    public enum UserStatus {
-        PENDING,
-        APPROVED,
-        REJECTED,
-        DISABLED
-    }
-
-    public enum UserRole {
-        USER,
-        ADMIN
     }
 }

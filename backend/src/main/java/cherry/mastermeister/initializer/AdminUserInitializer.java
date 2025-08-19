@@ -17,6 +17,8 @@
 package cherry.mastermeister.initializer;
 
 import cherry.mastermeister.entity.User;
+import cherry.mastermeister.model.UserRole;
+import cherry.mastermeister.model.UserStatus;
 import cherry.mastermeister.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,8 +79,8 @@ public class AdminUserInitializer implements ApplicationRunner {
         adminUser.setEmail(adminEmail);
         adminUser.setPassword(passwordEncoder.encode(adminPassword));
         adminUser.setFullName(adminFullName);
-        adminUser.setStatus(User.UserStatus.APPROVED);
-        adminUser.setRole(User.UserRole.ADMIN);
+        adminUser.setStatus(UserStatus.APPROVED);
+        adminUser.setRole(UserRole.ADMIN);
         adminUser.setEmailConfirmed(true);
         adminUser.setPreferredLanguage(adminLanguage);
         

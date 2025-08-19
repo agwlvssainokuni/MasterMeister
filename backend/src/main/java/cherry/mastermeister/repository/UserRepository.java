@@ -17,6 +17,7 @@
 package cherry.mastermeister.repository;
 
 import cherry.mastermeister.entity.User;
+import cherry.mastermeister.model.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -34,7 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmailConfirmationToken(String token);
 
     @Query("SELECT u FROM User u WHERE u.status = :status")
-    List<User> findByStatus(User.UserStatus status);
+    List<User> findByStatus(UserStatus status);
 
     boolean existsByUsername(String username);
 

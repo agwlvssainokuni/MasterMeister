@@ -19,6 +19,8 @@ package cherry.mastermeister.service;
 import cherry.mastermeister.controller.dto.UserRegistrationRequest;
 import cherry.mastermeister.controller.dto.UserRegistrationResult;
 import cherry.mastermeister.entity.User;
+import cherry.mastermeister.model.UserRole;
+import cherry.mastermeister.model.UserStatus;
 import cherry.mastermeister.exception.EmailConfirmationException;
 import cherry.mastermeister.exception.UserAlreadyExistsException;
 import cherry.mastermeister.repository.UserRepository;
@@ -63,8 +65,8 @@ public class UserRegistrationService {
         user.setFullName(request.fullName());
         user.setEmailConfirmationToken(emailConfirmationToken);
         user.setPreferredLanguage(request.language() != null ? request.language() : "en");
-        user.setStatus(User.UserStatus.PENDING);
-        user.setRole(User.UserRole.USER);
+        user.setStatus(UserStatus.PENDING);
+        user.setRole(UserRole.USER);
 
         User savedUser = userRepository.save(user);
 

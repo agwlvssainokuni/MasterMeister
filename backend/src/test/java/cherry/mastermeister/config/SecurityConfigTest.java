@@ -19,6 +19,7 @@ package cherry.mastermeister.config;
 import cherry.mastermeister.controller.AuthController;
 import cherry.mastermeister.controller.HealthController;
 import cherry.mastermeister.entity.User;
+import cherry.mastermeister.model.UserStatus;
 import cherry.mastermeister.repository.UserRepository;
 import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.util.JwtUtil;
@@ -70,7 +71,7 @@ class SecurityConfigTest {
         User user = new User();
         user.setUsername("testuser");
         user.setPassword(passwordEncoder.encode("testpass"));
-        user.setStatus(User.UserStatus.APPROVED);
+        user.setStatus(UserStatus.APPROVED);
         when(userRepository.findByUsername(eq("testuser"))).thenReturn(Optional.of(user));
 
         // Act & Assert
