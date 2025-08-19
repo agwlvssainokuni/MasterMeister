@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Master Data Maintenance Application - a Single Page Application (SPA) for maintaining master data stored in an RDBMS. The project is currently in initial setup phase.
+This is a Master Data Maintenance Application - a Single Page Application (SPA) for maintaining master data stored in an RDBMS. The project is currently in Phase 2: Authentication & User Management implementation.
 
 ## Technical Architecture
 
@@ -54,10 +54,24 @@ This is a Master Data Maintenance Application - a Single Page Application (SPA) 
 
 ## Development Setup
 
-This repository is currently in initial setup phase. No build files or source code have been created yet.
+**Current Implementation Status:**
+- ✅ Spring Boot 3.5.4 backend with Gradle build system
+- ✅ Multi-environment configuration (dev/stg/prd)
+- ✅ H2 database with file-based persistence in non-default environments
+- ✅ JWT-based authentication and user management
+- ✅ Email integration with MailPit for development
+- ✅ Admin user auto-initialization
+- ✅ Swagger/OpenAPI documentation
+- ✅ Docker containerization ready
+- 🚧 React frontend (not yet implemented)
 
-Future development will require:
-- Setting up Spring Boot backend with Maven/Gradle
-- Setting up React frontend with npm/yarn
-- Database configuration for both internal and target RDBMS
-- Implementation of the permission system and query builder components
+**Build Commands:**
+- `./gradlew build` - Build the application
+- `./gradlew test` - Run all tests
+- `./gradlew bootRun` - Run the application locally
+- `docker build -t mastermeister .` - Build Docker image
+
+**Environment Profiles:**
+- `default/dev` - Development with H2 console, verbose logging
+- `stg` - Staging with file-based H2, moderate logging
+- `prd` - Production with file-based H2, minimal logging

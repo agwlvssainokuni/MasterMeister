@@ -56,14 +56,19 @@ MasterMeister is a web-based application designed to provide a secure, user-frie
 
 🚧 **Currently in Development** 🚧
 
-This project is in the initial development phase. The following components are planned:
+This project is in Phase 2: Authentication & User Management implementation.
 
-- [ ] Project foundation and development environment
-- [ ] User authentication and management system
+- ✅ Project foundation and development environment
+- ✅ User authentication and management system (Phase 2.1 completed)
+- ✅ JWT-based authentication with Spring Security
+- ✅ Email integration with MailPit
+- ✅ Admin user auto-initialization
+- ✅ Swagger/OpenAPI documentation
+- ✅ Docker containerization
+- 🚧 Admin approval workflow (Phase 2.2 in progress)
 - [ ] Database configuration and schema import
 - [ ] Data access and display functionality
 - [ ] Query builder and execution system
-- [ ] Production deployment readiness
 
 See [ROADMAP.md](ROADMAP.md) for detailed development plans and milestones.
 
@@ -71,9 +76,14 @@ See [ROADMAP.md](ROADMAP.md) for detailed development plans and milestones.
 
 ```
 MasterMeister/
-├── backend/                 # Spring Boot application (planned)
+├── backend/                 # Spring Boot 3.5.4 application
+│   ├── src/main/java/      # Java source code
+│   ├── src/main/resources/ # Configuration files
+│   ├── src/test/           # Test code
+│   ├── build.gradle        # Gradle build configuration
+│   └── Dockerfile          # Docker container configuration
 ├── frontend/               # React application (planned)
-├── devenv/                 # Development environment (planned)
+├── devenv/                 # Development environment with Docker Compose
 ├── docs/                   # Documentation
 ├── ROADMAP.md              # Development roadmap
 ├── REQUIREMENTS.md         # Detailed requirements specification
@@ -92,7 +102,41 @@ MasterMeister/
 
 ### Development Setup
 
-*Development setup instructions will be added as the project structure is implemented.*
+#### Backend (Spring Boot)
+
+1. **Build and run the application:**
+   ```bash
+   cd backend
+   ./gradlew build
+   ./gradlew bootRun
+   ```
+
+2. **Run with different profiles:**
+   ```bash
+   ./gradlew bootRun --args='--spring.profiles.active=dev'
+   ```
+
+3. **Run tests:**
+   ```bash
+   ./gradlew test
+   ```
+
+4. **Docker deployment:**
+   ```bash
+   ./gradlew build
+   docker build -t mastermeister .
+   docker run -p 8080:8080 mastermeister
+   ```
+
+#### API Documentation
+- **Swagger UI**: http://localhost:8080/api/swagger-ui.html
+- **OpenAPI JSON**: http://localhost:8080/api/v3/api-docs
+- **H2 Console** (dev only): http://localhost:8080/h2-console
+
+#### Default Admin User
+- **Username**: admin
+- **Password**: password
+- **Email**: admin@example.com
 
 ## Documentation
 
@@ -116,9 +160,9 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Development Status
 
-**Current Phase**: Project Planning and Foundation Setup  
+**Current Phase**: Phase 2 - Authentication & User Management  
 **MVP Target**: Week 8 of development  
-**Next Milestone**: Development environment setup
+**Next Milestone**: Admin approval workflow (Phase 2.2)
 
 For detailed progress tracking, see [ROADMAP.md](ROADMAP.md).
 

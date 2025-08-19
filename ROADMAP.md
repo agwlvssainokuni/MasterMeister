@@ -95,6 +95,15 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
 - [x] Create Spring Security configuration with JWT
 - [x] Build user registration API with email validation
 - [x] Integrate MailPit for confirmation emails
+- [x] **Infrastructure Enhancements**: Admin initialization + Production readiness
+  - [x] AdminUserInitializer with configurable settings via application.properties
+  - [x] Health endpoint test improvements (removed unnecessary @WithMockUser)
+  - [x] Security service isolation verification for public endpoints
+  - [x] Swagger/OpenAPI 3 integration with JWT Bearer authentication
+  - [x] Docker containerization with Eclipse Temurin 21-jre
+  - [x] Dependency management organization with Spring Boot BOM
+  - [x] Environment-specific H2 file databases with profile-based naming
+  - [x] Profile-specific logging configuration for Hibernate SQL
 
 #### 2.2 Admin Approval Workflow
 - [ ] Create admin dashboard for user approval
