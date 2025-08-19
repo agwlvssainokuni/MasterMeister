@@ -18,9 +18,9 @@
 
 // Common Response
 export interface ApiResponse<T> {
-  success: boolean
+  ok: boolean
   data?: T
-  errors?: string[]
+  error?: string[]
 }
 
 // AuthController

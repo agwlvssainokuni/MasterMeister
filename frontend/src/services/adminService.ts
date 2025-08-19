@@ -25,8 +25,8 @@ class AdminService {
       API_ENDPOINTS.ADMIN.PENDING_USERS
     )
 
-    if (!response.data.success || !response.data.data) {
-      throw new Error(response.data.errors?.[0] || 'Failed to fetch pending users')
+    if (!response.data.ok || !response.data.data) {
+      throw new Error(response.data.error?.[0] || 'Failed to fetch pending users')
     }
 
     // Convert API DTOs to frontend types
@@ -44,8 +44,8 @@ class AdminService {
       API_ENDPOINTS.ADMIN.APPROVE_USER(userId)
     )
 
-    if (!response.data.success) {
-      throw new Error(response.data.errors?.[0] || 'Failed to approve user')
+    if (!response.data.ok) {
+      throw new Error(response.data.error?.[0] || 'Failed to approve user')
     }
   }
 
@@ -54,8 +54,8 @@ class AdminService {
       API_ENDPOINTS.ADMIN.REJECT_USER(userId)
     )
 
-    if (!response.data.success) {
-      throw new Error(response.data.errors?.[0] || 'Failed to reject user')
+    if (!response.data.ok) {
+      throw new Error(response.data.error?.[0] || 'Failed to reject user')
     }
   }
 }

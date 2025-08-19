@@ -22,7 +22,7 @@ interface JWTPayload {
   jti?: string // JWT ID
 }
 
-export function parseJWT(token: string): JWTPayload | null {
+export const parseJWT = (token: string): JWTPayload | null => {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) {
@@ -38,7 +38,7 @@ export function parseJWT(token: string): JWTPayload | null {
   }
 }
 
-export function isTokenExpired(token: string): boolean {
+export const isTokenExpired = (token: string): boolean => {
   const payload = parseJWT(token)
   if (!payload) {
     return true
@@ -48,7 +48,7 @@ export function isTokenExpired(token: string): boolean {
   return payload.exp < now
 }
 
-export function extractUserFromToken(token: string): { username: string; role: 'USER' | 'ADMIN' } | null {
+export const extractUserFromToken = (token: string): { username: string; role: 'USER' | 'ADMIN' } | null => {
   const payload = parseJWT(token)
   if (!payload) {
     return null

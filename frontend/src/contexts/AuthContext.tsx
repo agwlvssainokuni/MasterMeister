@@ -16,8 +16,10 @@
 
 import type {ReactNode} from 'react'
 import {createContext, useContext, useEffect, useState} from 'react'
+import {useNavigate} from 'react-router-dom'
 import type {AuthState, LoginCredentials} from '../types/frontend'
 import {authService} from '../services/authService'
+import {setAuthFailureHandler} from '../services/apiClient'
 
 interface AuthContextValue extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>
@@ -31,17 +33,29 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
-export function AuthProvider({children}: AuthProviderProps) {
+export const AuthProvider = ({children}: AuthProviderProps) => {
   const [authState, setAuthState] = useState<AuthState>(() =>
     authService.getCurrentAuthState()
   )
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     // Initialize auth state on mount
     const currentState = authService.getCurrentAuthState()
     setAuthState(currentState)
-  }, [])
+
+    // Setup auth failure handler for API client
+    setAuthFailureHandler(() => {
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+        accessToken: null,
+        refreshToken: null
+      })
+      navigate('/login', {replace: true})
+    })
+  }, [navigate])
 
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true)
@@ -100,7 +114,7 @@ export function AuthProvider({children}: AuthProviderProps) {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useAuth(): AuthContextValue {
+export const useAuth = (): AuthContextValue => {
   const context = useContext(AuthContext)
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider')

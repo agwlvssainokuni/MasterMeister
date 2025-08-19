@@ -15,7 +15,8 @@
  */
 
 import axios from 'axios'
-import {API_BASE_URL} from '../config/config'
+import {API_BASE_URL, API_ENDPOINTS} from '../config/config'
+import type {ApiResponse, LoginResult, RefreshTokenRequest} from "../types/api.ts";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -28,27 +29,40 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken')
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      }
     }
     return config
   },
   (error) => Promise.reject(error)
 )
 
+// Navigation callback for handling auth failures
+let onAuthFailure: (() => void) | null = null
+
+export const setAuthFailureHandler = (handler: () => void) => {
+  onAuthFailure = handler
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
 
+    // Handle 401 (unauthorized) - try token refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
       const refreshToken = localStorage.getItem('refreshToken')
       if (refreshToken) {
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refreshToken
-          })
+          const response = await axios.post<ApiResponse<LoginResult>>(
+            `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
+              refreshToken
+            } as RefreshTokenRequest
+          )
 
           const {data} = response.data
           if (data) {
@@ -59,11 +73,21 @@ apiClient.interceptors.response.use(
             return apiClient(originalRequest)
           }
         } catch {
+          // Token refresh failed - redirect to login
           localStorage.removeItem('accessToken')
           localStorage.removeItem('refreshToken')
-          window.location.href = '/login'
+          onAuthFailure?.()
         }
+      } else {
+        // No refresh token - redirect to login
+        onAuthFailure?.()
       }
+    }
+
+    // Handle 403 (forbidden) - access denied
+    if (error.response?.status === 403) {
+      // For 403, we don't try refresh - user lacks permissions
+      console.warn('Access denied (403): Insufficient permissions')
     }
 
     return Promise.reject(error)

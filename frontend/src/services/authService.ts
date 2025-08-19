@@ -32,8 +32,8 @@ class AuthService {
       loginRequest
     )
 
-    if (!response.data.success || !response.data.data) {
-      throw new Error(response.data.errors?.[0] || 'Login failed')
+    if (!response.data.ok || !response.data.data) {
+      throw new Error(response.data.error?.[0] || 'Login failed')
     }
 
     const loginResult = response.data.data

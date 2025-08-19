@@ -24,11 +24,9 @@ interface ProtectedRouteProps {
   fallback?: ReactNode
 }
 
-export function ProtectedRoute({
-                                 children,
-                                 requiredRole,
-                                 fallback
-                               }: ProtectedRouteProps) {
+export const ProtectedRoute = (
+  {children, requiredRole, fallback}: ProtectedRouteProps,
+) => {
   const {isAuthenticated, user, isLoading} = useAuth()
   const location = useLocation()
 
@@ -54,7 +52,9 @@ interface AdminRouteProps {
   fallback?: ReactNode
 }
 
-export function AdminRoute({children, fallback}: AdminRouteProps) {
+export const AdminRoute = (
+  {children, fallback}: AdminRouteProps,
+) => {
   return (
     <ProtectedRoute requiredRole="ADMIN" fallback={fallback}>
       {children}
