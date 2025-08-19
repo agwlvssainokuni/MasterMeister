@@ -123,12 +123,21 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
 - [ ] Build confirmation dialogs for admin actions
 
 #### 2.4 Login/Logout System
-- [ ] Create login/logout endpoints and frontend components
+- [x] Create login/logout endpoints
+  - [x] JWT Token Rotation implementation with RefreshToken management
+  - [x] POST /api/auth/logout endpoint with token revocation
+  - [x] Enhanced refresh endpoint with Token Rotation security
+  - [x] Access token: 5 minutes, Refresh token: 24 hours (configurable)
+  - [x] LogoutRequest DTO and TokenPair model
+- [ ] Create frontend components
 
-#### 2.5 Basic Security & Logging
+#### 2.5 Basic Security & Logging ✅ COMPLETED
 - [x] Create admin operation audit logging (AuditLog entity)
 - [x] Setup basic error handling and validation (API response format)
-- [ ] Implement authentication logging (login/logout)
+- [x] Implement authentication logging (login/logout)
+  - [x] AuditLogService for comprehensive event logging
+  - [x] Login/logout/token refresh audit trails
+  - [x] IP address and User-Agent tracking
 
 **Milestone 2**: MVP user management system operational
 
