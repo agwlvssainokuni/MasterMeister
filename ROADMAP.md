@@ -105,13 +105,27 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Environment-specific H2 file databases with profile-based naming
   - [x] Profile-specific logging configuration for Hibernate SQL
 
-#### 2.2 Admin Approval Workflow
-- [ ] Create admin dashboard for user approval
-- [ ] Implement approval/rejection workflow
-- [ ] Build notification system for approval results
+#### 2.2 Admin Approval Workflow (Backend) ✅ COMPLETED
+- [x] **Backend API Implementation**
+  - [x] AdminController with ADMIN role authorization
+  - [x] GET /api/admin/users/pending - pending user list
+  - [x] POST /api/admin/users/{id}/approve - user approval
+  - [x] POST /api/admin/users/{id}/reject - user rejection
+  - [x] UserService with approval/rejection logic
+  - [x] Email notifications for approval/rejection results
+  - [x] Model package restructuring (UserStatus, UserRole, TemplateType enums)
+  - [x] Comprehensive test coverage (AdminControllerTest, UserServiceTest)
+
+#### 2.3 Admin Approval Workflow (Frontend)
+- [ ] Create admin dashboard UI for user approval
+- [ ] Implement pending users list display
+- [ ] Add approve/reject button functionality
+- [ ] Build confirmation dialogs for admin actions
+
+#### 2.4 Login/Logout System
 - [ ] Create login/logout endpoints and frontend components
 
-#### 2.3 Basic Security & Logging
+#### 2.5 Basic Security & Logging
 - [x] Create admin operation audit logging (AuditLog entity)
 - [x] Setup basic error handling and validation (API response format)
 - [ ] Implement authentication logging (login/logout)
