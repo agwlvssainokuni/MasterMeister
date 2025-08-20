@@ -100,6 +100,7 @@
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
+  justify-content: center;
 }
 
 /* レスポンシブ */
@@ -127,8 +128,8 @@
     flex-direction: column;
     gap: var(--spacing-xs);
   }
-  
-  .admin-actions .btn {
+
+  .admin-actions .button {
     width: 100%;
     min-width: auto;
   }

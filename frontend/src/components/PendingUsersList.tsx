@@ -119,10 +119,10 @@ export const PendingUsersList = () => {
       <table className="table">
         <thead>
         <tr>
-          <th>{t('admin.users.table.username')}</th>
+          <th style={{width: '15rem'}}>{t('admin.users.table.username')}</th>
           <th>{t('admin.users.table.email')}</th>
-          <th>{t('admin.users.table.registeredAt')}</th>
-          <th>{t('admin.users.table.actions')}</th>
+          <th style={{width: '12rem'}}>{t('admin.users.table.registeredAt')}</th>
+          <th style={{width: '12rem'}}>{t('admin.users.table.actions')}</th>
         </tr>
         </thead>
         <tbody>
