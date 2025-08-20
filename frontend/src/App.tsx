@@ -1,7 +1,9 @@
 import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom'
 import {AuthProvider} from './contexts/AuthContext'
 import {ProtectedRoute} from './components/ProtectedRoute'
+import {AdminRoute} from './components/AdminRoute'
 import {LoginPage} from './pages/LoginPage'
+import {AdminDashboard} from './pages/AdminDashboard'
 import {LogoutButton} from './components/LogoutButton'
 import './App.css'
 
@@ -27,6 +29,14 @@ const App = () => {
               <ProtectedRoute>
                 <DashboardPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
             }
           />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

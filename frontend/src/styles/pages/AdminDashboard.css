@@ -1,0 +1,135 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* 管理者ダッシュボード */
+.admin-dashboard {
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+.admin-header {
+  background-color: var(--color-background);
+  border-bottom: var(--border-width) solid var(--color-border);
+  padding: var(--spacing-lg) 0;
+}
+
+.admin-header-content {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.admin-main {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+}
+
+.admin-main .tab-panel {
+  padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.admin-section-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.admin-section-title {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.admin-section-description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+}
+
+.admin-text-muted {
+  color: var(--color-text-muted);
+}
+
+/* disabledタブのスタイル */
+.admin-dashboard .tab-button:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-dashboard .tab-button:disabled:hover {
+  color: var(--color-text-muted);
+}
+
+/* 管理者専用コンポーネント */
+.admin-empty-state {
+  padding: var(--spacing-xxl);
+  text-align: center;
+}
+
+.admin-users-table {
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .admin-header-content {
+    padding: 0 var(--spacing-md);
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+  }
+
+  .admin-header h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .admin-main .tab-panel {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .admin-section-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .admin-actions {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+  
+  .admin-actions .btn {
+    width: 100%;
+    min-width: auto;
+  }
+}

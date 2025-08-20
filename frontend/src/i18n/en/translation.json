@@ -46,6 +46,53 @@
     "admin": "Admin",
     "settings": "Settings"
   },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard"
+    },
+    "nav": {
+      "users": "User Management",
+      "database": "Database Config",
+      "permissions": "Permissions"
+    },
+    "users": {
+      "title": "Pending User Approvals",
+      "description": "Review and approve user registration requests",
+      "noPendingUsers": "No pending users to approve",
+      "approve": "Approve",
+      "reject": "Reject",
+      "confirming": "Processing...",
+      "approved": "User approved successfully",
+      "rejected": "User rejected successfully",
+      "error": "Failed to process user request",
+      "table": {
+        "username": "Username",
+        "email": "Email Address",
+        "registeredAt": "Registered At",
+        "actions": "Actions"
+      }
+    },
+    "database": {
+      "title": "Database Configuration",
+      "description": "Configure database connections and schema settings",
+      "comingSoon": "Database configuration features coming soon"
+    },
+    "permissions": {
+      "title": "Permission Management",
+      "description": "Manage user permissions and access control",
+      "comingSoon": "Permission management features coming soon"
+    },
+    "confirmDialog": {
+      "approve": {
+        "title": "Approve User",
+        "message": "Are you sure you want to approve user: {username}?"
+      },
+      "reject": {
+        "title": "Reject User",
+        "message": "Are you sure you want to reject user: {username}? This action cannot be undone."
+      }
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
@@ -54,6 +101,9 @@
     "confirm": "Confirm",
     "save": "Save",
     "delete": "Delete",
-    "edit": "Edit"
+    "edit": "Edit",
+    "approve": "Approve",
+    "reject": "Reject",
+    "retry": "Retry"
   }
 }

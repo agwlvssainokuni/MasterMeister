@@ -63,6 +63,21 @@
   box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
 }
 
+/* デンジャーボタン */
+.button-danger {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.button-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.button-danger:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+}
+
 /* 無効状態 */
 .button:disabled {
   background-color: var(--color-surface);
