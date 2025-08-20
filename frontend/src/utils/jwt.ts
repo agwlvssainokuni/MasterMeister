@@ -16,7 +16,7 @@
 
 interface JWTPayload {
   sub: string // username
-  authorities: string[] // roles
+  role: string[] // roles
   exp: number // expiration timestamp
   iat: number // issued at timestamp
   jti?: string // JWT ID
@@ -54,10 +54,8 @@ export const extractUserFromToken = (token: string): { username: string; role: '
     return null
   }
 
-  // Extract role from authorities array (format: "ROLE_USER" or "ROLE_ADMIN")
-  const role = payload.authorities
-    ?.find(auth => auth.startsWith('ROLE_'))
-    ?.replace('ROLE_', '') as 'USER' | 'ADMIN'
+  // Extract first role from role array (already cleaned of ROLE_ prefix by backend)
+  const role = payload.role?.[0] as 'USER' | 'ADMIN'
 
   if (!role) {
     return null

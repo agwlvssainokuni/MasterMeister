@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {useEffect} from 'react'
+import {useCallback, useEffect} from 'react'
 import {useTranslation} from 'react-i18next'
 import {useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
@@ -32,6 +32,10 @@ export const LoginPage = () => {
     }
   }, [isAuthenticated, navigate])
 
+  const handleLoginSuccess = useCallback(() => {
+    navigate('/dashboard', {replace: true})
+  }, [navigate])
+
   if (isAuthenticated) {
     return null
   }
@@ -40,12 +44,12 @@ export const LoginPage = () => {
     <div className="auth-layout">
       <div className="auth-container">
         <div className="auth-header">
-          <h1 className="app-title">{t('app.title')}</h1>
-          <p className="app-subtitle">{t('app.subtitle')}</p>
+          <h1 className="auth-title">{t('app.title')}</h1>
+          <p className="auth-subtitle">{t('app.subtitle')}</p>
         </div>
-        
+
         <div className="auth-content">
-          <LoginForm />
+          <LoginForm onLoginSuccess={handleLoginSuccess}/>
         </div>
       </div>
     </div>

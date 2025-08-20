@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -57,7 +58,16 @@ public class JwtUtil {
     }
 
     public String generateAccessToken(UserDetails userDetails) {
-        Map<String, Object> claims = Map.of("type", "access");
+        // Extract all roles from authorities and remove ROLE_ prefix
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .map(auth -> auth.startsWith("ROLE_") ? auth.substring(5) : auth)
+                .toList();
+
+        Map<String, Object> claims = Map.of(
+                "type", "access",
+                "role", roles
+        );
         return createToken(claims, userDetails.getUsername(), accessTokenExpiration);
     }
 

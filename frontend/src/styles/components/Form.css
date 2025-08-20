@@ -15,6 +15,26 @@
  */
 
 /* フォーム基本スタイル */
+.form {
+  width: 100%;
+}
+
+.form-header {
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+}
+
+.form-title {
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin-bottom: 0;
+}
+
+.form-actions {
+  margin-top: var(--spacing-xl);
+}
+
 .form-group {
   margin-bottom: var(--spacing-lg);
 }

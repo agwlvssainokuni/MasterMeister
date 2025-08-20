@@ -21,13 +21,13 @@
   align-items: center;
   justify-content: center;
   background-color: var(--color-surface);
-  padding: var(--spacing-lg);
+  padding: 0;
 }
 
 .auth-container {
   width: 100%;
   max-width: 25rem; /* 400px */
-  padding: var(--spacing-xxl);
+  padding: var(--spacing-xl);
   background-color: var(--color-background);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-lg);
@@ -36,6 +36,10 @@
 .auth-header {
   text-align: center;
   margin-bottom: var(--spacing-xxl);
+}
+
+.auth-content {
+  margin-bottom: var(--spacing-lg);
 }
 
 .auth-title {

@@ -22,7 +22,11 @@ import '../styles/components/Form.css'
 import '../styles/components/Button.css'
 import '../styles/components/Alert.css'
 
-export const LoginForm = () => {
+interface LoginFormProps {
+  onLoginSuccess?: () => void
+}
+
+export const LoginForm = ({onLoginSuccess}: LoginFormProps) => {
   const {t} = useTranslation()
   const {login, isLoading} = useAuth()
   const [credentials, setCredentials] = useState<LoginCredentials>({
@@ -47,6 +51,7 @@ export const LoginForm = () => {
 
     try {
       await login(credentials)
+      onLoginSuccess?.()
     } catch (error) {
       setError(error instanceof Error ? error.message : t('login.error.failed'))
     }
