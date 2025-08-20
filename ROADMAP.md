@@ -133,7 +133,10 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] i18n internationalization system (react-i18next with Japanese/English resources)
   - [x] CSS design system: Variables, Form, Button, Table, Pagination, Tabs, Modal, Alert, Navigation, Card, Loading, AuthLayout
   - [x] Accessibility and responsive design implementation
-- [ ] Create login/logout form components
+- [x] Create login/logout form components
+  - [x] LoginForm/LogoutButton/LoginPage components with callback pattern
+  - [x] JWT role integration (Backend: ROLE_ prefix removal, Frontend: role claim parsing)
+  - [x] Complete authentication flow verification (login → dashboard → logout)
 
 #### 2.5 Basic Security & Logging ✅ COMPLETED
 - [x] Create admin operation audit logging (AuditLog entity)

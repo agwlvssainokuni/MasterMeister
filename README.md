@@ -65,7 +65,9 @@ This project is in Phase 2: Authentication & User Management implementation.
 - ✅ Admin user auto-initialization
 - ✅ Swagger/OpenAPI documentation
 - ✅ Docker containerization
-- 🚧 Admin approval workflow (Phase 2.2 in progress)
+- ✅ Admin approval workflow (Backend - Phase 2.2 completed)
+- ✅ React 19 frontend with login/logout functionality (Phase 2.4 completed)
+- 🚧 Admin dashboard UI (Phase 2.3 in progress)
 - [ ] Database configuration and schema import
 - [ ] Data access and display functionality
 - [ ] Query builder and execution system
@@ -82,7 +84,7 @@ MasterMeister/
 │   ├── src/test/           # Test code
 │   ├── build.gradle        # Gradle build configuration
 │   └── Dockerfile          # Docker container configuration
-├── frontend/               # React application (planned)
+├── frontend/               # React 19 application with Vite
 ├── devenv/                 # Development environment with Docker Compose
 ├── docs/                   # Documentation
 ├── ROADMAP.md              # Development roadmap
@@ -128,6 +130,30 @@ MasterMeister/
    docker run -p 8080:8080 mastermeister
    ```
 
+#### Frontend (React)
+
+1. **Install dependencies and run development server:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+2. **Build for production:**
+   ```bash
+   npm run build
+   ```
+
+3. **Run linting:**
+   ```bash
+   npm run lint
+   ```
+
+#### Full Stack Development
+- **Backend + Frontend build**: `./gradlew build -Pfrontend`
+- **Frontend development**: http://localhost:5173 (Vite dev server)
+- **Backend API**: http://localhost:8080 (Spring Boot)
+
 #### API Documentation
 - **Swagger UI**: http://localhost:8080/api/swagger-ui.html
 - **OpenAPI JSON**: http://localhost:8080/api/v3/api-docs
@@ -162,7 +188,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 **Current Phase**: Phase 2 - Authentication & User Management  
 **MVP Target**: Week 8 of development  
-**Next Milestone**: Admin approval workflow (Phase 2.2)
+**Next Milestone**: Admin dashboard UI (Phase 2.3)
 
 For detailed progress tracking, see [ROADMAP.md](ROADMAP.md).
 
