@@ -14,14 +14,31 @@
  * limitations under the License.
  */
 
-import {StrictMode} from 'react'
-import {createRoot} from 'react-dom/client'
-import './index.css'
-import './i18n'
-import App from './App.tsx'
+import i18n from 'i18next'
+import {initReactI18next} from 'react-i18next'
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App/>
-  </StrictMode>,
-)
+// JSON リソースファイルのインポート
+import jaTranslation from './ja/translation.json'
+import enTranslation from './en/translation.json'
+
+const resources = {
+  ja: {
+    translation: jaTranslation
+  },
+  en: {
+    translation: enTranslation
+  }
+}
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: 'ja', // デフォルト言語を日本語に設定
+    fallbackLng: 'en',
+    interpolation: {
+      escapeValue: false // Reactは既にXSS対策済み
+    }
+  })
+
+export default i18n

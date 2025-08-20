@@ -1,0 +1,102 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:root {
+  /* カラーパレット */
+  --color-primary: #646cff;
+  --color-primary-hover: #535bf2;
+  --color-primary-light: #747bff;
+
+  --color-secondary: #f9f9f9;
+  --color-secondary-dark: #1a1a1a;
+
+  --color-background: #ffffff;
+  --color-background-dark: #242424;
+  --color-surface: #f8f9fa;
+  --color-surface-dark: #1e1e1e;
+
+  --color-text: #213547;
+  --color-text-dark: rgba(255, 255, 255, 0.87);
+  --color-text-muted: #666666;
+  --color-text-muted-dark: #888888;
+
+  --color-border: #e0e0e0;
+  --color-border-dark: #404040;
+
+  --color-error: #dc3545;
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-info: #17a2b8;
+
+  /* スペーシング (rem) */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+
+  /* フォント (rem) */
+  --font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-xxl: 1.5rem;
+  --font-size-xxxl: 2rem;
+
+  --line-height: 1.5;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* ボーダー半径 (px - ピクセル精度が必要) */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  /* ボーダー幅 (px - 細かい線) */
+  --border-width: 1px;
+  --border-width-thick: 2px;
+
+  /* シャドウ */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* トランジション */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.35s ease;
+
+  /* レイアウト (rem) */
+  --container-max-width: 75rem; /* 1200px */
+  --header-height: 3.75rem; /* 60px */
+  --sidebar-width: 15.625rem; /* 250px */
+}
+
+/* ダークモード */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: var(--color-background-dark);
+    --color-surface: var(--color-surface-dark);
+    --color-text: var(--color-text-dark);
+    --color-text-muted: var(--color-text-muted-dark);
+    --color-border: var(--color-border-dark);
+    --color-secondary: var(--color-secondary-dark);
+  }
+}

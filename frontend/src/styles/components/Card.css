@@ -1,0 +1,261 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* カード基本スタイル */
+.card {
+  background-color: var(--color-background);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* カードヘッダー */
+.card-header {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: var(--border-width) solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.card-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.card-subtitle {
+  margin: var(--spacing-xs) 0 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-normal);
+}
+
+.card-header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+/* カードボディ */
+.card-body {
+  padding: var(--spacing-xl);
+}
+
+.card-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* カードフッター */
+.card-footer {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-top: var(--border-width) solid var(--color-border);
+  background-color: var(--color-surface);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-footer-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+/* クリック可能なカード */
+.card-clickable {
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.card-clickable:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.card-clickable:active {
+  transform: translateY(0);
+}
+
+/* ステータスカード */
+.card-status {
+  border-left: 4px solid var(--color-border);
+}
+
+.card-status.status-success {
+  border-left-color: var(--color-success);
+}
+
+.card-status.status-error {
+  border-left-color: var(--color-error);
+}
+
+.card-status.status-warning {
+  border-left-color: var(--color-warning);
+}
+
+.card-status.status-info {
+  border-left-color: var(--color-info);
+}
+
+/* 統計カード */
+.stats-card {
+  text-align: center;
+}
+
+.stats-card .card-body {
+  padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.stats-value {
+  font-size: var(--font-size-xxxl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  line-height: 1;
+}
+
+.stats-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stats-change {
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.stats-change.positive {
+  color: var(--color-success);
+}
+
+.stats-change.negative {
+  color: var(--color-error);
+}
+
+/* カードグリッド */
+.card-grid {
+  display: grid;
+  gap: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fit, minmax(18.75rem, 1fr)); /* 300px */
+}
+
+.card-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr)); /* 400px */
+}
+
+.card-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(18.75rem, 1fr)); /* 300px */
+}
+
+.card-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); /* 240px */
+}
+
+/* コンパクトカード */
+.card-compact .card-header,
+.card-compact .card-body,
+.card-compact .card-footer {
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.card-compact .card-title {
+  font-size: var(--font-size-md);
+}
+
+/* フラットカード */
+.card-flat {
+  border: none;
+  box-shadow: none;
+  background-color: var(--color-surface);
+}
+
+.card-flat:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* アイコン付きカード */
+.card-with-icon .card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+.card-icon {
+  width: 3rem; /* 48px */
+  height: 3rem; /* 48px */
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  flex-shrink: 0;
+}
+
+.card-icon.primary {
+  background-color: rgba(100, 108, 255, 0.1);
+  color: var(--color-primary);
+}
+
+.card-icon.success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--color-success);
+}
+
+.card-icon.error {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--color-error);
+}
+
+.card-icon.warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: var(--color-warning);
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .card-header,
+  .card-body,
+  .card-footer {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: stretch;
+  }
+
+  .card-footer-actions {
+    justify-content: center;
+  }
+
+  .stats-value {
+    font-size: var(--font-size-xxl);
+  }
+}

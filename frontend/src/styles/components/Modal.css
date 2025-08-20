@@ -1,0 +1,181 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* モーダルオーバーレイ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-lg);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.modal-overlay.open {
+  opacity: 1;
+}
+
+/* モーダルコンテナ */
+.modal {
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 31.25rem; /* 500px */
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform var(--transition-normal);
+}
+
+.modal-overlay.open .modal {
+  transform: scale(1);
+}
+
+/* モーダルヘッダー */
+.modal-header {
+  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+  border-bottom: var(--border-width) solid var(--color-border);
+  position: relative;
+}
+
+.modal-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  color: var(--color-text);
+  padding-right: var(--spacing-xxl);
+}
+
+.modal-close {
+  position: absolute;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  background: none;
+  border: none;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.modal-close:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.3);
+}
+
+/* モーダルボディ */
+.modal-body {
+  padding: var(--spacing-xl);
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.modal-body p {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text);
+  line-height: var(--line-height);
+}
+
+/* モーダルフッター */
+.modal-footer {
+  padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-xl);
+  border-top: var(--border-width) solid var(--color-border);
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+}
+
+/* サイズバリエーション */
+.modal-sm {
+  max-width: 18.75rem; /* 300px */
+}
+
+.modal-lg {
+  max-width: 50rem; /* 800px */
+}
+
+.modal-xl {
+  max-width: 75rem; /* 1200px */
+}
+
+/* 確認ダイアログ */
+.modal-confirm .modal-body {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+}
+
+.modal-confirm .modal-title {
+  color: var(--color-warning);
+  text-align: center;
+  padding-right: 0;
+}
+
+.modal-confirm .modal-header {
+  text-align: center;
+  padding-bottom: var(--spacing-md);
+}
+
+/* 危険なアクション用ダイアログ */
+.modal-danger .modal-title {
+  color: var(--color-error);
+}
+
+.modal-danger .modal-header {
+  border-bottom-color: var(--color-error);
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: var(--spacing-md);
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer .button {
+    width: 100%;
+  }
+}

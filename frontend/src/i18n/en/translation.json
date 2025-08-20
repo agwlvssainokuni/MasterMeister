@@ -1,0 +1,33 @@
+{
+  "app": {
+    "title": "Master Meister",
+    "subtitle": "Master Data Maintenance System"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "loginButton": "Login",
+    "loggingIn": "Logging in...",
+    "loginFailed": "Login failed",
+    "noAccount": "Don't have an account? ",
+    "register": "Register",
+    "registerSuffix": " here."
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  }
+}
