@@ -85,11 +85,11 @@
     "confirmDialog": {
       "approve": {
         "title": "ユーザー承認",
-        "message": "ユーザー「{username}」を承認してもよろしいですか？"
+        "message": "ユーザー「{{username}}」を承認してもよろしいですか？"
       },
       "reject": {
         "title": "ユーザー拒否",
-        "message": "ユーザー「{username}」を拒否してもよろしいですか？この操作は取り消せません。"
+        "message": "ユーザー「{{username}}」を拒否してもよろしいですか？この操作は取り消せません。"
       }
     }
   },

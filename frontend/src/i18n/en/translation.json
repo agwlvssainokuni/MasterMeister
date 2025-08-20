@@ -85,11 +85,11 @@
     "confirmDialog": {
       "approve": {
         "title": "Approve User",
-        "message": "Are you sure you want to approve user: {username}?"
+        "message": "Are you sure you want to approve user: {{username}}?"
       },
       "reject": {
         "title": "Reject User",
-        "message": "Are you sure you want to reject user: {username}? This action cannot be undone."
+        "message": "Are you sure you want to reject user: {{username}}? This action cannot be undone."
       }
     }
   },
