@@ -1,5 +1,6 @@
-import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom'
+import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom'
 import {AuthProvider} from './contexts/AuthContext'
+import {NotificationProvider} from './components/NotificationProvider'
 import {ProtectedRoute} from './components/ProtectedRoute'
 import {AdminRoute} from './components/AdminRoute'
 import {LoginPage} from './pages/LoginPage'
@@ -11,7 +12,7 @@ const DashboardPage = () => (
   <div style={{padding: '2rem'}}>
     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem'}}>
       <h1>Dashboard</h1>
-      <LogoutButton />
+      <LogoutButton/>
     </div>
     <p>Welcome to Master Meister Dashboard!</p>
   </div>
@@ -21,26 +22,28 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+        <NotificationProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage/>}/>
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard/>
+                </AdminRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
+          </Routes>
+        </NotificationProvider>
       </AuthProvider>
     </Router>
   )

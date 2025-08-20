@@ -18,17 +18,30 @@ import {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import type {PendingUser} from '../types/frontend'
 import {adminService} from '../services/adminService'
+import {ConfirmDialog} from './ConfirmDialog'
+import {useNotification} from '../hooks/useNotification'
 import '../styles/components/Table.css'
 import '../styles/components/Button.css'
 import '../styles/components/Loading.css'
 import '../styles/components/Alert.css'
+import '../styles/components/Modal.css'
 
 export const PendingUsersList = () => {
   const {t, i18n} = useTranslation()
+  const {showSuccess, showError} = useNotification()
   const [users, setUsers] = useState<PendingUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<number | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    type: 'approve' | 'reject'
+    user: PendingUser | null
+  }>({
+    isOpen: false,
+    type: 'approve',
+    user: null
+  })
 
   const fetchPendingUsers = async () => {
     try {
@@ -45,27 +58,49 @@ export const PendingUsersList = () => {
 
   useEffect(() => {
     fetchPendingUsers()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleApprove = async (user: PendingUser) => {
-    try {
-      setActionLoading(user.id)
-      await adminService.approveUser(user.id)
-      setUsers(prev => prev.filter(u => u.id !== user.id))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('admin.users.error'))
-    } finally {
-      setActionLoading(null)
+  const showConfirmDialog = (type: 'approve' | 'reject', user: PendingUser) => {
+    setConfirmDialog({
+      isOpen: true,
+      type,
+      user
+    })
+  }
+
+  const closeConfirmDialog = () => {
+    if (actionLoading === null) {
+      setConfirmDialog({
+        isOpen: false,
+        type: 'approve',
+        user: null
+      })
     }
   }
 
-  const handleReject = async (user: PendingUser) => {
+  const handleConfirmAction = async () => {
+    if (!confirmDialog.user) return
+
+    const user = confirmDialog.user
+    const isApprove = confirmDialog.type === 'approve'
+
     try {
       setActionLoading(user.id)
-      await adminService.rejectUser(user.id)
+
+      if (isApprove) {
+        await adminService.approveUser(user.id)
+        showSuccess(t('admin.users.approved'))
+      } else {
+        await adminService.rejectUser(user.id)
+        showSuccess(t('admin.users.rejected'))
+      }
+
       setUsers(prev => prev.filter(u => u.id !== user.id))
+      closeConfirmDialog()
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('admin.users.error'))
+      const errorMessage = err instanceof Error ? err.message : t('admin.users.error')
+      setError(errorMessage)
+      showError(errorMessage)
     } finally {
       setActionLoading(null)
     }
@@ -136,7 +171,7 @@ export const PendingUsersList = () => {
                 <button
                   type="button"
                   className="button button-primary button-sm"
-                  onClick={() => handleApprove(user)}
+                  onClick={() => showConfirmDialog('approve', user)}
                   disabled={actionLoading === user.id}
                 >
                   {actionLoading === user.id ? t('admin.users.confirming') : t('admin.users.approve')}
@@ -144,7 +179,7 @@ export const PendingUsersList = () => {
                 <button
                   type="button"
                   className="button button-danger button-sm"
-                  onClick={() => handleReject(user)}
+                  onClick={() => showConfirmDialog('reject', user)}
                   disabled={actionLoading === user.id}
                 >
                   {actionLoading === user.id ? t('admin.users.confirming') : t('admin.users.reject')}
@@ -155,6 +190,19 @@ export const PendingUsersList = () => {
         ))}
         </tbody>
       </table>
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={closeConfirmDialog}
+        onConfirm={handleConfirmAction}
+        title={t(`admin.confirmDialog.${confirmDialog.type}.title`)}
+        message={t(`admin.confirmDialog.${confirmDialog.type}.message`, {
+          username: confirmDialog.user?.username
+        })}
+        confirmText={t(`common.${confirmDialog.type}`)}
+        type={confirmDialog.type === 'reject' ? 'danger' : 'default'}
+        loading={actionLoading !== null}
+      />
     </div>
   )
 }

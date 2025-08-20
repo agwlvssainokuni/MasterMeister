@@ -133,4 +133,31 @@
     width: 100%;
     min-width: auto;
   }
+
+  /* テーブルレスポンシブ対応 */
+  .admin-users-table {
+    overflow-x: auto;
+  }
+
+  .admin-users-table table {
+    min-width: 600px;
+  }
+
+  .admin-users-table th[style*="width"],
+  .admin-users-table td {
+    white-space: nowrap;
+  }
+
+  .admin-users-table th:first-child,
+  .admin-users-table td:first-child {
+    min-width: 120px;
+  }
+
+  .admin-users-table th:nth-child(2),
+  .admin-users-table td:nth-child(2) {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
