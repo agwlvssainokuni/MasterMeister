@@ -116,10 +116,19 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Model package restructuring (UserStatus, UserRole, TemplateType enums)
   - [x] Comprehensive test coverage (AdminControllerTest, UserServiceTest)
 
-#### 2.3 Admin Approval Workflow (Frontend)
-- [ ] Create admin dashboard UI for user approval
-- [ ] Implement pending users list display
-- [ ] Add approve/reject button functionality
+#### 2.3 Admin Approval Workflow (Frontend) 🔄 IN PROGRESS
+- [x] Create admin dashboard UI for user approval
+  - [x] AdminRoute component with ADMIN role authorization
+  - [x] AdminDashboard with tabbed navigation (Users/Database/Permissions)
+  - [x] Responsive admin-specific CSS classes and styling
+- [x] Implement pending users list display
+  - [x] PendingUsersList component with API integration
+  - [x] Table display with user details (username, email, registration date)
+  - [x] Loading states, error handling, and empty state UI
+- [x] Add approve/reject button functionality
+  - [x] Direct API integration for approve/reject actions
+  - [x] Optimistic UI updates (user removal after action)
+  - [x] Action loading states and error handling
 - [ ] Build confirmation dialogs for admin actions
 
 #### 2.4 Login/Logout System
