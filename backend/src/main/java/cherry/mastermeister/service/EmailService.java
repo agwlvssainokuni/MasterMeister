@@ -23,7 +23,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Map;
 
 @Service
@@ -32,26 +34,37 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final EmailTemplateRepository emailTemplateRepository;
     private final String baseUrl;
+    private final String confirmationPath;
+    private final String tokenParam;
     private final String defaultLanguage;
 
     public EmailService(
             JavaMailSender mailSender,
             EmailTemplateRepository emailTemplateRepository,
             @Value("${mm.app.base-url:http://localhost:8080}") String baseUrl,
+            @Value("${mm.app.confirmation-path:/confirm-email}") String confirmationPath,
+            @Value("${mm.app.token-param:token}") String tokenParam,
             @Value("${mm.mail.default-language:en}") String defaultLanguage
     ) {
         this.mailSender = mailSender;
         this.emailTemplateRepository = emailTemplateRepository;
         this.baseUrl = baseUrl;
+        this.confirmationPath = confirmationPath;
+        this.tokenParam = tokenParam;
         this.defaultLanguage = defaultLanguage;
     }
 
     public void sendEmailConfirmation(String toAddress, String username, String confirmationToken, String language) {
-        String confirmationUrl = baseUrl + "/api/users/confirm-email?token=" + confirmationToken;
+        URI confirmationUrl = UriComponentsBuilder
+                .fromUriString(baseUrl)
+                .path(confirmationPath)
+                .queryParam(tokenParam, confirmationToken)
+                .build()
+                .toUri();
 
         Map<String, String> variables = Map.of(
                 "username", username,
-                "confirmationUrl", confirmationUrl
+                "confirmationUrl", confirmationUrl.toString()
         );
 
         sendTemplatedEmail(TemplateType.EMAIL_CONFIRMATION, toAddress, variables, language);

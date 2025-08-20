@@ -115,7 +115,7 @@ public class SecurityConfig {
                                 "/", "/index.html", "/assets/**",
                                 "/*.png", "/*.ico", "/*.svg",
                                 "/site.webmanifest",
-                                "/login", "/register",
+                                "/login", "/register", "/confirm-email",
                                 "/dashboard",
                                 "/admin"
                         ).permitAll()

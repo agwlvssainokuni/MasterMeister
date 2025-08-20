@@ -81,3 +81,13 @@ export interface UserRegistrationResult {
   email: string
   message: string
 }
+
+// Email Confirmation
+export interface EmailConfirmationRequest {
+  token: string
+}
+
+export interface EmailConfirmationResult {
+  status: string
+  message: string
+}

@@ -83,6 +83,18 @@
     "hasAccount": "Already have an account? ",
     "loginLink": "Login"
   },
+  "emailConfirmation": {
+    "confirming": "Confirming email...",
+    "success": {
+      "title": "Email Confirmed"
+    },
+    "error": {
+      "title": "Email Confirmation Error",
+      "missingToken": "Confirmation token not found. Please check the link in your email.",
+      "failed": "Email confirmation failed"
+    },
+    "loginButton": "Go to Login"
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "admin": "Admin",

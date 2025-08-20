@@ -83,6 +83,18 @@
     "hasAccount": "既にアカウントをお持ちの場合は、",
     "loginLink": "ログイン"
   },
+  "emailConfirmation": {
+    "confirming": "メール確認中...",
+    "success": {
+      "title": "メール確認完了"
+    },
+    "error": {
+      "title": "メール確認エラー",
+      "missingToken": "確認トークンが見つかりません。メールのリンクを確認してください。",
+      "failed": "メール確認に失敗しました"
+    },
+    "loginButton": "ログインページへ"
+  },
   "navigation": {
     "dashboard": "ダッシュボード",
     "admin": "管理者",

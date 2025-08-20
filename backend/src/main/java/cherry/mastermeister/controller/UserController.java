@@ -16,15 +16,15 @@
 
 package cherry.mastermeister.controller;
 
-import cherry.mastermeister.controller.dto.ApiResponse;
-import cherry.mastermeister.controller.dto.EmailConfirmationResult;
-import cherry.mastermeister.controller.dto.UserRegistrationRequest;
-import cherry.mastermeister.controller.dto.UserRegistrationResult;
+import cherry.mastermeister.controller.dto.*;
 import cherry.mastermeister.service.UserRegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
@@ -45,8 +45,9 @@ public class UserController {
     }
 
     @PostMapping("/confirm-email")
-    public ApiResponse<EmailConfirmationResult> confirmEmail(@RequestParam String token) {
-        userRegistrationService.confirmEmail(token);
+    public ApiResponse<EmailConfirmationResult> confirmEmail(
+            @Valid @RequestBody EmailConfirmationRequest request) {
+        userRegistrationService.confirmEmail(request.token());
 
         EmailConfirmationResult result = new EmailConfirmationResult(
                 "confirmed",

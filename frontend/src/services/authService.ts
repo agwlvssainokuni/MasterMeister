@@ -18,6 +18,8 @@ import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
+  EmailConfirmationRequest,
+  EmailConfirmationResult,
   LoginRequest,
   LoginResult,
   LogoutRequest,
@@ -100,6 +102,21 @@ class AuthService {
 
     if (!response.data.ok || !response.data.data) {
       throw new Error(response.data.error?.[0] || 'Registration failed')
+    }
+
+    return response.data.data
+  }
+
+  async confirmEmail(token: string): Promise<EmailConfirmationResult> {
+    const request: EmailConfirmationRequest = {token}
+
+    const response = await apiClient.post<ApiResponse<EmailConfirmationResult>>(
+      API_ENDPOINTS.USERS.CONFIRM_EMAIL,
+      request
+    )
+
+    if (!response.data.ok || !response.data.data) {
+      throw new Error(response.data.error?.[0] || 'Email confirmation failed')
     }
 
     return response.data.data

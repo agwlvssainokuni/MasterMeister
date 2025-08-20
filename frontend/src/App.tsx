@@ -5,6 +5,7 @@ import {ProtectedRoute} from './components/ProtectedRoute'
 import {AdminRoute} from './components/AdminRoute'
 import {LoginPage} from './pages/LoginPage'
 import {RegisterPage} from './pages/RegisterPage'
+import {EmailConfirmationPage} from './pages/EmailConfirmationPage'
 import {AdminDashboard} from './pages/AdminDashboard'
 import {LogoutButton} from './components/LogoutButton'
 import './App.css'
@@ -27,6 +28,7 @@ const App = () => {
           <Routes>
             <Route path="/login" element={<LoginPage/>}/>
             <Route path="/register" element={<RegisterPage/>}/>
+            <Route path="/confirm-email" element={<EmailConfirmationPage/>}/>
             <Route
               path="/dashboard"
               element={
