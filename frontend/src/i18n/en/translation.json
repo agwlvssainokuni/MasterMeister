@@ -15,6 +15,32 @@
     "register": "Register",
     "registerSuffix": " here."
   },
+  "login": {
+    "title": "Login",
+    "username": {
+      "label": "Username",
+      "placeholder": "Enter your username"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Enter your password"
+    },
+    "submit": "Login",
+    "submitting": "Logging in...",
+    "validation": {
+      "required": "Please enter your username and password"
+    },
+    "error": {
+      "failed": "Login failed"
+    }
+  },
+  "logout": {
+    "submit": "Logout",
+    "submitting": "Logging out...",
+    "error": {
+      "failed": "Logout failed"
+    }
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "admin": "Admin",

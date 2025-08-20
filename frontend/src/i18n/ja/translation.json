@@ -15,6 +15,32 @@
     "register": "新規登録",
     "registerSuffix": "してください。"
   },
+  "login": {
+    "title": "ログイン",
+    "username": {
+      "label": "ユーザー名",
+      "placeholder": "ユーザー名を入力してください"
+    },
+    "password": {
+      "label": "パスワード",
+      "placeholder": "パスワードを入力してください"
+    },
+    "submit": "ログイン",
+    "submitting": "ログイン中...",
+    "validation": {
+      "required": "ユーザー名とパスワードを入力してください"
+    },
+    "error": {
+      "failed": "ログインに失敗しました"
+    }
+  },
+  "logout": {
+    "submit": "ログアウト",
+    "submitting": "ログアウト中...",
+    "error": {
+      "failed": "ログアウトに失敗しました"
+    }
+  },
   "navigation": {
     "dashboard": "ダッシュボード",
     "admin": "管理者",
