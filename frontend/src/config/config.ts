@@ -22,6 +22,10 @@ export const API_ENDPOINTS = {
     LOGOUT: '/auth/logout',
     REFRESH: '/auth/refresh'
   },
+  USERS: {
+    REGISTER: '/users/register',
+    CONFIRM_EMAIL: '/users/confirm-email'
+  },
   ADMIN: {
     PENDING_USERS: '/admin/users/pending',
     APPROVE_USER: (id: number) => `/admin/users/${id}/approve`,

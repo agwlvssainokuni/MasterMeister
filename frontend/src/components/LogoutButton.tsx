@@ -54,7 +54,7 @@ export const LogoutButton = ({
   return (
     <div className="logout-button-container">
       {error && (
-        <div className="alert alert--danger" role="alert">
+        <div className="alert alert-error" role="alert">
           {error}
         </div>
       )}

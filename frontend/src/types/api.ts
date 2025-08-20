@@ -65,3 +65,19 @@ export interface ApproveUserRequest {
 export interface RejectUserRequest {
   // No body required
 }
+
+// User Registration
+export interface UserRegistrationRequest {
+  username: string
+  email: string
+  password: string
+  fullName: string
+  language: string
+}
+
+export interface UserRegistrationResult {
+  userId: number
+  username: string
+  email: string
+  message: string
+}

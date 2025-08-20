@@ -4,6 +4,7 @@ import {NotificationProvider} from './components/NotificationProvider'
 import {ProtectedRoute} from './components/ProtectedRoute'
 import {AdminRoute} from './components/AdminRoute'
 import {LoginPage} from './pages/LoginPage'
+import {RegisterPage} from './pages/RegisterPage'
 import {AdminDashboard} from './pages/AdminDashboard'
 import {LogoutButton} from './components/LogoutButton'
 import './App.css'
@@ -25,6 +26,7 @@ const App = () => {
         <NotificationProvider>
           <Routes>
             <Route path="/login" element={<LoginPage/>}/>
+            <Route path="/register" element={<RegisterPage/>}/>
             <Route
               path="/dashboard"
               element={

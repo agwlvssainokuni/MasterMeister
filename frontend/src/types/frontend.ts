@@ -46,3 +46,11 @@ export interface AdminAction {
   userId: number
   username: string
 }
+
+export interface RegistrationCredentials {
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+  fullName: string
+}

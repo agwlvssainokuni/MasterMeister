@@ -16,8 +16,15 @@
 
 import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
-import type {ApiResponse, LoginRequest, LoginResult, LogoutRequest} from '../types/api'
-import type {AuthState, LoginCredentials, User} from '../types/frontend'
+import type {
+  ApiResponse,
+  LoginRequest,
+  LoginResult,
+  LogoutRequest,
+  UserRegistrationRequest,
+  UserRegistrationResult
+} from '../types/api'
+import type {AuthState, LoginCredentials, RegistrationCredentials, User} from '../types/frontend'
 import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
 
 class AuthService {
@@ -75,6 +82,27 @@ class AuthService {
     // Clear local storage
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+  }
+
+  async register(credentials: RegistrationCredentials): Promise<UserRegistrationResult> {
+    const registerRequest: UserRegistrationRequest = {
+      username: credentials.username,
+      email: credentials.email,
+      password: credentials.password,
+      fullName: credentials.fullName,
+      language: navigator.language.startsWith('ja') ? 'ja' : 'en'
+    }
+
+    const response = await apiClient.post<ApiResponse<UserRegistrationResult>>(
+      API_ENDPOINTS.USERS.REGISTER,
+      registerRequest
+    )
+
+    if (!response.data.ok || !response.data.data) {
+      throw new Error(response.data.error?.[0] || 'Registration failed')
+    }
+
+    return response.data.data
   }
 
   getCurrentAuthState(): AuthState {

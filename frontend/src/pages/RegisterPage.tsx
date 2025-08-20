@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-import {useCallback, useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Link, useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
-import {LoginForm} from '../components/LoginForm'
+import {RegisterForm} from '../components/RegisterForm'
 import '../styles/layouts/AuthLayout.css'
+import '../styles/components/Alert.css'
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
   const {t} = useTranslation()
   const {isAuthenticated} = useAuth()
   const navigate = useNavigate()
+  const [registrationComplete, setRegistrationComplete] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -32,12 +34,42 @@ export const LoginPage = () => {
     }
   }, [isAuthenticated, navigate])
 
-  const handleLoginSuccess = useCallback(() => {
-    navigate('/dashboard', {replace: true})
-  }, [navigate])
+  const handleRegisterSuccess = () => {
+    setRegistrationComplete(true)
+  }
 
   if (isAuthenticated) {
     return null
+  }
+
+  if (registrationComplete) {
+    return (
+      <div className="auth-layout">
+        <div className="auth-container">
+          <div className="auth-header">
+            <h1 className="auth-title">{t('app.title')}</h1>
+            <p className="auth-subtitle">{t('app.subtitle')}</p>
+          </div>
+
+          <div className="auth-content">
+            <div className="alert alert-success" role="alert">
+              <h2>{t('register.success.title')}</h2>
+              <p>{t('register.success.message')}</p>
+              <p>{t('register.success.confirmation')}</p>
+            </div>
+
+            <div className="form-actions" style={{marginTop: '1.5rem'}}>
+              <Link
+                to="/login"
+                className="button button-primary button-lg button-full"
+              >
+                {t('register.success.loginButton')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -49,15 +81,14 @@ export const LoginPage = () => {
         </div>
 
         <div className="auth-content">
-          <LoginForm onLoginSuccess={handleLoginSuccess}/>
+          <RegisterForm onRegisterSuccess={handleRegisterSuccess}/>
 
           <div className="auth-links">
             <p>
-              {t('auth.noAccount')}
-              <Link to="/register" className="auth-link">
-                {t('auth.register')}
+              {t('register.hasAccount')}
+              <Link to="/login" className="auth-link">
+                {t('register.loginLink')}
               </Link>
-              {t('auth.registerSuffix')}
             </p>
           </div>
         </div>

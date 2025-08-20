@@ -41,6 +41,48 @@
       "failed": "ログアウトに失敗しました"
     }
   },
+  "register": {
+    "title": "新規登録",
+    "username": {
+      "label": "ユーザー名",
+      "placeholder": "ユーザー名を入力してください"
+    },
+    "email": {
+      "label": "メールアドレス",
+      "placeholder": "メールアドレスを入力してください"
+    },
+    "fullName": {
+      "label": "氏名",
+      "placeholder": "氏名を入力してください"
+    },
+    "password": {
+      "label": "パスワード",
+      "placeholder": "パスワードを入力してください（8文字以上）"
+    },
+    "confirmPassword": {
+      "label": "パスワード確認",
+      "placeholder": "パスワードを再度入力してください"
+    },
+    "submit": "登録",
+    "submitting": "登録中...",
+    "validation": {
+      "required": "すべての項目を入力してください",
+      "passwordMismatch": "パスワードが一致しません",
+      "passwordTooShort": "パスワードは8文字以上で入力してください",
+      "invalidEmail": "正しいメールアドレスを入力してください"
+    },
+    "error": {
+      "failed": "登録に失敗しました"
+    },
+    "success": {
+      "title": "登録完了",
+      "message": "アカウントの登録が完了しました。",
+      "confirmation": "管理者の承認をお待ちください。承認後にログインできるようになります。",
+      "loginButton": "ログインページへ"
+    },
+    "hasAccount": "既にアカウントをお持ちの場合は、",
+    "loginLink": "ログイン"
+  },
   "navigation": {
     "dashboard": "ダッシュボード",
     "admin": "管理者",
