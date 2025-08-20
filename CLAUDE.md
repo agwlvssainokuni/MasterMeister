@@ -63,13 +63,21 @@ This is a Master Data Maintenance Application - a Single Page Application (SPA) 
 - ✅ Admin user auto-initialization
 - ✅ Swagger/OpenAPI documentation
 - ✅ Docker containerization ready
-- 🚧 React frontend (not yet implemented)
+- ✅ React 19 frontend with Node.js 22
+- ✅ Frontend infrastructure: i18n (react-i18next), comprehensive CSS design system
+- 🚧 Login/logout form components (in progress)
 
 **Build Commands:**
 - `./gradlew build` - Build the application
 - `./gradlew test` - Run all tests
 - `./gradlew bootRun` - Run the application locally
 - `docker build -t mastermeister .` - Build Docker image
+- **Note**: Add `-Pfrontend` to any Gradle command to include frontend build and integration
+
+**Frontend Commands:**
+- `cd frontend && npm run dev` - Run frontend development server
+- `cd frontend && npm run build` - Build frontend for production
+- `cd frontend && npm run lint` - Run ESLint
 
 **Environment Profiles:**
 - `default/dev` - Development with H2 console, verbose logging
