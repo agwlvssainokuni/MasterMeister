@@ -96,7 +96,7 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
 - [x] Create Spring Security configuration with JWT
 - [x] Build user registration API with email validation
 - [x] Integrate MailPit for confirmation emails
-- [x] **Infrastructure Enhancements**: Admin initialization + Production readiness
+- [x] Infrastructure Enhancements: Admin initialization + Production readiness
   - [x] AdminUserInitializer with configurable settings via application.properties
   - [x] Health endpoint test improvements (removed unnecessary @WithMockUser)
   - [x] Security service isolation verification for public endpoints
@@ -107,7 +107,7 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Profile-specific logging configuration for Hibernate SQL
 
 #### 2.2 Admin Approval Workflow (Backend) ✅ COMPLETED
-- [x] **Backend API Implementation**
+- [x] Backend API Implementation
   - [x] AdminController with ADMIN role authorization
   - [x] GET /api/admin/users/pending - pending user list
   - [x] POST /api/admin/users/{id}/approve - user approval
@@ -135,7 +135,7 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] ESC key and overlay click dismissal
   - [x] Danger styling for reject actions
   - [x] Loading state integration
-- [x] **Enhanced UX Features**
+- [x] Enhanced UX Features
   - [x] Toast notification system (NotificationProvider/Context/Hook)
   - [x] Success/error notifications for admin actions
   - [x] Comprehensive responsive design improvements
@@ -165,7 +165,20 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Login/logout/token refresh audit trails
   - [x] IP address and User-Agent tracking
 
-**Milestone 2**: ✅ COMPLETED - MVP user management system operational
+#### 2.6 User Registration Frontend 
+- [ ] Create user registration form page
+  - [ ] Registration form with username, email, password fields
+  - [ ] Form validation and error handling
+  - [ ] Integration with existing authentication flow
+- [ ] Implement email confirmation workflow
+  - [ ] Registration success messaging
+  - [ ] Email confirmation status display
+  - [ ] Redirect to login after successful registration
+- [ ] Add registration link to login page
+  - [ ] Navigation between login/register forms
+  - [ ] Consistent styling with existing design system
+
+**Milestone 2**: 🔄 PENDING (2.6 User Registration Frontend remaining) - MVP user management system operational
 
 ---
 
