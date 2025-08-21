@@ -14,9 +14,28 @@
  * limitations under the License.
  */
 
-import React, {type ReactNode, useCallback, useState} from 'react'
-import {type Notification, NotificationContext} from '../contexts/NotificationContext'
+import React, {createContext, type ReactNode, useCallback, useContext, useState} from 'react'
 import '../styles/components/Notification.css'
+
+interface Notification {
+  id: string
+  type: 'success' | 'error' | 'info' | 'warning'
+  title?: string
+  message: string
+  duration?: number
+}
+
+interface NotificationContextType {
+  notifications: Notification[]
+  addNotification: (notification: Omit<Notification, 'id'>) => void
+  removeNotification: (id: string) => void
+  showSuccess: (message: string, title?: string) => void
+  showError: (message: string, title?: string) => void
+  showInfo: (message: string, title?: string) => void
+  showWarning: (message: string, title?: string) => void
+}
+
+const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
 
 interface NotificationProviderProps {
   children: ReactNode
@@ -30,7 +49,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({child
   }, [])
 
   const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
-    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+    const id = Date.now().toString() + Math.random().toString(36).substring(2, 9)
     const newNotification = {
       ...notification,
       id,
@@ -62,16 +81,18 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({child
     addNotification({type: 'warning', message, title})
   }, [addNotification])
 
+  const contextValue: NotificationContextType = {
+    notifications,
+    addNotification,
+    removeNotification,
+    showSuccess,
+    showError,
+    showInfo,
+    showWarning
+  }
+
   return (
-    <NotificationContext.Provider value={{
-      notifications,
-      addNotification,
-      removeNotification,
-      showSuccess,
-      showError,
-      showInfo,
-      showWarning
-    }}>
+    <NotificationContext.Provider value={contextValue}>
       {children}
       <div className="notification-container">
         {notifications.map(notification => (
@@ -102,3 +123,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({child
     </NotificationContext.Provider>
   )
 }
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const useNotification = (): NotificationContextType => {
+  const context = useContext(NotificationContext)
+  if (!context) {
+    throw new Error('useNotification must be used within a NotificationProvider')
+  }
+  return context
+}
+
+export type {Notification}

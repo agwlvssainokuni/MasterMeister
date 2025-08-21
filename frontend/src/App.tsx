@@ -1,6 +1,6 @@
 import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom'
 import {AuthProvider} from './contexts/AuthContext'
-import {NotificationProvider} from './components/NotificationProvider'
+import {NotificationProvider} from './contexts/NotificationContext'
 import {ProtectedRoute} from './components/ProtectedRoute'
 import {AdminRoute} from './components/AdminRoute'
 import {LoginPage} from './pages/LoginPage'
