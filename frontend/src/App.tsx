@@ -2,7 +2,7 @@ import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom
 import {AuthProvider} from './contexts/AuthContext'
 import {NotificationProvider} from './contexts/NotificationContext'
 import {ProtectedRoute} from './components/ProtectedRoute'
-import {AdminRoute} from './components/AdminRoute'
+import {AdminRoute} from './components/ProtectedRoute'
 import {LoginPage} from './pages/LoginPage'
 import {RegisterPage} from './pages/RegisterPage'
 import {EmailConfirmationPage} from './pages/EmailConfirmationPage'
