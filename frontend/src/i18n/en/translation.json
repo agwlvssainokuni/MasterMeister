@@ -86,7 +86,8 @@
   "emailConfirmation": {
     "confirming": "Confirming email...",
     "success": {
-      "title": "Email Confirmed"
+      "title": "Email Confirmed",
+      "message": "Your email address has been confirmed successfully. Please wait for administrator approval."
     },
     "error": {
       "title": "Email Confirmation Error",

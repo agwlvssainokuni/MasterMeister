@@ -86,7 +86,8 @@
   "emailConfirmation": {
     "confirming": "メール確認中...",
     "success": {
-      "title": "メール確認完了"
+      "title": "メール確認完了",
+      "message": "メールアドレスの確認が完了しました。管理者の承認をお待ちください。"
     },
     "error": {
       "title": "メール確認エラー",

@@ -21,6 +21,11 @@
   border: var(--border-width) solid;
   margin-bottom: var(--spacing-lg);
   position: relative;
+  display: block;
+}
+
+/* アイコン付きアラート用（将来の拡張用） */
+.alert.alert--with-icon {
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-md);
@@ -35,6 +40,19 @@
 
 .alert-content {
   flex: 1;
+}
+
+/* アラート内のタイトルとテキストの縦並び調整 */
+.alert h1, 
+.alert h2, 
+.alert h3 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-weight: var(--font-weight-medium);
+}
+
+.alert p {
+  margin: 0;
+  line-height: var(--line-height);
 }
 
 .alert-title {

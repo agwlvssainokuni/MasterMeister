@@ -113,7 +113,12 @@ export const EmailConfirmationPage = () => {
                   : t('emailConfirmation.error.title')
                 }
               </h2>
-              <p>{result.message}</p>
+              <p>
+                {result.status === 'confirmed'
+                  ? t('emailConfirmation.success.message')
+                  : t('emailConfirmation.error.failed')
+                }
+              </p>
             </div>
           ) : null}
 
