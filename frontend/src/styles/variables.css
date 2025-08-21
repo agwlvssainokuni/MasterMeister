@@ -42,12 +42,12 @@
   --color-info: #17a2b8;
 
   /* スペーシング (rem) */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-xxl: 3rem;
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 0.75rem;   /* 12px */
+  --spacing-lg: 1rem;      /* 16px */
+  --spacing-xl: 1.25rem;   /* 20px */
+  --spacing-xxl: 1.5rem;   /* 24px */
 
   /* フォント (rem) */
   --font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
