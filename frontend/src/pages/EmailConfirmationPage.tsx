@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {useEffect, useState} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Link, useNavigate, useSearchParams} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
@@ -33,6 +33,38 @@ export const EmailConfirmationPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // StrictMode対策: 副作用のある処理の重複実行を防ぐ
+  // 
+  // React StrictModeは開発環境で意図的にuseEffectなどを2回実行し、
+  // 副作用のないコードを書くことを促進する。本来、アプリケーションは
+  // 冪等性（同じ処理を複数回実行しても結果が同じ）を持つべきだが、
+  // メール確認APIのような一度しか実行できない処理も存在する。
+  // 
+  // このような場合、useStateでは setHasExecuted(true) が非同期で
+  // 更新されるため、同時に実行される2回の呼び出しを防げない。
+  // useRefは同期的に hasExecutedRef.current = true で更新されるため、
+  // 確実に重複実行を防ぐことができる。
+  const hasExecutedRef = useRef(false)
+
+  const confirmEmail = useCallback(async (token: string) => {
+    if (hasExecutedRef.current) {
+      return
+    }
+
+    hasExecutedRef.current = true
+
+    try {
+      setIsLoading(true)
+      setError(null)
+      const confirmationResult = await authService.confirmEmail(token)
+      setResult(confirmationResult)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t('emailConfirmation.error.failed'))
+    } finally {
+      setIsLoading(false)
+    }
+  }, [t])
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard', {replace: true})
@@ -47,20 +79,8 @@ export const EmailConfirmationPage = () => {
       return
     }
 
-    const confirmEmail = async () => {
-      try {
-        const confirmationResult = await authService.confirmEmail(token)
-        setResult(confirmationResult)
-      } catch (error) {
-        setError(error instanceof Error ? error.message : t('emailConfirmation.error.failed'))
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    confirmEmail()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, navigate])
+    confirmEmail(token)
+  }, [isAuthenticated, navigate, searchParams, t, confirmEmail])
 
   if (isAuthenticated) {
     return null
@@ -86,9 +106,9 @@ export const EmailConfirmationPage = () => {
               <p>{error}</p>
             </div>
           ) : result ? (
-            <div className={`alert ${result.status === 'SUCCESS' ? 'alert-success' : 'alert-error'}`} role="alert">
+            <div className={`alert ${result.status === 'confirmed' ? 'alert-success' : 'alert-error'}`} role="alert">
               <h2>
-                {result.status === 'SUCCESS'
+                {result.status === 'confirmed'
                   ? t('emailConfirmation.success.title')
                   : t('emailConfirmation.error.title')
                 }
