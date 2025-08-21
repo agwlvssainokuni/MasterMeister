@@ -76,6 +76,23 @@ This is a Master Data Maintenance Application - a Single Page Application (SPA) 
   - ✅ Admin dashboard with user approval workflow
   - ✅ StrictMode compatibility with duplicate execution prevention
 
+## Code Organization Principles
+
+**Context/Provider Pattern:**
+- All React contexts follow single-file pattern (Context + Provider + Hook)
+- Example: AuthContext.tsx, NotificationContext.tsx
+- Avoids file fragmentation and improves maintainability
+
+**Route Protection:**
+- Use ProtectedRoute.tsx for all authentication logic
+- AdminRoute is exported from ProtectedRoute.tsx (not separate file)
+- Centralized authentication prevents code duplication
+
+**Design System:**
+- CSS variables use 4px-based spacing scale
+- Values: xs(4px), sm(8px), md(12px), lg(16px), xl(20px), xxl(24px)
+- Follows modern UI library standards (Tailwind CSS compatible)
+
 **Build Commands:**
 - `./gradlew build` - Build the application
 - `./gradlew test` - Run all tests
