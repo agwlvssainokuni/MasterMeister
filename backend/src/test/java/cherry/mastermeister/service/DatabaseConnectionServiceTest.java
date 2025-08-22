@@ -17,7 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.DatabaseConnectionEntity;
-import cherry.mastermeister.model.DatabaseType;
+import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

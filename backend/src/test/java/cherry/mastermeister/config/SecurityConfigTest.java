@@ -19,7 +19,7 @@ package cherry.mastermeister.config;
 import cherry.mastermeister.controller.AuthController;
 import cherry.mastermeister.controller.HealthController;
 import cherry.mastermeister.entity.UserEntity;
-import cherry.mastermeister.model.UserStatus;
+import cherry.mastermeister.enums.UserStatus;
 import cherry.mastermeister.repository.AuditLogRepository;
 import cherry.mastermeister.repository.RefreshTokenRepository;
 import cherry.mastermeister.repository.UserRepository;

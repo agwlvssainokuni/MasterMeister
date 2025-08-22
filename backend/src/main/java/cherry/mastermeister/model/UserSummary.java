@@ -16,6 +16,8 @@
 
 package cherry.mastermeister.model;
 
+import cherry.mastermeister.enums.UserStatus;
+
 import java.time.LocalDateTime;
 
 public record UserSummary(

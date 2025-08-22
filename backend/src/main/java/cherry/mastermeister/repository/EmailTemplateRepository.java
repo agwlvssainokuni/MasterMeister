@@ -17,7 +17,7 @@
 package cherry.mastermeister.repository;
 
 import cherry.mastermeister.entity.EmailTemplateEntity;
-import cherry.mastermeister.model.TemplateType;
+import cherry.mastermeister.enums.TemplateType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

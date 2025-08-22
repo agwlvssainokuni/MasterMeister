@@ -17,7 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.EmailTemplateEntity;
-import cherry.mastermeister.model.TemplateType;
+import cherry.mastermeister.enums.TemplateType;
 import cherry.mastermeister.repository.EmailTemplateRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;

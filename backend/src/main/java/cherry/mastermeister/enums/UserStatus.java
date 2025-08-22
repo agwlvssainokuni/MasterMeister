@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.model;
+package cherry.mastermeister.enums;
 
 public enum UserStatus {
     PENDING,

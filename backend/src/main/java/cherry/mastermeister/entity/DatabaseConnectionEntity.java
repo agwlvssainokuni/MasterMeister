@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.entity;
 
-import cherry.mastermeister.model.DatabaseType;
+import cherry.mastermeister.enums.DatabaseType;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

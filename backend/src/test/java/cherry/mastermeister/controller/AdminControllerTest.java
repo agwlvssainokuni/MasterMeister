@@ -17,7 +17,7 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.config.SecurityConfig;
-import cherry.mastermeister.model.UserStatus;
+import cherry.mastermeister.enums.UserStatus;
 import cherry.mastermeister.model.UserSummary;
 import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.service.UserService;

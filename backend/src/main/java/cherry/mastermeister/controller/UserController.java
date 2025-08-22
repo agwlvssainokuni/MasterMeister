@@ -17,6 +17,7 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.*;
+import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.service.UserRegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,9 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserRegistrationResult>> register(
             @Valid @RequestBody UserRegistrationRequest request) {
-        UserRegistrationResult result = userRegistrationService.registerUser(request);
+        UserRegistration model = toModel(request);
+        UserRegistration registeredUser = userRegistrationService.registerUser(model);
+        UserRegistrationResult result = toResult(registeredUser);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(result));
     }
@@ -54,5 +57,27 @@ public class UserController {
                 "Email confirmed successfully. Please wait for administrator approval."
         );
         return ApiResponse.success(result);
+    }
+
+    private UserRegistration toModel(UserRegistrationRequest request) {
+        return new UserRegistration(
+                null,
+                request.username(),
+                request.email(),
+                request.fullName(),
+                request.password(),
+                null,
+                null,
+                null
+        );
+    }
+
+    private UserRegistrationResult toResult(UserRegistration model) {
+        return new UserRegistrationResult(
+                model.id(),
+                model.username(),
+                model.email(),
+                "Registration successful. Please check your email to confirm your account."
+        );
     }
 }

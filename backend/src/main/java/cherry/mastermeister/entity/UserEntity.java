@@ -16,8 +16,8 @@
 
 package cherry.mastermeister.entity;
 
-import cherry.mastermeister.model.UserRole;
-import cherry.mastermeister.model.UserStatus;
+import cherry.mastermeister.enums.UserRole;
+import cherry.mastermeister.enums.UserStatus;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

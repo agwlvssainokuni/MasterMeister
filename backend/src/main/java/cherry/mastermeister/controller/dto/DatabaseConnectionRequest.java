@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.controller.dto;
 
-import cherry.mastermeister.model.DatabaseType;
+import cherry.mastermeister.enums.DatabaseType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Max;

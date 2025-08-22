@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.model;
+package cherry.mastermeister.enums;
 
-public enum DatabaseType {
-    MYSQL,
-    MARIADB,
-    POSTGRESQL,
-    H2
+public enum TemplateType {
+    EMAIL_CONFIRMATION,      // (1) メールアドレス確認用（登録時）
+    EMAIL_CONFIRMED,         // (2) メールアドレス確認済み（確認後）
+    ACCOUNT_APPROVED,        // (3) アカウント承認通知
+    ACCOUNT_REJECTED,        // (3) アカウント却下通知
+    PASSWORD_RESET           // 将来拡張用
 }

@@ -17,8 +17,8 @@
 package cherry.mastermeister.initializer;
 
 import cherry.mastermeister.entity.UserEntity;
-import cherry.mastermeister.model.UserRole;
-import cherry.mastermeister.model.UserStatus;
+import cherry.mastermeister.enums.UserRole;
+import cherry.mastermeister.enums.UserStatus;
 import cherry.mastermeister.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -16,13 +16,12 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.controller.dto.UserRegistrationRequest;
-import cherry.mastermeister.controller.dto.UserRegistrationResult;
+import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.exception.EmailConfirmationException;
 import cherry.mastermeister.exception.UserAlreadyExistsException;
-import cherry.mastermeister.model.UserRole;
-import cherry.mastermeister.model.UserStatus;
+import cherry.mastermeister.enums.UserRole;
+import cherry.mastermeister.enums.UserStatus;
 import cherry.mastermeister.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,24 +46,24 @@ public class UserRegistrationService {
         this.secureRandom = new SecureRandom();
     }
 
-    public UserRegistrationResult registerUser(UserRegistrationRequest request) {
-        if (userRepository.findByUsername(request.username()).isPresent()) {
+    public UserRegistration registerUser(UserRegistration registration) {
+        if (userRepository.findByUsername(registration.username()).isPresent()) {
             throw new UserAlreadyExistsException("Username already exists");
         }
 
-        if (userRepository.findByEmail(request.email()).isPresent()) {
+        if (userRepository.findByEmail(registration.email()).isPresent()) {
             throw new UserAlreadyExistsException("Email already exists");
         }
 
         String emailConfirmationToken = generateEmailConfirmationToken();
 
         UserEntity user = new UserEntity();
-        user.setUsername(request.username());
-        user.setEmail(request.email());
-        user.setPassword(passwordEncoder.encode(request.password()));
-        user.setFullName(request.fullName());
+        user.setUsername(registration.username());
+        user.setEmail(registration.email());
+        user.setPassword(passwordEncoder.encode(registration.password()));
+        user.setFullName(registration.fullName());
         user.setEmailConfirmationToken(emailConfirmationToken);
-        user.setPreferredLanguage(request.language() != null ? request.language() : "en");
+        user.setPreferredLanguage("en"); // Default language
         user.setStatus(UserStatus.PENDING);
         user.setRole(UserRole.USER);
 
@@ -75,15 +74,10 @@ public class UserRegistrationService {
                 savedUser.getEmail(),
                 savedUser.getUsername(),
                 emailConfirmationToken,
-                request.language()
+                "en" // Default language for now
         );
 
-        return new UserRegistrationResult(
-                savedUser.getId(),
-                savedUser.getUsername(),
-                savedUser.getEmail(),
-                "Registration successful. Please check your email to confirm your account."
-        );
+        return toModel(savedUser);
     }
 
     public boolean confirmEmail(String token) {
@@ -112,5 +106,18 @@ public class UserRegistrationService {
         byte[] randomBytes = new byte[32];
         secureRandom.nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+    }
+
+    private UserRegistration toModel(UserEntity entity) {
+        return new UserRegistration(
+                entity.getId(),
+                entity.getUsername(),
+                entity.getEmail(),
+                entity.getFullName(),
+                entity.getPassword(),
+                entity.getEmailConfirmationToken(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
     }
 }

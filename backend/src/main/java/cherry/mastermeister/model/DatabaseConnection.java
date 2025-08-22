@@ -16,6 +16,7 @@
 
 package cherry.mastermeister.model;
 
+import cherry.mastermeister.enums.DatabaseType;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 

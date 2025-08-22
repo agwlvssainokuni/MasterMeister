@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.model;
+package cherry.mastermeister.enums;
 
-public enum UserRole {
-    USER,
-    ADMIN
+public enum DatabaseType {
+    MYSQL,
+    MARIADB,
+    POSTGRESQL,
+    H2
 }

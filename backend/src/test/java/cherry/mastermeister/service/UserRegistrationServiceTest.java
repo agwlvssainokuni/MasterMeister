@@ -16,8 +16,7 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.controller.dto.UserRegistrationRequest;
-import cherry.mastermeister.controller.dto.UserRegistrationResult;
+import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.exception.UserAlreadyExistsException;
 import cherry.mastermeister.repository.UserRepository;
@@ -52,8 +51,15 @@ class UserRegistrationServiceTest {
 
     @Test
     void shouldRegisterUserSuccessfully() {
-        UserRegistrationRequest request = new UserRegistrationRequest(
-                "testuser", "test@example.com", "password123", "Test User", "en"
+        UserRegistration request = new UserRegistration(
+                null,
+                "testuser",
+                "test@example.com",
+                "Test User",
+                "password123",
+                null,
+                null,
+                null
         );
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
@@ -66,13 +72,12 @@ class UserRegistrationServiceTest {
         savedUser.setEmail("test@example.com");
         when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
 
-        UserRegistrationResult result = userRegistrationService.registerUser(request);
+        UserRegistration result = userRegistrationService.registerUser(request);
 
         assertNotNull(result);
-        assertEquals(1L, result.userId());
+        assertEquals(1L, result.id());
         assertEquals("testuser", result.username());
         assertEquals("test@example.com", result.email());
-        assertNotNull(result.message());
 
         verify(userRepository).save(any(UserEntity.class));
         verify(emailService).sendEmailConfirmation(
@@ -85,8 +90,15 @@ class UserRegistrationServiceTest {
 
     @Test
     void shouldThrowExceptionWhenUsernameExists() {
-        UserRegistrationRequest request = new UserRegistrationRequest(
-                "testuser", "test@example.com", "password123", "Test User", "en"
+        UserRegistration request = new UserRegistration(
+                null,
+                "testuser",
+                "test@example.com",
+                "Test User",
+                "password123",
+                null,
+                null,
+                null
         );
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(new UserEntity()));
@@ -99,8 +111,15 @@ class UserRegistrationServiceTest {
 
     @Test
     void shouldThrowExceptionWhenEmailExists() {
-        UserRegistrationRequest request = new UserRegistrationRequest(
-                "testuser", "test@example.com", "password123", "Test User", "en"
+        UserRegistration request = new UserRegistration(
+                null,
+                "testuser",
+                "test@example.com",
+                "Test User",
+                "password123",
+                null,
+                null,
+                null
         );
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
