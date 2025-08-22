@@ -67,6 +67,7 @@ public class UserController {
                 request.fullName(),
                 request.password(),
                 null,
+                request.language(),
                 null,
                 null
         );

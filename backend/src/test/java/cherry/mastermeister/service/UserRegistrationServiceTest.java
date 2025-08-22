@@ -59,6 +59,7 @@ class UserRegistrationServiceTest {
                 "password123",
                 null,
                 null,
+                null,
                 null
         );
 
@@ -98,6 +99,7 @@ class UserRegistrationServiceTest {
                 "password123",
                 null,
                 null,
+                null,
                 null
         );
 
@@ -117,6 +119,7 @@ class UserRegistrationServiceTest {
                 "test@example.com",
                 "Test User",
                 "password123",
+                null,
                 null,
                 null,
                 null

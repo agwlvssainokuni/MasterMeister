@@ -28,6 +28,7 @@ public record UserRegistration(
         @Nonnull String fullName,
         @Nonnull String password,
         @Nullable String confirmationToken,
+        @Nullable String preferredLanguage,
         @Nullable LocalDateTime createdAt,
         @Nullable LocalDateTime updatedAt
 ) {

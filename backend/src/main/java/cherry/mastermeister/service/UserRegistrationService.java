@@ -16,12 +16,12 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.entity.UserEntity;
-import cherry.mastermeister.exception.EmailConfirmationException;
-import cherry.mastermeister.exception.UserAlreadyExistsException;
 import cherry.mastermeister.enums.UserRole;
 import cherry.mastermeister.enums.UserStatus;
+import cherry.mastermeister.exception.EmailConfirmationException;
+import cherry.mastermeister.exception.UserAlreadyExistsException;
+import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -63,7 +63,7 @@ public class UserRegistrationService {
         user.setPassword(passwordEncoder.encode(registration.password()));
         user.setFullName(registration.fullName());
         user.setEmailConfirmationToken(emailConfirmationToken);
-        user.setPreferredLanguage("en"); // Default language
+        user.setPreferredLanguage(registration.preferredLanguage());
         user.setStatus(UserStatus.PENDING);
         user.setRole(UserRole.USER);
 
@@ -74,7 +74,7 @@ public class UserRegistrationService {
                 savedUser.getEmail(),
                 savedUser.getUsername(),
                 emailConfirmationToken,
-                "en" // Default language for now
+                savedUser.getPreferredLanguage()
         );
 
         return toModel(savedUser);
@@ -116,6 +116,7 @@ public class UserRegistrationService {
                 entity.getFullName(),
                 entity.getPassword(),
                 entity.getEmailConfirmationToken(),
+                entity.getPreferredLanguage(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
