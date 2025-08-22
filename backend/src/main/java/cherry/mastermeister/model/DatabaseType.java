@@ -14,25 +14,11 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.controller.dto;
+package cherry.mastermeister.model;
 
-import cherry.mastermeister.model.DatabaseType;
-
-import java.time.LocalDateTime;
-
-public record DatabaseConnectionResult(
-        Long id,
-        String name,
-        DatabaseType dbType,
-        String host,
-        Integer port,
-        String databaseName,
-        String username,
-        String connectionParams,
-        boolean active,
-        LocalDateTime lastTestedAt,
-        Boolean testResult,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
-) {
+public enum DatabaseType {
+    MYSQL,
+    MARIADB,
+    POSTGRESQL,
+    H2
 }

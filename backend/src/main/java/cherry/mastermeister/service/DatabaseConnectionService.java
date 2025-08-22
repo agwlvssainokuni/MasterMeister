@@ -17,9 +17,9 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.DatabaseConnection;
-import cherry.mastermeister.entity.DatabaseConnection.DatabaseType;
 import cherry.mastermeister.exception.DatabaseConnectionNotFoundException;
 import cherry.mastermeister.model.DatabaseConnectionModel;
+import cherry.mastermeister.model.DatabaseType;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -167,19 +167,21 @@ public class DatabaseConnectionService {
         return toModel(entity);
     }
 
-    public DatabaseConnectionModel createConnection(DatabaseConnection connection) {
-        connection.setId(null);
-        DatabaseConnection saved = databaseConnectionRepository.save(connection);
+    public DatabaseConnectionModel createConnection(DatabaseConnectionModel model) {
+        DatabaseConnection entity = toEntity(model);
+        entity.setId(null);
+        DatabaseConnection saved = databaseConnectionRepository.save(entity);
         return toModel(saved);
     }
 
-    public DatabaseConnectionModel updateConnection(Long connectionId, DatabaseConnection connection) {
+    public DatabaseConnectionModel updateConnection(Long connectionId, DatabaseConnectionModel model) {
         DatabaseConnection existingConnection = findEntityById(connectionId);
-        connection.setId(connectionId);
-        connection.setCreatedAt(existingConnection.getCreatedAt());
+        DatabaseConnection entity = toEntity(model);
+        entity.setId(connectionId);
+        entity.setCreatedAt(existingConnection.getCreatedAt());
 
         closeDataSource(connectionId);
-        DatabaseConnection updated = databaseConnectionRepository.save(connection);
+        DatabaseConnection updated = databaseConnectionRepository.save(entity);
         return toModel(updated);
     }
 
@@ -229,6 +231,7 @@ public class DatabaseConnectionService {
                 entity.getPort(),
                 entity.getDatabaseName(),
                 entity.getUsername(),
+                entity.getPassword(),
                 entity.getConnectionParams(),
                 entity.isActive(),
                 entity.getLastTestedAt(),
@@ -236,6 +239,25 @@ public class DatabaseConnectionService {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private DatabaseConnection toEntity(DatabaseConnectionModel model) {
+        DatabaseConnection entity = new DatabaseConnection();
+        entity.setId(model.id());
+        entity.setName(model.name());
+        entity.setDbType(model.dbType());
+        entity.setHost(model.host());
+        entity.setPort(model.port());
+        entity.setDatabaseName(model.databaseName());
+        entity.setUsername(model.username());
+        entity.setPassword(model.password());
+        entity.setConnectionParams(model.connectionParams());
+        entity.setActive(model.active());
+        entity.setLastTestedAt(model.lastTestedAt());
+        entity.setTestResult(model.testResult());
+        entity.setCreatedAt(model.createdAt());
+        entity.setUpdatedAt(model.updatedAt());
+        return entity;
     }
 
     private void updateTestResult(DatabaseConnection dbConnection, boolean testResult) {

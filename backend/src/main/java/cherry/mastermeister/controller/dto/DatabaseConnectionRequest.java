@@ -17,22 +17,37 @@
 package cherry.mastermeister.controller.dto;
 
 import cherry.mastermeister.model.DatabaseType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
-import java.time.LocalDateTime;
-
-public record DatabaseConnectionResult(
-        Long id,
+public record DatabaseConnectionRequest(
+        @NotBlank(message = "Name is required")
         String name,
+        
+        @NotNull(message = "Database type is required")
         DatabaseType dbType,
+        
+        @NotBlank(message = "Host is required")
         String host,
+        
+        @NotNull(message = "Port is required")
+        @Min(value = 1, message = "Port must be greater than 0")
+        @Max(value = 65535, message = "Port must be less than 65536")
         Integer port,
+        
+        @NotBlank(message = "Database name is required")
         String databaseName,
+        
+        @NotBlank(message = "Username is required")
         String username,
+        
+        @NotBlank(message = "Password is required")
+        String password,
+        
         String connectionParams,
-        boolean active,
-        LocalDateTime lastTestedAt,
-        Boolean testResult,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        
+        boolean active
 ) {
 }

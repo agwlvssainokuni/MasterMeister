@@ -17,8 +17,8 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.ApiResponse;
+import cherry.mastermeister.controller.dto.DatabaseConnectionRequest;
 import cherry.mastermeister.controller.dto.DatabaseConnectionResult;
-import cherry.mastermeister.entity.DatabaseConnection;
 import cherry.mastermeister.model.DatabaseConnectionModel;
 import cherry.mastermeister.service.DatabaseConnectionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,8 +66,9 @@ public class DatabaseConnectionController {
 
     @PostMapping
     @Operation(summary = "Create database connection", description = "Create a new database connection")
-    public ApiResponse<DatabaseConnectionResult> createConnection(@Valid @RequestBody DatabaseConnection connection) {
-        DatabaseConnectionModel savedConnection = databaseConnectionService.createConnection(connection);
+    public ApiResponse<DatabaseConnectionResult> createConnection(@Valid @RequestBody DatabaseConnectionRequest request) {
+        DatabaseConnectionModel model = toModel(request);
+        DatabaseConnectionModel savedConnection = databaseConnectionService.createConnection(model);
         logger.info("Created database connection: {} (ID: {})", savedConnection.name(), savedConnection.id());
         return ApiResponse.success(toResult(savedConnection));
     }
@@ -75,8 +76,9 @@ public class DatabaseConnectionController {
     @PutMapping("/{id}")
     @Operation(summary = "Update database connection", description = "Update an existing database connection")
     public ApiResponse<DatabaseConnectionResult> updateConnection(
-            @PathVariable Long id, @Valid @RequestBody DatabaseConnection connection) {
-        DatabaseConnectionModel updatedConnection = databaseConnectionService.updateConnection(id, connection);
+            @PathVariable Long id, @Valid @RequestBody DatabaseConnectionRequest request) {
+        DatabaseConnectionModel model = toModel(request);
+        DatabaseConnectionModel updatedConnection = databaseConnectionService.updateConnection(id, model);
         logger.info("Updated database connection: {} (ID: {})", updatedConnection.name(), id);
         return ApiResponse.success(toResult(updatedConnection));
     }
@@ -112,6 +114,25 @@ public class DatabaseConnectionController {
         DatabaseConnectionModel connection = databaseConnectionService.deactivateConnection(id);
         logger.info("Deactivated database connection: {} (ID: {})", connection.name(), id);
         return ApiResponse.success(toResult(connection));
+    }
+
+    private DatabaseConnectionModel toModel(DatabaseConnectionRequest request) {
+        return new DatabaseConnectionModel(
+                null,
+                request.name(),
+                request.dbType(),
+                request.host(),
+                request.port(),
+                request.databaseName(),
+                request.username(),
+                request.password(),
+                request.connectionParams(),
+                request.active(),
+                null,
+                null,
+                null,
+                null
+        );
     }
 
     private DatabaseConnectionResult toResult(DatabaseConnectionModel model) {

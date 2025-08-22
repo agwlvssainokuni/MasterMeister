@@ -16,6 +16,7 @@
 
 package cherry.mastermeister.entity;
 
+import cherry.mastermeister.model.DatabaseType;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -231,10 +232,4 @@ public class DatabaseConnection {
                 .toString();
     }
 
-    public enum DatabaseType {
-        MYSQL,
-        MARIADB,
-        POSTGRESQL,
-        H2
-    }
 }

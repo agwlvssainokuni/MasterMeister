@@ -16,23 +16,25 @@
 
 package cherry.mastermeister.model;
 
-import cherry.mastermeister.entity.DatabaseConnection.DatabaseType;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import java.time.LocalDateTime;
 
 public record DatabaseConnectionModel(
-        Long id,
-        String name,
-        DatabaseType dbType,
-        String host,
-        Integer port,
-        String databaseName,
-        String username,
-        String connectionParams,
+        @Nullable Long id,
+        @Nonnull String name,
+        @Nonnull DatabaseType dbType,
+        @Nonnull String host,
+        @Nonnull Integer port,
+        @Nonnull String databaseName,
+        @Nonnull String username,
+        @Nonnull String password,
+        @Nullable String connectionParams,
         boolean active,
-        LocalDateTime lastTestedAt,
-        Boolean testResult,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        @Nullable LocalDateTime lastTestedAt,
+        @Nullable Boolean testResult,
+        @Nullable LocalDateTime createdAt,
+        @Nullable LocalDateTime updatedAt
 ) {
 }
