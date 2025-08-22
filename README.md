@@ -46,6 +46,12 @@ MasterMeister is a web-based application designed to provide a secure, user-frie
 - PostgreSQL
 - H2 Database
 
+### Architecture
+- **Backend**: Entity/Model/DTO 3-layer separation with strict responsibility boundaries
+- **Frontend**: Service layer handles API communication with type conversion isolation
+- **Database**: Connection pooling with dynamic DataSource management
+- **Security**: JWT-based authentication with role-based authorization
+
 ### Deployment
 - **12 Factor App** compliant
 - **Executable WAR** for standalone deployment
@@ -70,11 +76,19 @@ MasterMeister is a web-based application designed to provide a secure, user-frie
   - ✅ Complete authentication flow (login/logout/register)
   - ✅ Responsive design and modern architecture
 
+**Current Progress:**
+- ✅ **Phase 3.1 COMPLETED**: Multi-Database Connection Management
+  - ✅ Dynamic DataSource creation with HikariCP
+  - ✅ MySQL/MariaDB/PostgreSQL/H2 support
+  - ✅ Connection testing and validation
+  - ✅ Backend architecture with strict responsibility separation
+
 **Next Phase:**
-- 🚧 **Phase 3**: Database Configuration System (In Planning)
-  - [ ] Multi-database connection management
-  - [ ] Schema import and metadata management
-  - [ ] Permission system foundation
+- 🚧 **Phase 3.2**: Schema Import & Metadata Management (In Progress)
+  - [ ] Schema reader for different database types
+  - [ ] Table/column metadata storage
+  - [ ] Schema update operations
+  - [ ] Admin logging for schema operations
 
 See [ROADMAP.md](ROADMAP.md) for detailed development plans and milestones.
 
@@ -190,7 +204,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Development Status
 
-**Current Phase**: Phase 3 - Database Configuration System (In Planning)
+**Current Phase**: Phase 3.2 - Schema Import & Metadata Management (In Progress)
 **MVP Target**: Week 8 of development  
 **Latest Milestone**: ✅ Milestone 2 Complete - MVP User Management System Operational
 

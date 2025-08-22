@@ -206,6 +206,11 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Entity/Model/DTO 3-layer architecture implementation
   - [x] GlobalExceptionHandler integration with custom exceptions
 - [x] Support MySQL, MariaDB, PostgreSQL, H2 connections (enum defined)
+- [x] Backend Architecture & Responsibility Separation
+  - [x] Entity/Model/DTO 3-layer strict separation implementation
+  - [x] Package-level import restriction enforcement (Controller↛Entity, Service↛DTO, Repository↛Model/DTO)
+  - [x] Controller → Service → Repository dependency flow with proper type conversion
+  - [x] Dedicated enums package for cross-layer accessibility
 
 #### 3.2 Schema Import & Metadata Management
 - [ ] Create schema reader for different database types

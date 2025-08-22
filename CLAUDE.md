@@ -93,6 +93,15 @@ This is a Master Data Maintenance Application - a Single Page Application (SPA) 
 - Values: xs(4px), sm(8px), md(12px), lg(16px), xl(20px), xxl(24px)
 - Follows modern UI library standards (Tailwind CSS compatible)
 
+**Backend Responsibility Separation:**
+- Entity layer (entity package) for JPA/Repository operations only
+- Model layer (model package) for Service business logic
+- DTO layer (controller/dto package) for Controller input/output
+- Controller never imports entity package (uses DTO → Model → Entity flow)
+- Service never imports dto package (uses Model for all operations)
+- Repository never imports dto/model packages (uses Entity only)
+- Enums in dedicated package (enums) accessible by all layers
+
 **Frontend Responsibility Separation:**
 - Service layer (src/services/) handles all API communication and type conversion
 - API types (types/api.ts) are confined to Service layer only
