@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_username_active", columnList = "username, active"),
         @Index(name = "idx_expires_at", columnList = "expires_at")
 })
-public class RefreshToken {
+public class RefreshTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -150,7 +150,7 @@ public class RefreshToken {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        RefreshToken that = (RefreshToken) obj;
+        RefreshTokenEntity that = (RefreshTokenEntity) obj;
         return new EqualsBuilder()
                 .append(id, that.id)
                 .isEquals();

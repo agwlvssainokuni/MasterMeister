@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.entity.DatabaseConnection;
+import cherry.mastermeister.entity.DatabaseConnectionEntity;
 import cherry.mastermeister.model.DatabaseType;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ class DatabaseConnectionServiceTest {
     @Test
     void testGetDataSource_CreateNewDataSource() {
         DatabaseConnectionService service = new DatabaseConnectionService(repository);
-        DatabaseConnection dbConnection = createTestDatabaseConnection();
+        DatabaseConnectionEntity dbConnection = createTestDatabaseConnectionEntity();
         dbConnection.setDbType(DatabaseType.H2);
         dbConnection.setHost("mem");
         dbConnection.setDatabaseName("testdb");
@@ -70,7 +70,7 @@ class DatabaseConnectionServiceTest {
     @Test
     void testGetDataSource_ThrowsExceptionWhenConnectionInactive() {
         DatabaseConnectionService service = new DatabaseConnectionService(repository);
-        DatabaseConnection dbConnection = createTestDatabaseConnection();
+        DatabaseConnectionEntity dbConnection = createTestDatabaseConnectionEntity();
         dbConnection.setActive(false);
         when(repository.findById(1L)).thenReturn(Optional.of(dbConnection));
 
@@ -98,7 +98,7 @@ class DatabaseConnectionServiceTest {
     @Test
     void testCloseDataSource() {
         DatabaseConnectionService service = new DatabaseConnectionService(repository);
-        DatabaseConnection dbConnection = createTestDatabaseConnection();
+        DatabaseConnectionEntity dbConnection = createTestDatabaseConnectionEntity();
         dbConnection.setDbType(DatabaseType.H2);
         dbConnection.setHost("mem");
         dbConnection.setDatabaseName("testdb");
@@ -114,13 +114,13 @@ class DatabaseConnectionServiceTest {
     @Test
     void testCloseAllDataSources() {
         DatabaseConnectionService service = new DatabaseConnectionService(repository);
-        DatabaseConnection dbConnection1 = createTestDatabaseConnection();
+        DatabaseConnectionEntity dbConnection1 = createTestDatabaseConnectionEntity();
         dbConnection1.setDbType(DatabaseType.H2);
         dbConnection1.setHost("mem");
         dbConnection1.setDatabaseName("testdb1");
         dbConnection1.setConnectionParams("DB_CLOSE_DELAY=-1");
 
-        DatabaseConnection dbConnection2 = createTestDatabaseConnection();
+        DatabaseConnectionEntity dbConnection2 = createTestDatabaseConnectionEntity();
         dbConnection2.setId(2L);
         dbConnection2.setDbType(DatabaseType.H2);
         dbConnection2.setHost("mem");
@@ -138,8 +138,8 @@ class DatabaseConnectionServiceTest {
         verify(repository).findById(2L);
     }
 
-    private DatabaseConnection createTestDatabaseConnection() {
-        DatabaseConnection dbConnection = new DatabaseConnection();
+    private DatabaseConnectionEntity createTestDatabaseConnectionEntity() {
+        DatabaseConnectionEntity dbConnection = new DatabaseConnectionEntity();
         dbConnection.setId(1L);
         dbConnection.setName("test-connection");
         dbConnection.setDbType(DatabaseType.H2);

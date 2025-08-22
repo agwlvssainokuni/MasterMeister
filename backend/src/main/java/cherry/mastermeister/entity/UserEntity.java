@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -180,7 +180,7 @@ public class User {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        User user = (User) obj;
+        UserEntity user = (UserEntity) obj;
         return new EqualsBuilder()
                 .append(id, user.id)
                 .isEquals();

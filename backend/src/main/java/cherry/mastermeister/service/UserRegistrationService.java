@@ -18,7 +18,7 @@ package cherry.mastermeister.service;
 
 import cherry.mastermeister.controller.dto.UserRegistrationRequest;
 import cherry.mastermeister.controller.dto.UserRegistrationResult;
-import cherry.mastermeister.entity.User;
+import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.exception.EmailConfirmationException;
 import cherry.mastermeister.exception.UserAlreadyExistsException;
 import cherry.mastermeister.model.UserRole;
@@ -58,7 +58,7 @@ public class UserRegistrationService {
 
         String emailConfirmationToken = generateEmailConfirmationToken();
 
-        User user = new User();
+        UserEntity user = new UserEntity();
         user.setUsername(request.username());
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
@@ -68,7 +68,7 @@ public class UserRegistrationService {
         user.setStatus(UserStatus.PENDING);
         user.setRole(UserRole.USER);
 
-        User savedUser = userRepository.save(user);
+        UserEntity savedUser = userRepository.save(user);
 
         // メール確認用メール送信
         emailService.sendEmailConfirmation(

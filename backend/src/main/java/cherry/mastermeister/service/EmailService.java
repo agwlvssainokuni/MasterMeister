@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.entity.EmailTemplate;
+import cherry.mastermeister.entity.EmailTemplateEntity;
 import cherry.mastermeister.model.TemplateType;
 import cherry.mastermeister.repository.EmailTemplateRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,7 +88,7 @@ public class EmailService {
     private void sendTemplatedEmail(TemplateType templateType, String toAddress, Map<String, String> variables, String language) {
         String lang = language != null ? language : defaultLanguage;
 
-        EmailTemplate template = emailTemplateRepository
+        EmailTemplateEntity template = emailTemplateRepository
                 .findByTemplateTypeAndLanguageCode(templateType, lang)
                 .orElse(emailTemplateRepository
                         .findByTemplateTypeAndLanguageCode(templateType, defaultLanguage)

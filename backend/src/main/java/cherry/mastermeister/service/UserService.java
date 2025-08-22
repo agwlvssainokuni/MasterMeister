@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.entity.User;
+import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.model.UserStatus;
 import cherry.mastermeister.model.UserSummary;
@@ -39,14 +39,14 @@ public class UserService {
     }
 
     public List<UserSummary> getPendingUsers() {
-        List<User> pendingUsers = userRepository.findByStatus(UserStatus.PENDING);
+        List<UserEntity> pendingUsers = userRepository.findByStatus(UserStatus.PENDING);
         return pendingUsers.stream()
                 .map(this::toUserSummary)
                 .toList();
     }
 
     public void approveUser(Long userId) {
-        User user = userRepository.findById(userId)
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         if (user.getStatus() != UserStatus.PENDING) {
@@ -65,7 +65,7 @@ public class UserService {
     }
 
     public void rejectUser(Long userId) {
-        User user = userRepository.findById(userId)
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         if (user.getStatus() != UserStatus.PENDING) {
@@ -83,7 +83,7 @@ public class UserService {
         );
     }
 
-    private UserSummary toUserSummary(User user) {
+    private UserSummary toUserSummary(UserEntity user) {
         return new UserSummary(
                 user.getId(),
                 user.getUsername(),

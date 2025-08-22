@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "audit_logs")
-public class AuditLog {
+public class AuditLogEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -150,7 +150,7 @@ public class AuditLog {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        AuditLog auditLog = (AuditLog) obj;
+        AuditLogEntity auditLog = (AuditLogEntity) obj;
         return new EqualsBuilder()
                 .append(id, auditLog.id)
                 .isEquals();

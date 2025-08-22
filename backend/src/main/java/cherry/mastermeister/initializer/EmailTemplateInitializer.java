@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.initializer;
 
-import cherry.mastermeister.entity.EmailTemplate;
+import cherry.mastermeister.entity.EmailTemplateEntity;
 import cherry.mastermeister.model.TemplateType;
 import cherry.mastermeister.repository.EmailTemplateRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -165,7 +165,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
 
     private void initializeTemplate(TemplateType templateType, String languageCode, String subject, String body) {
         if (!emailTemplateRepository.existsByTemplateTypeAndLanguageCode(templateType, languageCode)) {
-            EmailTemplate template = new EmailTemplate();
+            EmailTemplateEntity template = new EmailTemplateEntity();
             template.setTemplateType(templateType);
             template.setLanguageCode(languageCode);
             template.setSenderEmail(defaultSenderEmail);

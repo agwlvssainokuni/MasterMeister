@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.repository;
 
-import cherry.mastermeister.entity.RefreshToken;
+import cherry.mastermeister.entity.RefreshTokenEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,24 +27,24 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
+public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity, Long> {
 
-    Optional<RefreshToken> findByTokenIdAndActiveTrue(String tokenId);
+    Optional<RefreshTokenEntity> findByTokenIdAndActiveTrue(String tokenId);
 
-    List<RefreshToken> findByUsernameAndActiveTrue(String username);
+    List<RefreshTokenEntity> findByUsernameAndActiveTrue(String username);
 
     @Modifying
-    @Query("UPDATE RefreshToken rt SET rt.active = false WHERE rt.username = :username AND rt.active = true")
+    @Query("UPDATE RefreshTokenEntity rt SET rt.active = false WHERE rt.username = :username AND rt.active = true")
     int deactivateAllByUsername(String username);
 
     @Modifying
-    @Query("UPDATE RefreshToken rt SET rt.active = false WHERE rt.tokenId = :tokenId AND rt.active = true")
+    @Query("UPDATE RefreshTokenEntity rt SET rt.active = false WHERE rt.tokenId = :tokenId AND rt.active = true")
     int deactivateByTokenId(String tokenId);
 
     @Modifying
-    @Query("DELETE FROM RefreshToken rt WHERE rt.expiresAt < :cutoffTime")
+    @Query("DELETE FROM RefreshTokenEntity rt WHERE rt.expiresAt < :cutoffTime")
     int deleteExpiredTokens(LocalDateTime cutoffTime);
 
-    @Query("SELECT COUNT(rt) FROM RefreshToken rt WHERE rt.username = :username AND rt.active = true")
+    @Query("SELECT COUNT(rt) FROM RefreshTokenEntity rt WHERE rt.username = :username AND rt.active = true")
     long countActiveTokensByUsername(String username);
 }

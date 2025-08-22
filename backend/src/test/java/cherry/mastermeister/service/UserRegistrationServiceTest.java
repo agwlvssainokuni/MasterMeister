@@ -18,7 +18,7 @@ package cherry.mastermeister.service;
 
 import cherry.mastermeister.controller.dto.UserRegistrationRequest;
 import cherry.mastermeister.controller.dto.UserRegistrationResult;
-import cherry.mastermeister.entity.User;
+import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.exception.UserAlreadyExistsException;
 import cherry.mastermeister.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -60,11 +60,11 @@ class UserRegistrationServiceTest {
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
         
-        User savedUser = new User();
+        UserEntity savedUser = new UserEntity();
         savedUser.setId(1L);
         savedUser.setUsername("testuser");
         savedUser.setEmail("test@example.com");
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
 
         UserRegistrationResult result = userRegistrationService.registerUser(request);
 
@@ -74,7 +74,7 @@ class UserRegistrationServiceTest {
         assertEquals("test@example.com", result.email());
         assertNotNull(result.message());
 
-        verify(userRepository).save(any(User.class));
+        verify(userRepository).save(any(UserEntity.class));
         verify(emailService).sendEmailConfirmation(
                 eq("test@example.com"),
                 eq("testuser"),
@@ -89,12 +89,12 @@ class UserRegistrationServiceTest {
                 "testuser", "test@example.com", "password123", "Test User", "en"
         );
 
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(new User()));
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(new UserEntity()));
 
         assertThrows(UserAlreadyExistsException.class, 
                 () -> userRegistrationService.registerUser(request));
 
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, never()).save(any(UserEntity.class));
     }
 
     @Test
@@ -104,17 +104,17 @@ class UserRegistrationServiceTest {
         );
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(new User()));
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(new UserEntity()));
 
         assertThrows(UserAlreadyExistsException.class, 
                 () -> userRegistrationService.registerUser(request));
 
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, never()).save(any(UserEntity.class));
     }
 
     @Test
     void shouldConfirmEmailAndSendNotificationWithUserLanguage() {
-        User user = new User();
+        UserEntity user = new UserEntity();
         user.setId(1L);
         user.setUsername("testuser");
         user.setEmail("test@example.com");
@@ -123,7 +123,7 @@ class UserRegistrationServiceTest {
         user.setPreferredLanguage("ja");
 
         when(userRepository.findByEmailConfirmationToken("testtoken")).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(user);
 
         boolean result = userRegistrationService.confirmEmail("testtoken");
 

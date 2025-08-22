@@ -16,9 +16,9 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.entity.DatabaseConnection;
+import cherry.mastermeister.entity.DatabaseConnectionEntity;
 import cherry.mastermeister.exception.DatabaseConnectionNotFoundException;
-import cherry.mastermeister.model.DatabaseConnectionModel;
+import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.DatabaseType;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import com.zaxxer.hikari.HikariConfig;
@@ -51,7 +51,7 @@ public class DatabaseConnectionService {
     }
 
     public boolean testConnection(Long connectionId) {
-        DatabaseConnection dbConnection = databaseConnectionRepository.findById(connectionId)
+        DatabaseConnectionEntity dbConnection = databaseConnectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Database connection not found: " + connectionId));
 
         try {
@@ -87,7 +87,7 @@ public class DatabaseConnectionService {
     }
 
     private HikariDataSource createDataSource(Long connectionId) {
-        DatabaseConnection dbConnection = databaseConnectionRepository.findById(connectionId)
+        DatabaseConnectionEntity dbConnection = databaseConnectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Database connection not found: " + connectionId));
 
         if (!dbConnection.isActive()) {
@@ -119,7 +119,7 @@ public class DatabaseConnectionService {
         return new HikariDataSource(config);
     }
 
-    private String buildJdbcUrl(DatabaseConnection dbConnection) {
+    private String buildJdbcUrl(DatabaseConnectionEntity dbConnection) {
         String baseUrl = switch (dbConnection.getDbType()) {
             case MYSQL -> String.format("jdbc:mysql://%s:%d/%s",
                     dbConnection.getHost(), dbConnection.getPort(), dbConnection.getDatabaseName());
@@ -156,43 +156,43 @@ public class DatabaseConnectionService {
         };
     }
 
-    public List<DatabaseConnectionModel> getAllConnections() {
+    public List<DatabaseConnection> getAllConnections() {
         return databaseConnectionRepository.findAll().stream()
                 .map(this::toModel)
                 .toList();
     }
 
-    public DatabaseConnectionModel getConnection(Long connectionId) {
-        DatabaseConnection entity = findEntityById(connectionId);
+    public DatabaseConnection getConnection(Long connectionId) {
+        DatabaseConnectionEntity entity = findEntityById(connectionId);
         return toModel(entity);
     }
 
-    public DatabaseConnectionModel createConnection(DatabaseConnectionModel model) {
-        DatabaseConnection entity = toEntity(model);
+    public DatabaseConnection createConnection(DatabaseConnection model) {
+        DatabaseConnectionEntity entity = toEntity(model);
         entity.setId(null);
-        DatabaseConnection saved = databaseConnectionRepository.save(entity);
+        DatabaseConnectionEntity saved = databaseConnectionRepository.save(entity);
         return toModel(saved);
     }
 
-    public DatabaseConnectionModel updateConnection(Long connectionId, DatabaseConnectionModel model) {
-        DatabaseConnection existingConnection = findEntityById(connectionId);
-        DatabaseConnection entity = toEntity(model);
+    public DatabaseConnection updateConnection(Long connectionId, DatabaseConnection model) {
+        DatabaseConnectionEntity existingConnection = findEntityById(connectionId);
+        DatabaseConnectionEntity entity = toEntity(model);
         entity.setId(connectionId);
         entity.setCreatedAt(existingConnection.getCreatedAt());
 
         closeDataSource(connectionId);
-        DatabaseConnection updated = databaseConnectionRepository.save(entity);
+        DatabaseConnectionEntity updated = databaseConnectionRepository.save(entity);
         return toModel(updated);
     }
 
     public void deleteConnection(Long connectionId) {
-        DatabaseConnection connection = findEntityById(connectionId);
+        DatabaseConnectionEntity connection = findEntityById(connectionId);
         closeDataSource(connectionId);
         databaseConnectionRepository.delete(connection);
     }
 
     public Map<String, Object> testConnectionWithDetails(Long connectionId) {
-        DatabaseConnection dbConnection = findEntityById(connectionId);
+        DatabaseConnectionEntity dbConnection = findEntityById(connectionId);
         boolean isConnected = testConnection(connectionId);
 
         return Map.of(
@@ -202,28 +202,28 @@ public class DatabaseConnectionService {
         );
     }
 
-    public DatabaseConnectionModel activateConnection(Long connectionId) {
-        DatabaseConnection connection = findEntityById(connectionId);
+    public DatabaseConnection activateConnection(Long connectionId) {
+        DatabaseConnectionEntity connection = findEntityById(connectionId);
         connection.setActive(true);
-        DatabaseConnection updated = databaseConnectionRepository.save(connection);
+        DatabaseConnectionEntity updated = databaseConnectionRepository.save(connection);
         return toModel(updated);
     }
 
-    public DatabaseConnectionModel deactivateConnection(Long connectionId) {
-        DatabaseConnection connection = findEntityById(connectionId);
+    public DatabaseConnection deactivateConnection(Long connectionId) {
+        DatabaseConnectionEntity connection = findEntityById(connectionId);
         connection.setActive(false);
         closeDataSource(connectionId);
-        DatabaseConnection updated = databaseConnectionRepository.save(connection);
+        DatabaseConnectionEntity updated = databaseConnectionRepository.save(connection);
         return toModel(updated);
     }
 
-    private DatabaseConnection findEntityById(Long connectionId) {
+    private DatabaseConnectionEntity findEntityById(Long connectionId) {
         return databaseConnectionRepository.findById(connectionId)
                 .orElseThrow(() -> new DatabaseConnectionNotFoundException("Database connection not found: " + connectionId));
     }
 
-    private DatabaseConnectionModel toModel(DatabaseConnection entity) {
-        return new DatabaseConnectionModel(
+    private DatabaseConnection toModel(DatabaseConnectionEntity entity) {
+        return new DatabaseConnection(
                 entity.getId(),
                 entity.getName(),
                 entity.getDbType(),
@@ -241,8 +241,8 @@ public class DatabaseConnectionService {
         );
     }
 
-    private DatabaseConnection toEntity(DatabaseConnectionModel model) {
-        DatabaseConnection entity = new DatabaseConnection();
+    private DatabaseConnectionEntity toEntity(DatabaseConnection model) {
+        DatabaseConnectionEntity entity = new DatabaseConnectionEntity();
         entity.setId(model.id());
         entity.setName(model.name());
         entity.setDbType(model.dbType());
@@ -260,7 +260,7 @@ public class DatabaseConnectionService {
         return entity;
     }
 
-    private void updateTestResult(DatabaseConnection dbConnection, boolean testResult) {
+    private void updateTestResult(DatabaseConnectionEntity dbConnection, boolean testResult) {
         dbConnection.setLastTestedAt(LocalDateTime.now());
         dbConnection.setTestResult(testResult);
         databaseConnectionRepository.save(dbConnection);

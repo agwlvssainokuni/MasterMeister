@@ -18,7 +18,7 @@ package cherry.mastermeister.config;
 
 import cherry.mastermeister.controller.AuthController;
 import cherry.mastermeister.controller.HealthController;
-import cherry.mastermeister.entity.User;
+import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.model.UserStatus;
 import cherry.mastermeister.repository.AuditLogRepository;
 import cherry.mastermeister.repository.RefreshTokenRepository;
@@ -87,7 +87,7 @@ class SecurityConfigTest {
     @Test
     void shouldAllowAuthEndpoints() throws Exception {
         // Arrange
-        User user = new User();
+        UserEntity user = new UserEntity();
         user.setUsername("testuser");
         user.setPassword(passwordEncoder.encode("testpass"));
         user.setStatus(UserStatus.APPROVED);

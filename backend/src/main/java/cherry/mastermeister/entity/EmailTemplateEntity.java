@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 @Table(name = "email_templates", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"template_type", "language_code"})
 })
-public class EmailTemplate {
+public class EmailTemplateEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -147,7 +147,7 @@ public class EmailTemplate {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        EmailTemplate that = (EmailTemplate) obj;
+        EmailTemplateEntity that = (EmailTemplateEntity) obj;
         return new EqualsBuilder()
                 .append(id, that.id)
                 .isEquals();

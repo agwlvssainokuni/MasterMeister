@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.entity.User;
+import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.model.UserStatus;
 import cherry.mastermeister.model.UserSummary;
@@ -52,8 +52,8 @@ class UserServiceTest {
     @Test
     void shouldGetPendingUsers() {
         // Arrange
-        User user1 = createUser(1L, "user1", UserStatus.PENDING);
-        User user2 = createUser(2L, "user2", UserStatus.PENDING);
+        UserEntity user1 = createUser(1L, "user1", UserStatus.PENDING);
+        UserEntity user2 = createUser(2L, "user2", UserStatus.PENDING);
         when(userRepository.findByStatus(UserStatus.PENDING)).thenReturn(List.of(user1, user2));
 
         // Act
@@ -72,9 +72,9 @@ class UserServiceTest {
     @Test
     void shouldApproveUser() {
         // Arrange
-        User user = createUser(1L, "testuser", UserStatus.PENDING);
+        UserEntity user = createUser(1L, "testuser", UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(user);
 
         // Act
         userService.approveUser(1L);
@@ -108,7 +108,7 @@ class UserServiceTest {
     @Test
     void shouldThrowExceptionWhenApprovingNonPendingUser() {
         // Arrange
-        User user = createUser(1L, "testuser", UserStatus.APPROVED);
+        UserEntity user = createUser(1L, "testuser", UserStatus.APPROVED);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         // Act & Assert
@@ -124,9 +124,9 @@ class UserServiceTest {
     @Test
     void shouldRejectUser() {
         // Arrange
-        User user = createUser(1L, "testuser", UserStatus.PENDING);
+        UserEntity user = createUser(1L, "testuser", UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(user);
 
         // Act
         userService.rejectUser(1L);
@@ -160,7 +160,7 @@ class UserServiceTest {
     @Test
     void shouldThrowExceptionWhenRejectingNonPendingUser() {
         // Arrange
-        User user = createUser(1L, "testuser", UserStatus.REJECTED);
+        UserEntity user = createUser(1L, "testuser", UserStatus.REJECTED);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         // Act & Assert
@@ -173,8 +173,8 @@ class UserServiceTest {
         verifyNoInteractions(emailService);
     }
 
-    private User createUser(Long id, String username, UserStatus status) {
-        User user = new User();
+    private UserEntity createUser(Long id, String username, UserStatus status) {
+        UserEntity user = new UserEntity();
         user.setId(id);
         user.setUsername(username);
         user.setEmail(username + "@example.com");

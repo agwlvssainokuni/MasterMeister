@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.repository;
 
-import cherry.mastermeister.entity.AuditLog;
+import cherry.mastermeister.entity.AuditLogEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,14 +27,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
+public interface AuditLogRepository extends JpaRepository<AuditLogEntity, Long> {
 
-    Page<AuditLog> findByUsername(String username, Pageable pageable);
+    Page<AuditLogEntity> findByUsername(String username, Pageable pageable);
 
-    Page<AuditLog> findByAction(String action, Pageable pageable);
+    Page<AuditLogEntity> findByAction(String action, Pageable pageable);
 
-    @Query("SELECT a FROM AuditLog a WHERE a.timestamp BETWEEN :startTime AND :endTime")
-    Page<AuditLog> findByTimestampBetween(LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
+    @Query("SELECT a FROM AuditLogEntity a WHERE a.timestamp BETWEEN :startTime AND :endTime")
+    Page<AuditLogEntity> findByTimestampBetween(LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
 
-    List<AuditLog> findByUsernameAndTimestampBetween(String username, LocalDateTime startTime, LocalDateTime endTime);
+    List<AuditLogEntity> findByUsernameAndTimestampBetween(String username, LocalDateTime startTime, LocalDateTime endTime);
 }

@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.repository;
 
-import cherry.mastermeister.entity.User;
+import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.model.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,16 +26,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    Optional<User> findByUsername(String username);
+    Optional<UserEntity> findByUsername(String username);
 
-    Optional<User> findByEmail(String email);
+    Optional<UserEntity> findByEmail(String email);
 
-    Optional<User> findByEmailConfirmationToken(String token);
+    Optional<UserEntity> findByEmailConfirmationToken(String token);
 
-    @Query("SELECT u FROM User u WHERE u.status = :status")
-    List<User> findByStatus(UserStatus status);
+    @Query("SELECT u FROM UserEntity u WHERE u.status = :status")
+    List<UserEntity> findByStatus(UserStatus status);
 
     boolean existsByUsername(String username);
 

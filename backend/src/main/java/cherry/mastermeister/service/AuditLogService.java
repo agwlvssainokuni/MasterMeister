@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.entity.AuditLog;
+import cherry.mastermeister.entity.AuditLogEntity;
 import cherry.mastermeister.repository.AuditLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
@@ -33,14 +33,14 @@ public class AuditLogService {
     }
 
     public void logLoginSuccess(String username, HttpServletRequest request) {
-        AuditLog auditLog = createBaseAuditLog(username, "LOGIN", "AUTH", request);
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGIN", "AUTH", request);
         auditLog.setSuccess(true);
         auditLog.setDetails("User successfully logged in");
         auditLogRepository.save(auditLog);
     }
 
     public void logLoginFailure(String username, String errorMessage, HttpServletRequest request) {
-        AuditLog auditLog = createBaseAuditLog(username, "LOGIN", "AUTH", request);
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGIN", "AUTH", request);
         auditLog.setSuccess(false);
         auditLog.setErrorMessage(errorMessage);
         auditLog.setDetails("Login attempt failed");
@@ -48,21 +48,21 @@ public class AuditLogService {
     }
 
     public void logLogout(String username, HttpServletRequest request) {
-        AuditLog auditLog = createBaseAuditLog(username, "LOGOUT", "AUTH", request);
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGOUT", "AUTH", request);
         auditLog.setSuccess(true);
         auditLog.setDetails("User successfully logged out");
         auditLogRepository.save(auditLog);
     }
 
     public void logTokenRefresh(String username, HttpServletRequest request) {
-        AuditLog auditLog = createBaseAuditLog(username, "TOKEN_REFRESH", "AUTH", request);
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "TOKEN_REFRESH", "AUTH", request);
         auditLog.setSuccess(true);
         auditLog.setDetails("Access token refreshed successfully");
         auditLogRepository.save(auditLog);
     }
 
     public void logTokenRefreshFailure(String username, String errorMessage, HttpServletRequest request) {
-        AuditLog auditLog = createBaseAuditLog(username, "TOKEN_REFRESH", "AUTH", request);
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "TOKEN_REFRESH", "AUTH", request);
         auditLog.setSuccess(false);
         auditLog.setErrorMessage(errorMessage);
         auditLog.setDetails("Token refresh attempt failed");
@@ -70,14 +70,14 @@ public class AuditLogService {
     }
 
     public void logAdminAction(String username, String action, String target, String details, HttpServletRequest request) {
-        AuditLog auditLog = createBaseAuditLog(username, action, target, request);
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, action, target, request);
         auditLog.setSuccess(true);
         auditLog.setDetails(details);
         auditLogRepository.save(auditLog);
     }
 
-    private AuditLog createBaseAuditLog(String username, String action, String target, HttpServletRequest request) {
-        AuditLog auditLog = new AuditLog();
+    private AuditLogEntity createBaseAuditLogEntity(String username, String action, String target, HttpServletRequest request) {
+        AuditLogEntity auditLog = new AuditLogEntity();
         auditLog.setUsername(username);
         auditLog.setAction(action);
         auditLog.setTarget(target);

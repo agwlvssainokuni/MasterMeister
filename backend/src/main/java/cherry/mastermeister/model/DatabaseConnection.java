@@ -21,7 +21,7 @@ import jakarta.annotation.Nullable;
 
 import java.time.LocalDateTime;
 
-public record DatabaseConnectionModel(
+public record DatabaseConnection(
         @Nullable Long id,
         @Nonnull String name,
         @Nonnull DatabaseType dbType,

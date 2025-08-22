@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.repository;
 
-import cherry.mastermeister.entity.EmailTemplate;
+import cherry.mastermeister.entity.EmailTemplateEntity;
 import cherry.mastermeister.model.TemplateType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -24,9 +24,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EmailTemplateRepository extends JpaRepository<EmailTemplate, Long> {
+public interface EmailTemplateRepository extends JpaRepository<EmailTemplateEntity, Long> {
 
-    Optional<EmailTemplate> findByTemplateTypeAndLanguageCode(
+    Optional<EmailTemplateEntity> findByTemplateTypeAndLanguageCode(
             TemplateType templateType,
             String languageCode
     );

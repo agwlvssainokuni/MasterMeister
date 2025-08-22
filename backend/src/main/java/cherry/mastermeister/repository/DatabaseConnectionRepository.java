@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.repository;
 
-import cherry.mastermeister.entity.DatabaseConnection;
+import cherry.mastermeister.entity.DatabaseConnectionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -24,11 +24,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DatabaseConnectionRepository extends JpaRepository<DatabaseConnection, Long> {
+public interface DatabaseConnectionRepository extends JpaRepository<DatabaseConnectionEntity, Long> {
 
-    Optional<DatabaseConnection> findByName(String name);
+    Optional<DatabaseConnectionEntity> findByName(String name);
 
-    List<DatabaseConnection> findByActive(boolean active);
+    List<DatabaseConnectionEntity> findByActive(boolean active);
 
     boolean existsByName(String name);
 }

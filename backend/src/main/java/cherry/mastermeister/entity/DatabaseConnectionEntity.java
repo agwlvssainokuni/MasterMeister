@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "database_connections")
-public class DatabaseConnection {
+public class DatabaseConnectionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -200,7 +200,7 @@ public class DatabaseConnection {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        DatabaseConnection that = (DatabaseConnection) obj;
+        DatabaseConnectionEntity that = (DatabaseConnectionEntity) obj;
         return new EqualsBuilder()
                 .append(id, that.id)
                 .isEquals();
@@ -231,5 +231,4 @@ public class DatabaseConnection {
                 .append("updatedAt", updatedAt)
                 .toString();
     }
-
 }

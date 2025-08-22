@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.entity.RefreshToken;
+import cherry.mastermeister.entity.RefreshTokenEntity;
 import cherry.mastermeister.model.TokenPair;
 import cherry.mastermeister.repository.RefreshTokenRepository;
 import cherry.mastermeister.util.JwtUtil;
@@ -45,7 +45,7 @@ public class RefreshTokenService {
         String tokenId = UUID.randomUUID().toString();
         String token = jwtUtil.generateRefreshToken(userDetails, tokenId);
 
-        RefreshToken refreshToken = new RefreshToken();
+        RefreshTokenEntity refreshToken = new RefreshTokenEntity();
         refreshToken.setTokenId(tokenId);
         refreshToken.setUsername(userDetails.getUsername());
         refreshToken.setExpiresAt(jwtUtil.extractExpirationAsLocalDateTime(token));
@@ -64,12 +64,12 @@ public class RefreshTokenService {
             return false;
         }
 
-        Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByTokenIdAndActiveTrue(tokenId);
+        Optional<RefreshTokenEntity> refreshTokenOpt = refreshTokenRepository.findByTokenIdAndActiveTrue(tokenId);
         if (refreshTokenOpt.isEmpty()) {
             return false;
         }
 
-        RefreshToken refreshToken = refreshTokenOpt.get();
+        RefreshTokenEntity refreshToken = refreshTokenOpt.get();
 
         // トークンの有効期限とユーザー名をチェック
         if (refreshToken.isExpired() || !refreshToken.getUsername().equals(userDetails.getUsername())) {
@@ -86,7 +86,7 @@ public class RefreshTokenService {
         }
 
         String oldTokenId = jwtUtil.extractTokenId(refreshTokenString);
-        RefreshToken oldRefreshToken = refreshTokenRepository.findByTokenIdAndActiveTrue(oldTokenId)
+        RefreshTokenEntity oldRefreshToken = refreshTokenRepository.findByTokenIdAndActiveTrue(oldTokenId)
                 .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
 
         // 古いリフレッシュトークンを無効化 (Token Rotation)
