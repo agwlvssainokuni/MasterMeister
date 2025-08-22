@@ -16,12 +16,12 @@
 
 import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
-import type {ApiResponse, UserSummaryResult} from '../types/api'
+import type {ApiResponse, UserSummaryResult as ApiUserSummaryResult} from '../types/api'
 import type {PendingUser} from '../types/frontend'
 
 class AdminService {
   async getPendingUsers(): Promise<PendingUser[]> {
-    const response = await apiClient.get<ApiResponse<UserSummaryResult[]>>(
+    const response = await apiClient.get<ApiResponse<ApiUserSummaryResult[]>>(
       API_ENDPOINTS.ADMIN.PENDING_USERS
     )
 

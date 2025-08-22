@@ -19,14 +19,21 @@ import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
   EmailConfirmationRequest,
-  EmailConfirmationResult,
+  EmailConfirmationResult as ApiEmailConfirmationResult,
   LoginRequest,
   LoginResult,
   LogoutRequest,
   UserRegistrationRequest,
-  UserRegistrationResult
+  UserRegistrationResult as ApiUserRegistrationResult
 } from '../types/api'
-import type {AuthState, LoginCredentials, RegistrationCredentials, User} from '../types/frontend'
+import type {
+  AuthState,
+  EmailConfirmationResult,
+  LoginCredentials,
+  RegistrationCredentials,
+  RegistrationResult,
+  User
+} from '../types/frontend'
 import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
 
 class AuthService {
@@ -86,7 +93,7 @@ class AuthService {
     localStorage.removeItem('refreshToken')
   }
 
-  async register(credentials: RegistrationCredentials): Promise<UserRegistrationResult> {
+  async register(credentials: RegistrationCredentials): Promise<RegistrationResult> {
     const registerRequest: UserRegistrationRequest = {
       username: credentials.username,
       email: credentials.email,
@@ -95,7 +102,7 @@ class AuthService {
       language: navigator.language.startsWith('ja') ? 'ja' : 'en'
     }
 
-    const response = await apiClient.post<ApiResponse<UserRegistrationResult>>(
+    const response = await apiClient.post<ApiResponse<ApiUserRegistrationResult>>(
       API_ENDPOINTS.USERS.REGISTER,
       registerRequest
     )
@@ -104,13 +111,19 @@ class AuthService {
       throw new Error(response.data.error?.[0] || 'Registration failed')
     }
 
-    return response.data.data
+    const apiResult = response.data.data
+    return {
+      userId: apiResult.userId,
+      username: apiResult.username,
+      email: apiResult.email,
+      message: apiResult.message
+    }
   }
 
   async confirmEmail(token: string): Promise<EmailConfirmationResult> {
     const request: EmailConfirmationRequest = {token}
 
-    const response = await apiClient.post<ApiResponse<EmailConfirmationResult>>(
+    const response = await apiClient.post<ApiResponse<ApiEmailConfirmationResult>>(
       API_ENDPOINTS.USERS.CONFIRM_EMAIL,
       request
     )
@@ -119,7 +132,11 @@ class AuthService {
       throw new Error(response.data.error?.[0] || 'Email confirmation failed')
     }
 
-    return response.data.data
+    const apiResult = response.data.data
+    return {
+      status: apiResult.status,
+      message: apiResult.message
+    }
   }
 
   getCurrentAuthState(): AuthState {

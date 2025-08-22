@@ -54,3 +54,15 @@ export interface RegistrationCredentials {
   confirmPassword: string
   fullName: string
 }
+
+export interface RegistrationResult {
+  userId: number
+  username: string
+  email: string
+  message: string
+}
+
+export interface EmailConfirmationResult {
+  status: string
+  message: string
+}

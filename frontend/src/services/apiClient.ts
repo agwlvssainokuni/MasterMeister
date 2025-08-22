@@ -16,7 +16,7 @@
 
 import axios from 'axios'
 import {API_BASE_URL, API_ENDPOINTS} from '../config/config'
-import type {ApiResponse, LoginResult, RefreshTokenRequest} from "../types/api.ts";
+import type {ApiResponse, LoginResult, RefreshTokenRequest} from "../types/api"
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
