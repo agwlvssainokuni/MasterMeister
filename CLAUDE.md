@@ -93,6 +93,13 @@ This is a Master Data Maintenance Application - a Single Page Application (SPA) 
 - Values: xs(4px), sm(8px), md(12px), lg(16px), xl(20px), xxl(24px)
 - Follows modern UI library standards (Tailwind CSS compatible)
 
+**Frontend Responsibility Separation:**
+- Service layer (src/services/) handles all API communication and type conversion
+- API types (types/api.ts) are confined to Service layer only
+- Frontend types (types/frontend.ts) are used by Components/Pages/Contexts
+- Service methods return Frontend types, never expose API Request/Response types
+- Type conversion (API ↔ Frontend) must be performed within Service layer
+
 **Build Commands:**
 - `./gradlew build` - Build the application
 - `./gradlew test` - Run all tests
