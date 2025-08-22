@@ -1,0 +1,134 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package cherry.mastermeister.controller;
+
+import cherry.mastermeister.controller.dto.ApiResponse;
+import cherry.mastermeister.controller.dto.DatabaseConnectionResult;
+import cherry.mastermeister.entity.DatabaseConnection;
+import cherry.mastermeister.model.DatabaseConnectionModel;
+import cherry.mastermeister.service.DatabaseConnectionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/admin/database-connections")
+@PreAuthorize("hasRole('ADMIN')")
+@SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Database Connection Management", description = "APIs for managing database connections")
+public class DatabaseConnectionController {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final DatabaseConnectionService databaseConnectionService;
+
+    public DatabaseConnectionController(DatabaseConnectionService databaseConnectionService) {
+        this.databaseConnectionService = databaseConnectionService;
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all database connections", description = "Retrieve list of all database connections")
+    public ApiResponse<List<DatabaseConnectionResult>> getAllConnections() {
+        List<DatabaseConnectionModel> connections = databaseConnectionService.getAllConnections();
+        List<DatabaseConnectionResult> results = connections.stream()
+                .map(this::toResult)
+                .toList();
+        return ApiResponse.success(results);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get database connection by ID", description = "Retrieve a specific database connection")
+    public ApiResponse<DatabaseConnectionResult> getConnection(@PathVariable Long id) {
+        DatabaseConnectionModel connection = databaseConnectionService.getConnection(id);
+        return ApiResponse.success(toResult(connection));
+    }
+
+    @PostMapping
+    @Operation(summary = "Create database connection", description = "Create a new database connection")
+    public ApiResponse<DatabaseConnectionResult> createConnection(@Valid @RequestBody DatabaseConnection connection) {
+        DatabaseConnectionModel savedConnection = databaseConnectionService.createConnection(connection);
+        logger.info("Created database connection: {} (ID: {})", savedConnection.name(), savedConnection.id());
+        return ApiResponse.success(toResult(savedConnection));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update database connection", description = "Update an existing database connection")
+    public ApiResponse<DatabaseConnectionResult> updateConnection(
+            @PathVariable Long id, @Valid @RequestBody DatabaseConnection connection) {
+        DatabaseConnectionModel updatedConnection = databaseConnectionService.updateConnection(id, connection);
+        logger.info("Updated database connection: {} (ID: {})", updatedConnection.name(), id);
+        return ApiResponse.success(toResult(updatedConnection));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete database connection", description = "Delete a database connection")
+    public ApiResponse<Void> deleteConnection(@PathVariable Long id) {
+        databaseConnectionService.deleteConnection(id);
+        logger.info("Deleted database connection ID: {}", id);
+        return ApiResponse.success(null);
+    }
+
+    @PostMapping("/{id}/test")
+    @Operation(summary = "Test database connection", description = "Test connectivity for a specific database connection")
+    public ApiResponse<Map<String, Object>> testConnection(@PathVariable Long id) {
+        Map<String, Object> result = databaseConnectionService.testConnectionWithDetails(id);
+        boolean isConnected = (Boolean) result.get("connected");
+        logger.info("Connection test for ID {}: {}", id, isConnected ? "SUCCESS" : "FAILED");
+        return ApiResponse.success(result);
+    }
+
+    @PostMapping("/{id}/activate")
+    @Operation(summary = "Activate database connection", description = "Activate a database connection")
+    public ApiResponse<DatabaseConnectionResult> activateConnection(@PathVariable Long id) {
+        DatabaseConnectionModel connection = databaseConnectionService.activateConnection(id);
+        logger.info("Activated database connection: {} (ID: {})", connection.name(), id);
+        return ApiResponse.success(toResult(connection));
+    }
+
+    @PostMapping("/{id}/deactivate")
+    @Operation(summary = "Deactivate database connection", description = "Deactivate a database connection")
+    public ApiResponse<DatabaseConnectionResult> deactivateConnection(@PathVariable Long id) {
+        DatabaseConnectionModel connection = databaseConnectionService.deactivateConnection(id);
+        logger.info("Deactivated database connection: {} (ID: {})", connection.name(), id);
+        return ApiResponse.success(toResult(connection));
+    }
+
+    private DatabaseConnectionResult toResult(DatabaseConnectionModel model) {
+        return new DatabaseConnectionResult(
+                model.id(),
+                model.name(),
+                model.dbType(),
+                model.host(),
+                model.port(),
+                model.databaseName(),
+                model.username(),
+                model.connectionParams(),
+                model.active(),
+                model.lastTestedAt(),
+                model.testResult(),
+                model.createdAt(),
+                model.updatedAt()
+        );
+    }
+}
