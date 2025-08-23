@@ -16,6 +16,7 @@
 
 package cherry.mastermeister.util;
 
+import cherry.mastermeister.security.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -68,7 +69,10 @@ public class JwtUtil {
                 "type", "access",
                 "role", roles
         );
-        return createToken(claims, userDetails.getUsername(), accessTokenExpiration);
+        String subject = userDetails instanceof CustomUserDetails ? 
+                ((CustomUserDetails) userDetails).getUserUuid() : 
+                userDetails.getUsername();
+        return createToken(claims, subject, accessTokenExpiration);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
@@ -80,7 +84,10 @@ public class JwtUtil {
                 "type", "refresh",
                 "jti", tokenId
         );
-        return createToken(claims, userDetails.getUsername(), refreshTokenExpiration);
+        String subject = userDetails instanceof CustomUserDetails ? 
+                ((CustomUserDetails) userDetails).getUserUuid() : 
+                userDetails.getUsername();
+        return createToken(claims, subject, refreshTokenExpiration);
     }
 
     private String createToken(Map<String, Object> claims, String subject, Long expirationTime) {
@@ -94,7 +101,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public String extractUserUuid(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -129,8 +136,13 @@ public class JwtUtil {
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        final String userUuid = extractUserUuid(token);
+        if (userDetails instanceof CustomUserDetails) {
+            return (userUuid.equals(((CustomUserDetails) userDetails).getUserUuid()) && !isTokenExpired(token));
+        } else {
+            // Fallback for non-custom UserDetails (shouldn't happen in normal flow)
+            return (userUuid.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        }
     }
 
     public Boolean isRefreshToken(String token) {

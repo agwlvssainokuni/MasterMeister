@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -33,6 +34,9 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "user_uuid", nullable = false, unique = true, length = 36)
+    private String userUuid;
 
     @Column(nullable = false, unique = true, length = 50)
     private String username;
@@ -72,6 +76,14 @@ public class UserEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUserUuid() {
+        return userUuid;
+    }
+
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
     }
 
     public String getUsername() {
@@ -156,6 +168,9 @@ public class UserEntity {
 
     @PrePersist
     protected void onCreate() {
+        if (userUuid == null) {
+            userUuid = UUID.randomUUID().toString();
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
@@ -186,6 +201,7 @@ public class UserEntity {
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("id", id)
+                .append("userUuid", userUuid)
                 .append("username", username)
                 .append("email", email)
                 .append("status", status)

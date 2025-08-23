@@ -20,6 +20,7 @@ import cherry.mastermeister.controller.dto.*;
 import cherry.mastermeister.model.TokenPair;
 import cherry.mastermeister.service.AuditLogService;
 import cherry.mastermeister.service.RefreshTokenService;
+import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -46,14 +47,14 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
     private final RefreshTokenService refreshTokenService;
     private final AuditLogService auditLogService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
-            UserDetailsService userDetailsService,
+            UserDetailsServiceImpl userDetailsService,
             RefreshTokenService refreshTokenService,
             AuditLogService auditLogService
     ) {
@@ -108,8 +109,8 @@ public class AuthController {
                         .body(ApiResponse.error(List.of("Invalid refresh token")));
             }
 
-            String username = jwtUtil.extractUsername(refreshToken);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            String userUuid = jwtUtil.extractUserUuid(refreshToken);
+            UserDetails userDetails = userDetailsService.loadUserByUserUuid(userUuid);
 
             TokenPair tokenPair = refreshTokenService.refreshTokens(refreshToken, userDetails);
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
@@ -130,7 +131,8 @@ public class AuthController {
             // トークンリフレッシュ失敗のログ記録
             String username = null;
             try {
-                username = jwtUtil.extractUsername(request.refreshToken());
+                String userUuid = jwtUtil.extractUserUuid(request.refreshToken());
+                username = userDetailsService.loadUserByUserUuid(userUuid).getUsername();
             } catch (Exception ignored) {
                 // トークンが無効な場合はusernameを取得できない
             }
@@ -161,7 +163,8 @@ public class AuthController {
             }
 
             String tokenId = jwtUtil.extractTokenId(refreshToken);
-            String username = jwtUtil.extractUsername(refreshToken);
+            String userUuid = jwtUtil.extractUserUuid(refreshToken);
+            String username = userDetailsService.loadUserByUserUuid(userUuid).getUsername();
 
             if (tokenId != null) {
                 refreshTokenService.revokeRefreshToken(tokenId);

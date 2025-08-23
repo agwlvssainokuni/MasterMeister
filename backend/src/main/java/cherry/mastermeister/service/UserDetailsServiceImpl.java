@@ -18,6 +18,7 @@ package cherry.mastermeister.service;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.enums.UserStatus;
 import cherry.mastermeister.repository.UserRepository;
+import cherry.mastermeister.security.CustomUserDetails;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,7 +43,24 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        return new org.springframework.security.core.userdetails.User(
+        return new CustomUserDetails(
+                user.getUserUuid(),
+                user.getUsername(),
+                user.getPassword(),
+                user.getStatus() == UserStatus.APPROVED,
+                true, // accountNonExpired
+                true, // credentialsNonExpired
+                true, // accountNonLocked
+                getAuthorities(user)
+        );
+    }
+
+    public UserDetails loadUserByUserUuid(String userUuid) throws UsernameNotFoundException {
+        UserEntity user = userRepository.findByUserUuid(userUuid)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with UUID: " + userUuid));
+
+        return new CustomUserDetails(
+                user.getUserUuid(),
                 user.getUsername(),
                 user.getPassword(),
                 user.getStatus() == UserStatus.APPROVED,
