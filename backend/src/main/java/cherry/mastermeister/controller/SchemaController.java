@@ -31,10 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/schema")
@@ -58,6 +57,31 @@ public class SchemaController {
         SchemaMetadata schema = schemaReaderService.readSchema(connectionId);
         SchemaMetadataResult result = toDto(schema);
 
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    @GetMapping("/connections/{connectionId}/cached")
+    @Operation(summary = "Get cached schema metadata", description = "Get cached schema metadata from storage")
+    public ResponseEntity<ApiResponse<SchemaMetadataResult>> getCachedSchema(@PathVariable Long connectionId) {
+        logger.info("Getting cached schema metadata for connection ID: {}", connectionId);
+        
+        Optional<SchemaMetadata> schema = schemaReaderService.getStoredSchemaMetadata(connectionId);
+        if (schema.isPresent()) {
+            SchemaMetadataResult result = toDto(schema.get());
+            return ResponseEntity.ok(ApiResponse.success(result));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/connections/{connectionId}/refresh")
+    @Operation(summary = "Refresh schema metadata", description = "Force refresh schema metadata from database")
+    public ResponseEntity<ApiResponse<SchemaMetadataResult>> refreshSchema(@PathVariable Long connectionId) {
+        logger.info("Refreshing schema metadata for connection ID: {}", connectionId);
+        
+        SchemaMetadata schema = schemaReaderService.readAndRefreshSchema(connectionId);
+        SchemaMetadataResult result = toDto(schema);
+        
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 

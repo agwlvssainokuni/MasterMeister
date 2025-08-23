@@ -36,13 +36,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SchemaReaderServiceTest {
 
     @Mock
     private DatabaseConnectionService databaseConnectionService;
+
+    @Mock
+    private SchemaMetadataStorageService schemaMetadataStorageService;
 
     @Mock
     private DataSource dataSource;
@@ -70,7 +74,7 @@ class SchemaReaderServiceTest {
 
     @BeforeEach
     void setUp() {
-        schemaReaderService = new SchemaReaderService(databaseConnectionService);
+        schemaReaderService = new SchemaReaderService(databaseConnectionService, schemaMetadataStorageService);
 
         dbConnection = new DatabaseConnection(
                 1L, "Test Connection", DatabaseType.H2, "mem", 9092,
@@ -131,6 +135,10 @@ class SchemaReaderServiceTest {
         when(columnsResultSet.getString("IS_AUTOINCREMENT")).thenReturn("YES", "NO");
         when(columnsResultSet.getInt("ORDINAL_POSITION")).thenReturn(1, 2);
 
+        // Mock storage service to return the saved metadata
+        when(schemaMetadataStorageService.saveSchemaMetadata(any(SchemaMetadata.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         // Execute
         SchemaMetadata result = schemaReaderService.readSchema(1L);
 
@@ -163,6 +171,9 @@ class SchemaReaderServiceTest {
         assertFalse(nameColumn.autoIncrement());
         assertTrue(nameColumn.nullable());
         assertEquals(2, nameColumn.ordinalPosition());
+        
+        // Verify storage service was called
+        verify(schemaMetadataStorageService).saveSchemaMetadata(any(SchemaMetadata.class));
     }
 
     @Test

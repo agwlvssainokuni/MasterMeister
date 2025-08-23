@@ -38,9 +38,12 @@ public class SchemaReaderService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseConnectionService databaseConnectionService;
+    private final SchemaMetadataStorageService schemaMetadataStorageService;
 
-    public SchemaReaderService(DatabaseConnectionService databaseConnectionService) {
+    public SchemaReaderService(DatabaseConnectionService databaseConnectionService,
+                              SchemaMetadataStorageService schemaMetadataStorageService) {
         this.databaseConnectionService = databaseConnectionService;
+        this.schemaMetadataStorageService = schemaMetadataStorageService;
     }
 
     public SchemaMetadata readSchema(Long connectionId) {
@@ -53,17 +56,30 @@ public class SchemaReaderService {
             List<String> schemas = readSchemas(metaData, connection.dbType());
             List<TableMetadata> tables = readTables(metaData, connection, schemas);
 
-            return new SchemaMetadata(
+            SchemaMetadata schemaMetadata = new SchemaMetadata(
                     connectionId,
                     connection.databaseName(),
                     schemas,
                     tables,
                     LocalDateTime.now()
             );
+
+            // Save the schema metadata to the database
+            return schemaMetadataStorageService.saveSchemaMetadata(schemaMetadata);
         } catch (SQLException e) {
             logger.error("Failed to read schema metadata for connection ID: {}", connectionId, e);
             throw new RuntimeException("Schema reading failed", e);
         }
+    }
+
+    public Optional<SchemaMetadata> getStoredSchemaMetadata(Long connectionId) {
+        logger.debug("Retrieving stored schema metadata for connection ID: {}", connectionId);
+        return schemaMetadataStorageService.getSchemaMetadata(connectionId);
+    }
+
+    public SchemaMetadata readAndRefreshSchema(Long connectionId) {
+        logger.info("Reading and refreshing schema metadata for connection ID: {}", connectionId);
+        return readSchema(connectionId);
     }
 
     private List<String> readSchemas(DatabaseMetaData metaData, DatabaseType dbType) throws SQLException {
