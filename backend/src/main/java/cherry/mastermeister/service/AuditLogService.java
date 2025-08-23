@@ -21,6 +21,10 @@ import cherry.mastermeister.repository.AuditLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -32,58 +36,80 @@ public class AuditLogService {
         this.auditLogRepository = auditLogRepository;
     }
 
-    public void logLoginSuccess(String username, HttpServletRequest request) {
-        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGIN", "AUTH", request);
+    public void logLoginSuccess(String username) {
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGIN", "AUTH");
         auditLog.setSuccess(true);
         auditLog.setDetails("User successfully logged in");
         auditLogRepository.save(auditLog);
     }
 
-    public void logLoginFailure(String username, String errorMessage, HttpServletRequest request) {
-        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGIN", "AUTH", request);
+    public void logLoginFailure(String username, String errorMessage) {
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGIN", "AUTH");
         auditLog.setSuccess(false);
         auditLog.setErrorMessage(errorMessage);
         auditLog.setDetails("Login attempt failed");
         auditLogRepository.save(auditLog);
     }
 
-    public void logLogout(String username, HttpServletRequest request) {
-        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGOUT", "AUTH", request);
+    public void logLogout(String username) {
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGOUT", "AUTH");
         auditLog.setSuccess(true);
         auditLog.setDetails("User successfully logged out");
         auditLogRepository.save(auditLog);
     }
 
-    public void logTokenRefresh(String username, HttpServletRequest request) {
-        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "TOKEN_REFRESH", "AUTH", request);
+    public void logTokenRefresh(String username) {
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "TOKEN_REFRESH", "AUTH");
         auditLog.setSuccess(true);
         auditLog.setDetails("Access token refreshed successfully");
         auditLogRepository.save(auditLog);
     }
 
-    public void logTokenRefreshFailure(String username, String errorMessage, HttpServletRequest request) {
-        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "TOKEN_REFRESH", "AUTH", request);
+    public void logTokenRefreshFailure(String username, String errorMessage) {
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "TOKEN_REFRESH", "AUTH");
         auditLog.setSuccess(false);
         auditLog.setErrorMessage(errorMessage);
         auditLog.setDetails("Token refresh attempt failed");
         auditLogRepository.save(auditLog);
     }
 
-    public void logAdminAction(String username, String action, String target, String details, HttpServletRequest request) {
-        AuditLogEntity auditLog = createBaseAuditLogEntity(username, action, target, request);
+    public void logAdminAction(String username, String action, String target, String details) {
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, action, target);
         auditLog.setSuccess(true);
         auditLog.setDetails(details);
         auditLogRepository.save(auditLog);
     }
 
-    private AuditLogEntity createBaseAuditLogEntity(String username, String action, String target, HttpServletRequest request) {
+    public void logSchemaOperation(String username, String operation, Long connectionId, boolean success,
+                                   String details, String errorMessage) {
+        String target = "SCHEMA_CONNECTION_" + connectionId;
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, operation, target);
+        auditLog.setSuccess(success);
+        auditLog.setDetails(details);
+        if (errorMessage != null) {
+            auditLog.setErrorMessage(errorMessage);
+        }
+        auditLogRepository.save(auditLog);
+    }
+
+    private AuditLogEntity createBaseAuditLogEntity(String username, String action, String target) {
+        HttpServletRequest request = getCurrentRequest();
         AuditLogEntity auditLog = new AuditLogEntity();
         auditLog.setUsername(username);
         auditLog.setAction(action);
         auditLog.setTarget(target);
-        auditLog.setIpAddress(extractClientIpAddress(request));
-        auditLog.setUserAgent(request.getHeader("User-Agent"));
+        if (request != null) {
+            auditLog.setIpAddress(extractClientIpAddress(request));
+            auditLog.setUserAgent(request.getHeader("User-Agent"));
+        }
         return auditLog;
+    }
+
+    private HttpServletRequest getCurrentRequest() {
+        return Optional.ofNullable(RequestContextHolder.getRequestAttributes())
+                .filter(ServletRequestAttributes.class::isInstance)
+                .map(ServletRequestAttributes.class::cast)
+                .map(ServletRequestAttributes::getRequest).orElse(null);
     }
 
     private String extractClientIpAddress(HttpServletRequest request) {

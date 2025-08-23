@@ -41,13 +41,16 @@ public class SchemaUpdateService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final SchemaReaderService schemaReaderService;
     private final SchemaUpdateLogRepository schemaUpdateLogRepository;
+    private final AuditLogService auditLogService;
 
     public SchemaUpdateService(
             SchemaReaderService schemaReaderService,
-            SchemaUpdateLogRepository schemaUpdateLogRepository
+            SchemaUpdateLogRepository schemaUpdateLogRepository,
+            AuditLogService auditLogService
     ) {
         this.schemaReaderService = schemaReaderService;
         this.schemaUpdateLogRepository = schemaUpdateLogRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -144,6 +147,10 @@ public class SchemaUpdateService {
             logger.info("Successfully executed {} for connection ID: {} in {}ms",
                     operation, connectionId, executionTime);
 
+            // Log admin action
+            auditLogService.logSchemaOperation(userEmail, operation.name(), connectionId, true, 
+                    logEntity.getDetails(), null);
+
             return result;
 
         } catch (Exception e) {
@@ -158,6 +165,10 @@ public class SchemaUpdateService {
             schemaUpdateLogRepository.save(logEntity);
             logger.error("Failed to execute {} for connection ID: {} in {}ms",
                     operation, connectionId, executionTime, e);
+
+            // Log admin action failure
+            auditLogService.logSchemaOperation(userEmail, operation.name(), connectionId, false, 
+                    logEntity.getDetails(), e.getMessage());
 
             throw e;
         }
