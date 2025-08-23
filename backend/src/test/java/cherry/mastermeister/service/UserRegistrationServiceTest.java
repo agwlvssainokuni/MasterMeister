@@ -16,9 +16,12 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.entity.RegistrationTokenEntity;
 import cherry.mastermeister.entity.UserEntity;
-import cherry.mastermeister.exception.UserAlreadyExistsException;
+import cherry.mastermeister.exception.UserRegistrationException;
+import cherry.mastermeister.model.RegistrationToken;
 import cherry.mastermeister.model.UserRegistration;
+import cherry.mastermeister.repository.RegistrationTokenRepository;
 import cherry.mastermeister.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,11 +30,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +42,9 @@ class UserRegistrationServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private RegistrationTokenRepository registrationTokenRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -50,81 +56,140 @@ class UserRegistrationServiceTest {
     private UserRegistrationService userRegistrationService;
 
     @Test
-    void shouldRegisterUserSuccessfully() {
-        UserRegistration request = new UserRegistration(
-                null,
-                "test@example.com",
-                "password123",
-                null,
-                "en",
-                null,
-                null
-        );
+    void shouldRegisterEmailSuccessfullyForNewUser() {
+        String email = "test@example.com";
+        String language = "en";
 
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(registrationTokenRepository.markTokensAsUsedByEmail(email)).thenReturn(0);
 
-        UserEntity savedUser = new UserEntity();
-        savedUser.setId(1L);
-        savedUser.setEmail("test@example.com");
-        when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
+        RegistrationTokenEntity savedToken = new RegistrationTokenEntity();
+        savedToken.setId(1L);
+        savedToken.setEmail(email);
+        savedToken.setToken("test-token");
+        savedToken.setExpiresAt(LocalDateTime.now().plusHours(24));
+        savedToken.setCreatedAt(LocalDateTime.now());
+        when(registrationTokenRepository.save(any(RegistrationTokenEntity.class))).thenReturn(savedToken);
 
-        UserRegistration result = userRegistrationService.registerUser(request);
+        RegistrationToken result = userRegistrationService.registerEmail(email, language);
 
         assertNotNull(result);
-        assertEquals(1L, result.id());
-        assertEquals("test@example.com", result.email());
+        assertEquals(email, result.email());
+        assertNotNull(result.token());
+        assertNotNull(result.expiresAt());
+        assertFalse(result.isExistingUser());
 
-        verify(userRepository).save(any(UserEntity.class));
-        verify(emailService).sendEmailConfirmation(
-                eq("test@example.com"),
-                anyString(),
-                eq("en")
-        );
+        verify(registrationTokenRepository).save(any(RegistrationTokenEntity.class));
+        verify(emailService).sendRegistrationStart(eq(email), anyString(), eq(language));
     }
 
     @Test
-    void shouldThrowExceptionWhenEmailExists() {
-        UserRegistration request = new UserRegistration(
-                null,
-                "test@example.com",
-                "password123",
-                null,
-                "en",
-                null,
-                null
-        );
+    void shouldReturnExistingUserIndicatorForRegisteredEmail() {
+        String email = "test@example.com";
+        String language = "en";
 
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(new UserEntity()));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(new UserEntity()));
 
-        assertThrows(UserAlreadyExistsException.class,
-                () -> userRegistrationService.registerUser(request));
+        RegistrationToken result = userRegistrationService.registerEmail(email, language);
+
+        assertNotNull(result);
+        assertEquals(email, result.email());
+        assertNull(result.token());
+        assertNull(result.expiresAt());
+        assertTrue(result.isExistingUser());
+
+        verify(registrationTokenRepository, never()).save(any(RegistrationTokenEntity.class));
+        verify(emailService, never()).sendRegistrationStart(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void shouldRegisterUserSuccessfullyWithValidToken() {
+        String token = "valid-token";
+        String email = "test@example.com";
+        String password = "password123";
+        String language = "en";
+
+        RegistrationTokenEntity tokenEntity = new RegistrationTokenEntity();
+        tokenEntity.setId(1L);
+        tokenEntity.setEmail(email);
+        tokenEntity.setToken(token);
+        tokenEntity.setExpiresAt(LocalDateTime.now().plusHours(1));
+        tokenEntity.setUsed(false);
+
+        when(registrationTokenRepository.findByToken(token)).thenReturn(Optional.of(tokenEntity));
+        when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
+
+        UserEntity savedUser = new UserEntity();
+        savedUser.setId(1L);
+        savedUser.setEmail(email);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
+
+        UserRegistration result = userRegistrationService.registerUser(token, email, password, language);
+
+        assertNotNull(result);
+        assertEquals(1L, result.id());
+        assertEquals(email, result.email());
+
+        verify(registrationTokenRepository).save(tokenEntity);
+        assertTrue(tokenEntity.isUsed());
+        verify(userRepository).save(any(UserEntity.class));
+    }
+
+    @Test
+    void shouldThrowExceptionForInvalidToken() {
+        String token = "invalid-token";
+        String email = "test@example.com";
+        String password = "password123";
+        String language = "en";
+
+        when(registrationTokenRepository.findByToken(token)).thenReturn(Optional.empty());
+
+        assertThrows(UserRegistrationException.class,
+                () -> userRegistrationService.registerUser(token, email, password, language));
 
         verify(userRepository, never()).save(any(UserEntity.class));
     }
 
     @Test
-    void shouldConfirmEmailAndSendNotificationWithUserLanguage() {
-        UserEntity user = new UserEntity();
-        user.setId(1L);
-        user.setEmail("test@example.com");
-        user.setEmailConfirmed(false);
-        user.setEmailConfirmationToken("testtoken");
-        user.setPreferredLanguage("ja");
+    void shouldThrowExceptionForExpiredToken() {
+        String token = "expired-token";
+        String email = "test@example.com";
+        String password = "password123";
+        String language = "en";
 
-        when(userRepository.findByEmailConfirmationToken("testtoken")).thenReturn(Optional.of(user));
-        when(userRepository.save(any(UserEntity.class))).thenReturn(user);
+        RegistrationTokenEntity tokenEntity = new RegistrationTokenEntity();
+        tokenEntity.setEmail(email);
+        tokenEntity.setToken(token);
+        tokenEntity.setExpiresAt(LocalDateTime.now().minusHours(1));
+        tokenEntity.setUsed(false);
 
-        boolean result = userRegistrationService.confirmEmail("testtoken");
+        when(registrationTokenRepository.findByToken(token)).thenReturn(Optional.of(tokenEntity));
 
-        assertTrue(result);
-        assertTrue(user.isEmailConfirmed());
-        assertNull(user.getEmailConfirmationToken());
+        assertThrows(UserRegistrationException.class,
+                () -> userRegistrationService.registerUser(token, email, password, language));
 
-        verify(userRepository).save(user);
-        verify(emailService).sendEmailConfirmed(
-                eq("test@example.com"),
-                eq("ja")
-        );
+        verify(userRepository, never()).save(any(UserEntity.class));
+    }
+
+    @Test
+    void shouldThrowExceptionForMismatchedEmail() {
+        String token = "valid-token";
+        String tokenEmail = "token@example.com";
+        String requestEmail = "request@example.com";
+        String password = "password123";
+        String language = "en";
+
+        RegistrationTokenEntity tokenEntity = new RegistrationTokenEntity();
+        tokenEntity.setEmail(tokenEmail);
+        tokenEntity.setToken(token);
+        tokenEntity.setExpiresAt(LocalDateTime.now().plusHours(1));
+        tokenEntity.setUsed(false);
+
+        when(registrationTokenRepository.findByToken(token)).thenReturn(Optional.of(tokenEntity));
+
+        assertThrows(UserRegistrationException.class,
+                () -> userRegistrationService.registerUser(token, requestEmail, password, language));
+
+        verify(userRepository, never()).save(any(UserEntity.class));
     }
 }
