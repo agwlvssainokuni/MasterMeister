@@ -61,9 +61,9 @@ class UserServiceTest {
 
         // Assert
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).username()).isEqualTo("user1");
+        assertThat(result.get(0).email()).isEqualTo("user1@example.com");
         assertThat(result.get(0).status()).isEqualTo(UserStatus.PENDING);
-        assertThat(result.get(1).username()).isEqualTo("user2");
+        assertThat(result.get(1).email()).isEqualTo("user2@example.com");
         assertThat(result.get(1).status()).isEqualTo(UserStatus.PENDING);
 
         verify(userRepository).findByStatus(UserStatus.PENDING);
@@ -85,7 +85,6 @@ class UserServiceTest {
         verify(userRepository).save(user);
         verify(emailService).sendAccountApproved(
                 eq("testuser@example.com"),
-                eq("testuser"),
                 eq("en")
         );
     }
@@ -137,7 +136,6 @@ class UserServiceTest {
         verify(userRepository).save(user);
         verify(emailService).sendAccountRejected(
                 eq("testuser@example.com"),
-                eq("testuser"),
                 eq("en")
         );
     }
@@ -173,11 +171,10 @@ class UserServiceTest {
         verifyNoInteractions(emailService);
     }
 
-    private UserEntity createUser(Long id, String username, UserStatus status) {
+    private UserEntity createUser(Long id, String emailPrefix, UserStatus status) {
         UserEntity user = new UserEntity();
         user.setId(id);
-        user.setUsername(username);
-        user.setEmail(username + "@example.com");
+        user.setEmail(emailPrefix + "@example.com");
         user.setStatus(status);
         user.setEmailConfirmed(true);
         user.setPreferredLanguage("en");

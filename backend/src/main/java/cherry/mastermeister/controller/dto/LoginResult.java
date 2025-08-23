@@ -19,7 +19,7 @@ package cherry.mastermeister.controller.dto;
 public record LoginResult(
         String accessToken,
         String refreshToken,
-        String username,
+        String email,
         String role,
         long expiresIn
 ) {

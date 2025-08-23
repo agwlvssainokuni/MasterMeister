@@ -18,7 +18,6 @@ package cherry.mastermeister.controller.dto;
 
 public record UserRegistrationResult(
         Long userId,
-        String username,
         String email,
         String message
 ) {

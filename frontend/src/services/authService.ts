@@ -39,7 +39,7 @@ import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthState> {
     const loginRequest: LoginRequest = {
-      username: credentials.username,
+      email: credentials.email,
       password: credentials.password
     }
 
@@ -60,7 +60,7 @@ class AuthService {
 
     // Convert to frontend types
     const user: User = {
-      username: loginResult.username,
+      email: loginResult.email,
       role: loginResult.role as 'USER' | 'ADMIN'
     }
 
@@ -95,7 +95,6 @@ class AuthService {
 
   async register(credentials: RegistrationCredentials): Promise<RegistrationResult> {
     const registerRequest: UserRegistrationRequest = {
-      username: credentials.username,
       email: credentials.email,
       password: credentials.password,
       language: navigator.language.startsWith('ja') ? 'ja' : 'en'
@@ -113,7 +112,6 @@ class AuthService {
     const apiResult = response.data.data
     return {
       userId: apiResult.userId,
-      username: apiResult.username,
       email: apiResult.email,
       message: apiResult.message
     }
@@ -164,7 +162,7 @@ class AuthService {
     // Extract user info from JWT
     const userInfo = extractUserFromToken(accessToken)
     const user: User | null = userInfo ? {
-      username: userInfo.username,
+      email: userInfo.email,
       role: userInfo.role
     } : null
 

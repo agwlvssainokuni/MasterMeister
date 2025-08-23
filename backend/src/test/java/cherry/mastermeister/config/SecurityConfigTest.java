@@ -88,15 +88,15 @@ class SecurityConfigTest {
     void shouldAllowAuthEndpoints() throws Exception {
         // Arrange
         UserEntity user = new UserEntity();
-        user.setUsername("testuser");
+        user.setEmail("test@example.com");
         user.setPassword(passwordEncoder.encode("testpass"));
         user.setStatus(UserStatus.APPROVED);
-        when(userRepository.findByUsername(eq("testuser"))).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail(eq("test@example.com"))).thenReturn(Optional.of(user));
 
         // Act & Assert
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"testuser\",\"password\":\"testpass\"}"))
+                        .content("{\"email\":\"test@example.com\",\"password\":\"testpass\"}"))
                 .andExpect(status().isOk());
     }
 }

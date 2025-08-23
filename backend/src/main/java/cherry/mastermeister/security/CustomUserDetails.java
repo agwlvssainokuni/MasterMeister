@@ -32,10 +32,16 @@ public class CustomUserDetails implements UserDetails {
     private final boolean accountNonLocked;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(String userUuid, String username, String password,
-                             boolean enabled, boolean accountNonExpired,
-                             boolean credentialsNonExpired, boolean accountNonLocked,
-                             Collection<? extends GrantedAuthority> authorities) {
+    public CustomUserDetails(
+            String userUuid,
+            String username,
+            String password,
+            boolean enabled,
+            boolean accountNonExpired,
+            boolean credentialsNonExpired,
+            boolean accountNonLocked,
+            Collection<? extends GrantedAuthority> authorities
+    ) {
         this.userUuid = userUuid;
         this.username = username;
         this.password = password;

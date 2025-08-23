@@ -30,7 +30,7 @@ export const LoginForm = ({onLoginSuccess}: LoginFormProps) => {
   const {t} = useTranslation()
   const {login, isLoading} = useAuth()
   const [credentials, setCredentials] = useState<LoginCredentials>({
-    username: '',
+    email: '',
     password: ''
   })
   const [error, setError] = useState<string | null>(null)
@@ -44,7 +44,7 @@ export const LoginForm = ({onLoginSuccess}: LoginFormProps) => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
 
-    if (!credentials.username || !credentials.password) {
+    if (!credentials.email || !credentials.password) {
       setError(t('login.validation.required'))
       return
     }
@@ -70,19 +70,19 @@ export const LoginForm = ({onLoginSuccess}: LoginFormProps) => {
       )}
 
       <div className="form-group">
-        <label htmlFor="username" className="form-label">
-          {t('login.username.label')}
+        <label htmlFor="email" className="form-label">
+          {t('login.email.label')}
         </label>
         <input
-          id="username"
-          name="username"
-          type="text"
-          value={credentials.username}
+          id="email"
+          name="email"
+          type="email"
+          value={credentials.email}
           onChange={handleInputChange}
           className="form-input"
           required
-          autoComplete="username"
-          placeholder={t('login.username.placeholder')}
+          autoComplete="email"
+          placeholder={t('login.email.placeholder')}
         />
       </div>
 
@@ -107,7 +107,7 @@ export const LoginForm = ({onLoginSuccess}: LoginFormProps) => {
         <button
           type="submit"
           className="button button-primary button-lg button-full"
-          disabled={isLoading || !credentials.username || !credentials.password}
+          disabled={isLoading || !credentials.email || !credentials.password}
         >
           {isLoading ? t('login.submitting') : t('login.submit')}
         </button>

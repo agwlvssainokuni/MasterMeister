@@ -32,7 +32,6 @@ class AdminService {
     // Convert API DTOs to frontend types
     return response.data.data.map(user => ({
       id: user.id,
-      username: user.username,
       email: user.email,
       registeredAt: new Date(user.createdAt),
       isPending: user.status === 'PENDING'

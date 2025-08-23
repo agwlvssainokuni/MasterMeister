@@ -65,11 +65,11 @@ class AdminControllerTest {
     void shouldGetPendingUsersWhenAdmin() throws Exception {
         // Arrange
         UserSummary user1 = new UserSummary(
-                1L, "user1", "user1@example.com",
+                1L, "user1@example.com",
                 UserStatus.PENDING, true, LocalDateTime.now()
         );
         UserSummary user2 = new UserSummary(
-                2L, "user2", "user2@example.com",
+                2L, "user2@example.com",
                 UserStatus.PENDING, false, LocalDateTime.now()
         );
         when(userService.getPendingUsers()).thenReturn(List.of(user1, user2));
@@ -82,10 +82,10 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data.length()").value(2))
                 .andExpect(jsonPath("$.data[0].id").value(1))
-                .andExpect(jsonPath("$.data[0].username").value("user1"))
+                .andExpect(jsonPath("$.data[0].email").value("user1@example.com"))
                 .andExpect(jsonPath("$.data[0].status").value("PENDING"))
                 .andExpect(jsonPath("$.data[1].id").value(2))
-                .andExpect(jsonPath("$.data[1].username").value("user2"));
+                .andExpect(jsonPath("$.data[1].email").value("user2@example.com"));
 
         verify(userService).getPendingUsers();
     }

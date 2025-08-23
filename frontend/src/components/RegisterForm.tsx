@@ -29,7 +29,6 @@ interface RegisterFormProps {
 export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
   const {t} = useTranslation()
   const [credentials, setCredentials] = useState<RegistrationCredentials>({
-    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -44,7 +43,7 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
   }
 
   const validateForm = (): string | null => {
-    if (!credentials.username || !credentials.email || !credentials.password) {
+    if (!credentials.email || !credentials.password) {
       return t('register.validation.required')
     }
 
@@ -95,23 +94,6 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
           {error}
         </div>
       )}
-
-      <div className="form-group">
-        <label htmlFor="username" className="form-label">
-          {t('register.username.label')}
-        </label>
-        <input
-          id="username"
-          name="username"
-          type="text"
-          value={credentials.username}
-          onChange={handleInputChange}
-          className="form-input"
-          required
-          autoComplete="username"
-          placeholder={t('register.username.placeholder')}
-        />
-      </div>
 
       <div className="form-group">
         <label htmlFor="email" className="form-label">

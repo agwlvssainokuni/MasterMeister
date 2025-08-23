@@ -25,14 +25,14 @@ export interface ApiResponse<T> {
 
 // AuthController
 export interface LoginRequest {
-  username: string
+  email: string
   password: string
 }
 
 export interface LoginResult {
   accessToken: string
   refreshToken: string
-  username: string
+  email: string
   role: string
   expiresIn: number
 }
@@ -48,7 +48,6 @@ export interface LogoutRequest {
 // AdminController
 export interface UserSummaryResult {
   id: number
-  username: string
   email: string
   status: string
   emailConfirmed: boolean
@@ -67,7 +66,6 @@ export interface RejectUserRequest {
 
 // User Registration
 export interface UserRegistrationRequest {
-  username: string
   email: string
   password: string
   language: string
@@ -75,7 +73,6 @@ export interface UserRegistrationRequest {
 
 export interface UserRegistrationResult {
   userId: number
-  username: string
   email: string
   message: string
 }

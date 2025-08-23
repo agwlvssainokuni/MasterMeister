@@ -17,9 +17,9 @@
   },
   "login": {
     "title": "Login",
-    "username": {
-      "label": "Username",
-      "placeholder": "Enter your username"
+    "email": {
+      "label": "Email Address",
+      "placeholder": "Enter your email address"
     },
     "password": {
       "label": "Password",
@@ -28,7 +28,7 @@
     "submit": "Login",
     "submitting": "Logging in...",
     "validation": {
-      "required": "Please enter your username and password"
+      "required": "Please enter your email and password"
     },
     "error": {
       "failed": "Login failed"
@@ -43,10 +43,6 @@
   },
   "register": {
     "title": "Register",
-    "username": {
-      "label": "Username",
-      "placeholder": "Enter your username"
-    },
     "email": {
       "label": "Email Address",
       "placeholder": "Enter your email address"
@@ -62,7 +58,7 @@
     "submit": "Register",
     "submitting": "Registering...",
     "validation": {
-      "required": "Please fill in all required fields",
+      "required": "Please enter your email and password",
       "passwordMismatch": "Passwords do not match",
       "passwordTooShort": "Password must be at least 8 characters",
       "invalidEmail": "Please enter a valid email address"
@@ -117,7 +113,6 @@
       "rejected": "User rejected successfully",
       "error": "Failed to process user request",
       "table": {
-        "username": "Username",
         "email": "Email Address",
         "registeredAt": "Registered At",
         "actions": "Actions"
@@ -136,11 +131,11 @@
     "confirmDialog": {
       "approve": {
         "title": "Approve User",
-        "message": "Are you sure you want to approve user: {{username}}?"
+        "message": "Are you sure you want to approve user: {{email}}?"
       },
       "reject": {
         "title": "Reject User",
-        "message": "Are you sure you want to reject user: {{username}}? This action cannot be undone."
+        "message": "Are you sure you want to reject user: {{email}}? This action cannot be undone."
       }
     }
   },

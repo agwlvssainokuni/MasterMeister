@@ -53,22 +53,19 @@ class UserRegistrationServiceTest {
     void shouldRegisterUserSuccessfully() {
         UserRegistration request = new UserRegistration(
                 null,
-                "testuser",
                 "test@example.com",
                 "password123",
                 null,
-                null,
+                "en",
                 null,
                 null
         );
 
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         UserEntity savedUser = new UserEntity();
         savedUser.setId(1L);
-        savedUser.setUsername("testuser");
         savedUser.setEmail("test@example.com");
         when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
 
@@ -76,53 +73,28 @@ class UserRegistrationServiceTest {
 
         assertNotNull(result);
         assertEquals(1L, result.id());
-        assertEquals("testuser", result.username());
         assertEquals("test@example.com", result.email());
 
         verify(userRepository).save(any(UserEntity.class));
         verify(emailService).sendEmailConfirmation(
                 eq("test@example.com"),
-                eq("testuser"),
                 anyString(),
                 eq("en")
         );
     }
 
     @Test
-    void shouldThrowExceptionWhenUsernameExists() {
-        UserRegistration request = new UserRegistration(
-                null,
-                "testuser",
-                "test@example.com",
-                "password123",
-                null,
-                null,
-                null,
-                null
-        );
-
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(new UserEntity()));
-
-        assertThrows(UserAlreadyExistsException.class,
-                () -> userRegistrationService.registerUser(request));
-
-        verify(userRepository, never()).save(any(UserEntity.class));
-    }
-
-    @Test
     void shouldThrowExceptionWhenEmailExists() {
         UserRegistration request = new UserRegistration(
                 null,
-                "testuser",
                 "test@example.com",
                 "password123",
                 null,
-                null,
+                "en",
                 null,
                 null
         );
 
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(new UserEntity()));
 
         assertThrows(UserAlreadyExistsException.class,
@@ -135,7 +107,6 @@ class UserRegistrationServiceTest {
     void shouldConfirmEmailAndSendNotificationWithUserLanguage() {
         UserEntity user = new UserEntity();
         user.setId(1L);
-        user.setUsername("testuser");
         user.setEmail("test@example.com");
         user.setEmailConfirmed(false);
         user.setEmailConfirmationToken("testtoken");
@@ -153,7 +124,6 @@ class UserRegistrationServiceTest {
         verify(userRepository).save(user);
         verify(emailService).sendEmailConfirmed(
                 eq("test@example.com"),
-                eq("testuser"),
                 eq("ja")
         );
     }

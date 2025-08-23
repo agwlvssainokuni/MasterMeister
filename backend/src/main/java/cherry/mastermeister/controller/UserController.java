@@ -75,7 +75,6 @@ public class UserController {
         return new UserRegistrationResult(
                 model.id(),
                 model.email(),
-                model.email(), // username の代わりに email を使用
                 "Registration successful. Please check your email to confirm your account."
         );
     }

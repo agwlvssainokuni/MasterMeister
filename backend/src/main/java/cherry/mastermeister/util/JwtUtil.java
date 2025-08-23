@@ -21,6 +21,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,6 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
 
 @Component
@@ -61,22 +61,19 @@ public class JwtUtil {
     public String generateAccessToken(UserDetails userDetails) {
         // Extract all roles from authorities and remove ROLE_ prefix
         List<String> roles = userDetails.getAuthorities().stream()
-                .map(authority -> authority.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .map(auth -> auth.startsWith("ROLE_") ? auth.substring(5) : auth)
                 .toList();
 
         Map<String, Object> claims = Map.of(
                 "type", "access",
-                "role", roles
+                "role", roles,
+                "email", userDetails.getUsername() // username is actually email
         );
-        String subject = userDetails instanceof CustomUserDetails ? 
-                ((CustomUserDetails) userDetails).getUserUuid() : 
+        String subject = userDetails instanceof CustomUserDetails ?
+                ((CustomUserDetails) userDetails).getUserUuid() :
                 userDetails.getUsername();
         return createToken(claims, subject, accessTokenExpiration);
-    }
-
-    public String generateRefreshToken(UserDetails userDetails) {
-        return generateRefreshToken(userDetails, UUID.randomUUID().toString());
     }
 
     public String generateRefreshToken(UserDetails userDetails, String tokenId) {
@@ -84,8 +81,8 @@ public class JwtUtil {
                 "type", "refresh",
                 "jti", tokenId
         );
-        String subject = userDetails instanceof CustomUserDetails ? 
-                ((CustomUserDetails) userDetails).getUserUuid() : 
+        String subject = userDetails instanceof CustomUserDetails ?
+                ((CustomUserDetails) userDetails).getUserUuid() :
                 userDetails.getUsername();
         return createToken(claims, subject, refreshTokenExpiration);
     }

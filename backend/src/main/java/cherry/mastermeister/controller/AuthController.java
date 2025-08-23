@@ -32,7 +32,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,7 +68,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResult>> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.username(), request.password())
+                    new UsernamePasswordAuthenticationToken(request.email(), request.password())
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -92,7 +91,7 @@ public class AuthController {
             return ResponseEntity.ok(ApiResponse.success(result));
         } catch (Exception e) {
             // ログイン失敗のログ記録
-            auditLogService.logLoginFailure(request.username(), e.getMessage(), httpRequest);
+            auditLogService.logLoginFailure(request.email(), e.getMessage(), httpRequest);
 
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(List.of("Invalid credentials")));

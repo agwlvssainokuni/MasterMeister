@@ -17,9 +17,9 @@
   },
   "login": {
     "title": "ログイン",
-    "username": {
-      "label": "ユーザー名",
-      "placeholder": "ユーザー名を入力してください"
+    "email": {
+      "label": "メールアドレス",
+      "placeholder": "メールアドレスを入力してください"
     },
     "password": {
       "label": "パスワード",
@@ -28,7 +28,7 @@
     "submit": "ログイン",
     "submitting": "ログイン中...",
     "validation": {
-      "required": "ユーザー名とパスワードを入力してください"
+      "required": "メールアドレスとパスワードを入力してください"
     },
     "error": {
       "failed": "ログインに失敗しました"
@@ -43,10 +43,6 @@
   },
   "register": {
     "title": "新規登録",
-    "username": {
-      "label": "ユーザー名",
-      "placeholder": "ユーザー名を入力してください"
-    },
     "email": {
       "label": "メールアドレス",
       "placeholder": "メールアドレスを入力してください"
@@ -62,7 +58,7 @@
     "submit": "登録",
     "submitting": "登録中...",
     "validation": {
-      "required": "すべての項目を入力してください",
+      "required": "メールアドレスとパスワードを入力してください",
       "passwordMismatch": "パスワードが一致しません",
       "passwordTooShort": "パスワードは8文字以上で入力してください",
       "invalidEmail": "正しいメールアドレスを入力してください"
@@ -117,7 +113,6 @@
       "rejected": "ユーザーを拒否しました",
       "error": "ユーザーの処理に失敗しました",
       "table": {
-        "username": "ユーザー名",
         "email": "メールアドレス",
         "registeredAt": "登録日時",
         "actions": "アクション"
@@ -136,11 +131,11 @@
     "confirmDialog": {
       "approve": {
         "title": "ユーザー承認",
-        "message": "ユーザー「{{username}}」を承認してもよろしいですか？"
+        "message": "ユーザー「{{email}}」を承認してもよろしいですか？"
       },
       "reject": {
         "title": "ユーザー拒否",
-        "message": "ユーザー「{{username}}」を拒否してもよろしいですか？この操作は取り消せません。"
+        "message": "ユーザー「{{email}}」を拒否してもよろしいですか？この操作は取り消せません。"
       }
     }
   },

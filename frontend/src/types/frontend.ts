@@ -17,7 +17,7 @@
 // Frontend types - optimized for UI state management
 
 export interface User {
-  username: string
+  email: string
   role: 'USER' | 'ADMIN'
 }
 
@@ -29,13 +29,12 @@ export interface AuthState {
 }
 
 export interface LoginCredentials {
-  username: string
+  email: string
   password: string
 }
 
 export interface PendingUser {
   id: number
-  username: string
   email: string
   registeredAt: Date
   isPending?: boolean
@@ -44,11 +43,10 @@ export interface PendingUser {
 export interface AdminAction {
   type: 'approve' | 'reject'
   userId: number
-  username: string
+  email: string
 }
 
 export interface RegistrationCredentials {
-  username: string
   email: string
   password: string
   confirmPassword: string
@@ -56,7 +54,6 @@ export interface RegistrationCredentials {
 
 export interface RegistrationResult {
   userId: number
-  username: string
   email: string
   message: string
 }

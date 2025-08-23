@@ -15,7 +15,8 @@
  */
 
 interface JWTPayload {
-  sub: string // username
+  sub: string // userUuid
+  email: string // email address
   role: string[] // roles
   exp: number // expiration timestamp
   iat: number // issued at timestamp
@@ -48,7 +49,7 @@ export const isTokenExpired = (token: string): boolean => {
   return payload.exp < now
 }
 
-export const extractUserFromToken = (token: string): { username: string; role: 'USER' | 'ADMIN' } | null => {
+export const extractUserFromToken = (token: string): { email: string; role: 'USER' | 'ADMIN' } | null => {
   const payload = parseJWT(token)
   if (!payload) {
     return null
@@ -57,12 +58,12 @@ export const extractUserFromToken = (token: string): { username: string; role: '
   // Extract first role from role array (already cleaned of ROLE_ prefix by backend)
   const role = payload.role?.[0] as 'USER' | 'ADMIN'
 
-  if (!role) {
+  if (!role || !payload.email) {
     return null
   }
 
   return {
-    username: payload.sub,
+    email: payload.email,
     role
   }
 }

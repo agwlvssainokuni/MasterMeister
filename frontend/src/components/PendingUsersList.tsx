@@ -154,7 +154,6 @@ export const PendingUsersList = () => {
       <table className="table">
         <thead>
         <tr>
-          <th style={{width: '15rem'}}>{t('admin.users.table.username')}</th>
           <th>{t('admin.users.table.email')}</th>
           <th style={{width: '12rem'}}>{t('admin.users.table.registeredAt')}</th>
           <th style={{width: '12rem'}}>{t('admin.users.table.actions')}</th>
@@ -163,7 +162,6 @@ export const PendingUsersList = () => {
         <tbody>
         {users.map(user => (
           <tr key={user.id}>
-            <td>{user.username}</td>
             <td>{user.email}</td>
             <td>{formatDate(user.registeredAt)}</td>
             <td>
@@ -197,7 +195,7 @@ export const PendingUsersList = () => {
         onConfirm={handleConfirmAction}
         title={t(`admin.confirmDialog.${confirmDialog.type}.title`)}
         message={t(`admin.confirmDialog.${confirmDialog.type}.message`, {
-          username: confirmDialog.user?.username
+          email: confirmDialog.user?.email
         })}
         confirmText={t(`common.${confirmDialog.type}`)}
         type={confirmDialog.type === 'reject' ? 'danger' : 'default'}
