@@ -30,16 +30,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByUserUuid(String userUuid);
 
-    Optional<UserEntity> findByUsername(String username);
-
     Optional<UserEntity> findByEmail(String email);
 
     Optional<UserEntity> findByEmailConfirmationToken(String token);
 
     @Query("SELECT u FROM UserEntity u WHERE u.status = :status")
     List<UserEntity> findByStatus(UserStatus status);
-
-    boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
 }

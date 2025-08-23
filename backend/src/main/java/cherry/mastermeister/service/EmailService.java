@@ -54,7 +54,7 @@ public class EmailService {
         this.defaultLanguage = defaultLanguage;
     }
 
-    public void sendEmailConfirmation(String toAddress, String username, String confirmationToken, String language) {
+    public void sendEmailConfirmation(String toAddress, String confirmationToken, String language) {
         URI confirmationUrl = UriComponentsBuilder
                 .fromUriString(baseUrl)
                 .path(confirmationPath)
@@ -63,25 +63,25 @@ public class EmailService {
                 .toUri();
 
         Map<String, String> variables = Map.of(
-                "username", username,
+                "username", toAddress,
                 "confirmationUrl", confirmationUrl.toString()
         );
 
         sendTemplatedEmail(TemplateType.EMAIL_CONFIRMATION, toAddress, variables, language);
     }
 
-    public void sendEmailConfirmed(String toAddress, String username, String language) {
-        Map<String, String> variables = Map.of("username", username);
+    public void sendEmailConfirmed(String toAddress, String language) {
+        Map<String, String> variables = Map.of("username", toAddress);
         sendTemplatedEmail(TemplateType.EMAIL_CONFIRMED, toAddress, variables, language);
     }
 
-    public void sendAccountApproved(String toAddress, String username, String language) {
-        Map<String, String> variables = Map.of("username", username);
+    public void sendAccountApproved(String toAddress, String language) {
+        Map<String, String> variables = Map.of("username", toAddress);
         sendTemplatedEmail(TemplateType.ACCOUNT_APPROVED, toAddress, variables, language);
     }
 
-    public void sendAccountRejected(String toAddress, String username, String language) {
-        Map<String, String> variables = Map.of("username", username);
+    public void sendAccountRejected(String toAddress, String language) {
+        Map<String, String> variables = Map.of("username", toAddress);
         sendTemplatedEmail(TemplateType.ACCOUNT_REJECTED, toAddress, variables, language);
     }
 

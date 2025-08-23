@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 
 public record UserRegistration(
         @Nullable Long id,
-        @Nonnull String username,
         @Nonnull String email,
         @Nonnull String password,
         @Nullable String confirmationToken,

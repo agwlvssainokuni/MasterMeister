@@ -62,7 +62,6 @@ public class UserController {
     private UserRegistration toModel(UserRegistrationRequest request) {
         return new UserRegistration(
                 null,
-                request.username(),
                 request.email(),
                 request.password(),
                 null,
@@ -75,8 +74,8 @@ public class UserController {
     private UserRegistrationResult toResult(UserRegistration model) {
         return new UserRegistrationResult(
                 model.id(),
-                model.username(),
                 model.email(),
+                model.email(), // username の代わりに email を使用
                 "Registration successful. Please check your email to confirm your account."
         );
     }

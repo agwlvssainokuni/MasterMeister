@@ -47,9 +47,6 @@ public class UserRegistrationService {
     }
 
     public UserRegistration registerUser(UserRegistration registration) {
-        if (userRepository.findByUsername(registration.username()).isPresent()) {
-            throw new UserAlreadyExistsException("Username already exists");
-        }
 
         if (userRepository.findByEmail(registration.email()).isPresent()) {
             throw new UserAlreadyExistsException("Email already exists");
@@ -58,7 +55,6 @@ public class UserRegistrationService {
         String emailConfirmationToken = generateEmailConfirmationToken();
 
         UserEntity user = new UserEntity();
-        user.setUsername(registration.username());
         user.setEmail(registration.email());
         user.setPassword(passwordEncoder.encode(registration.password()));
         user.setEmailConfirmationToken(emailConfirmationToken);
@@ -71,7 +67,6 @@ public class UserRegistrationService {
         // メール確認用メール送信
         emailService.sendEmailConfirmation(
                 savedUser.getEmail(),
-                savedUser.getUsername(),
                 emailConfirmationToken,
                 savedUser.getPreferredLanguage()
         );
@@ -92,7 +87,6 @@ public class UserRegistrationService {
                     // メール確認完了通知送信
                     emailService.sendEmailConfirmed(
                             user.getEmail(),
-                            user.getUsername(),
                             user.getPreferredLanguage()
                     );
 
@@ -110,7 +104,6 @@ public class UserRegistrationService {
     private UserRegistration toModel(UserEntity entity) {
         return new UserRegistration(
                 entity.getId(),
-                entity.getUsername(),
                 entity.getEmail(),
                 entity.getPassword(),
                 entity.getEmailConfirmationToken(),

@@ -114,7 +114,6 @@ public class AdminController {
     private UserSummaryResult toResult(UserSummary userSummary) {
         return new UserSummaryResult(
                 userSummary.id(),
-                userSummary.username(),
                 userSummary.email(),
                 userSummary.status().name(),
                 userSummary.emailConfirmed(),

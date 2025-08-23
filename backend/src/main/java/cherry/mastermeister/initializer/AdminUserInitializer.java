@@ -65,14 +65,13 @@ public class AdminUserInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        if (initializeAdminUser && !userRepository.existsByUsername(adminUsername)) {
+        if (initializeAdminUser && !userRepository.existsByEmail(adminEmail)) {
             createAdminUser();
         }
     }
 
     private void createAdminUser() {
         UserEntity adminUser = new UserEntity();
-        adminUser.setUsername(adminUsername);
         adminUser.setEmail(adminEmail);
         adminUser.setPassword(passwordEncoder.encode(adminPassword));
         adminUser.setStatus(UserStatus.APPROVED);

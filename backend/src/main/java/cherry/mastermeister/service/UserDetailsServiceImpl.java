@@ -39,13 +39,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         return new CustomUserDetails(
                 user.getUserUuid(),
-                user.getUsername(),
+                user.getEmail(), // username として email を使用
                 user.getPassword(),
                 user.getStatus() == UserStatus.APPROVED,
                 true, // accountNonExpired
@@ -61,7 +61,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return new CustomUserDetails(
                 user.getUserUuid(),
-                user.getUsername(),
+                user.getEmail(), // username として email を使用
                 user.getPassword(),
                 user.getStatus() == UserStatus.APPROVED,
                 true, // accountNonExpired

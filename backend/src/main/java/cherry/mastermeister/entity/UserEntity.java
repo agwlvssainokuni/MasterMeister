@@ -38,9 +38,6 @@ public class UserEntity {
     @Column(name = "user_uuid", nullable = false, unique = true, length = 36)
     private String userUuid;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String username;
-
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
@@ -84,14 +81,6 @@ public class UserEntity {
 
     public void setUserUuid(String userUuid) {
         this.userUuid = userUuid;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getEmail() {
@@ -202,7 +191,6 @@ public class UserEntity {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("id", id)
                 .append("userUuid", userUuid)
-                .append("username", username)
                 .append("email", email)
                 .append("status", status)
                 .append("role", role)

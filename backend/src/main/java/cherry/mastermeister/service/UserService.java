@@ -59,7 +59,6 @@ public class UserService {
         // 承認通知メール送信
         emailService.sendAccountApproved(
                 user.getEmail(),
-                user.getUsername(),
                 user.getPreferredLanguage()
         );
     }
@@ -78,7 +77,6 @@ public class UserService {
         // 拒否通知メール送信
         emailService.sendAccountRejected(
                 user.getEmail(),
-                user.getUsername(),
                 user.getPreferredLanguage()
         );
     }
@@ -86,7 +84,6 @@ public class UserService {
     private UserSummary toUserSummary(UserEntity user) {
         return new UserSummary(
                 user.getId(),
-                user.getUsername(),
                 user.getEmail(),
                 user.getStatus(),
                 user.isEmailConfirmed(),
