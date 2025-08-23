@@ -23,9 +23,9 @@ import cherry.mastermeister.model.RegistrationToken;
 import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.repository.RegistrationTokenRepository;
 import cherry.mastermeister.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -52,8 +52,14 @@ class UserRegistrationServiceTest {
     @Mock
     private EmailService emailService;
 
-    @InjectMocks
     private UserRegistrationService userRegistrationService;
+
+    @BeforeEach
+    void setUp() {
+        userRegistrationService = new UserRegistrationService(
+                userRepository, registrationTokenRepository, passwordEncoder, emailService, 3
+        );
+    }
 
     @Test
     void shouldRegisterEmailSuccessfullyForNewUser() {

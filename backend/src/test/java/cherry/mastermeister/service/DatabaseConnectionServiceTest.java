@@ -19,6 +19,7 @@ package cherry.mastermeister.service;
 import cherry.mastermeister.entity.DatabaseConnectionEntity;
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -38,9 +39,15 @@ class DatabaseConnectionServiceTest {
     @Mock
     private DatabaseConnectionRepository repository;
 
+    private DatabaseConnectionService service;
+
+    @BeforeEach
+    void setUp() {
+        service = new DatabaseConnectionService(repository);
+    }
+
     @Test
     void testGetDataSource_CreateNewDataSource() {
-        DatabaseConnectionService service = new DatabaseConnectionService(repository);
         DatabaseConnectionEntity dbConnection = createTestDatabaseConnectionEntity();
         dbConnection.setDbType(DatabaseType.H2);
         dbConnection.setHost("mem");
@@ -56,7 +63,6 @@ class DatabaseConnectionServiceTest {
 
     @Test
     void testGetDataSource_ThrowsExceptionWhenConnectionNotFound() {
-        DatabaseConnectionService service = new DatabaseConnectionService(repository);
         when(repository.findById(1L)).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(
@@ -69,7 +75,6 @@ class DatabaseConnectionServiceTest {
 
     @Test
     void testGetDataSource_ThrowsExceptionWhenConnectionInactive() {
-        DatabaseConnectionService service = new DatabaseConnectionService(repository);
         DatabaseConnectionEntity dbConnection = createTestDatabaseConnectionEntity();
         dbConnection.setActive(false);
         when(repository.findById(1L)).thenReturn(Optional.of(dbConnection));
@@ -84,7 +89,6 @@ class DatabaseConnectionServiceTest {
 
     @Test
     void testTestConnection_ConnectionNotFound() {
-        DatabaseConnectionService service = new DatabaseConnectionService(repository);
         when(repository.findById(1L)).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(
@@ -97,7 +101,6 @@ class DatabaseConnectionServiceTest {
 
     @Test
     void testCloseDataSource() {
-        DatabaseConnectionService service = new DatabaseConnectionService(repository);
         DatabaseConnectionEntity dbConnection = createTestDatabaseConnectionEntity();
         dbConnection.setDbType(DatabaseType.H2);
         dbConnection.setHost("mem");
@@ -113,7 +116,6 @@ class DatabaseConnectionServiceTest {
 
     @Test
     void testCloseAllDataSources() {
-        DatabaseConnectionService service = new DatabaseConnectionService(repository);
         DatabaseConnectionEntity dbConnection1 = createTestDatabaseConnectionEntity();
         dbConnection1.setDbType(DatabaseType.H2);
         dbConnection1.setHost("mem");
