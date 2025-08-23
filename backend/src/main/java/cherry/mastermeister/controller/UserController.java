@@ -64,7 +64,6 @@ public class UserController {
                 null,
                 request.username(),
                 request.email(),
-                request.fullName(),
                 request.password(),
                 null,
                 request.language(),

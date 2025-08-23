@@ -33,7 +33,6 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
     email: '',
     password: '',
     confirmPassword: '',
-    fullName: ''
   })
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -45,7 +44,7 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
   }
 
   const validateForm = (): string | null => {
-    if (!credentials.username || !credentials.email || !credentials.password || !credentials.fullName) {
+    if (!credentials.username || !credentials.email || !credentials.password) {
       return t('register.validation.required')
     }
 
@@ -128,23 +127,6 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
           required
           autoComplete="email"
           placeholder={t('register.email.placeholder')}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="fullName" className="form-label">
-          {t('register.fullName.label')}
-        </label>
-        <input
-          id="fullName"
-          name="fullName"
-          type="text"
-          value={credentials.fullName}
-          onChange={handleInputChange}
-          className="form-input"
-          required
-          autoComplete="name"
-          placeholder={t('register.fullName.placeholder')}
         />
       </div>
 

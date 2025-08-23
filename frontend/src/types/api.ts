@@ -50,7 +50,6 @@ export interface UserSummaryResult {
   id: number
   username: string
   email: string
-  fullName: string
   status: string
   emailConfirmed: boolean
   createdAt: string
@@ -71,7 +70,6 @@ export interface UserRegistrationRequest {
   username: string
   email: string
   password: string
-  fullName: string
   language: string
 }
 

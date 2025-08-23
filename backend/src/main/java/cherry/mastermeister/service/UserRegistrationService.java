@@ -61,7 +61,6 @@ public class UserRegistrationService {
         user.setUsername(registration.username());
         user.setEmail(registration.email());
         user.setPassword(passwordEncoder.encode(registration.password()));
-        user.setFullName(registration.fullName());
         user.setEmailConfirmationToken(emailConfirmationToken);
         user.setPreferredLanguage(registration.preferredLanguage());
         user.setStatus(UserStatus.PENDING);
@@ -113,7 +112,6 @@ public class UserRegistrationService {
                 entity.getId(),
                 entity.getUsername(),
                 entity.getEmail(),
-                entity.getFullName(),
                 entity.getPassword(),
                 entity.getEmailConfirmationToken(),
                 entity.getPreferredLanguage(),

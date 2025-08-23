@@ -51,10 +51,6 @@
       "label": "メールアドレス",
       "placeholder": "メールアドレスを入力してください"
     },
-    "fullName": {
-      "label": "氏名",
-      "placeholder": "氏名を入力してください"
-    },
     "password": {
       "label": "パスワード",
       "placeholder": "パスワードを入力してください（8文字以上）"

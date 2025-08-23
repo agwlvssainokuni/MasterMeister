@@ -98,7 +98,6 @@ class AuthService {
       username: credentials.username,
       email: credentials.email,
       password: credentials.password,
-      fullName: credentials.fullName,
       language: navigator.language.startsWith('ja') ? 'ja' : 'en'
     }
 

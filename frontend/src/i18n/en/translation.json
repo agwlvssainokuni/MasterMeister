@@ -51,10 +51,6 @@
       "label": "Email Address",
       "placeholder": "Enter your email address"
     },
-    "fullName": {
-      "label": "Full Name",
-      "placeholder": "Enter your full name"
-    },
     "password": {
       "label": "Password",
       "placeholder": "Enter your password (8+ characters)"

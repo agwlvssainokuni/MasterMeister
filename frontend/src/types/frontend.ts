@@ -52,7 +52,6 @@ export interface RegistrationCredentials {
   email: string
   password: string
   confirmPassword: string
-  fullName: string
 }
 
 export interface RegistrationResult {

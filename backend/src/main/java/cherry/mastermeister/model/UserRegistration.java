@@ -25,7 +25,6 @@ public record UserRegistration(
         @Nullable Long id,
         @Nonnull String username,
         @Nonnull String email,
-        @Nonnull String fullName,
         @Nonnull String password,
         @Nullable String confirmationToken,
         @Nullable String preferredLanguage,

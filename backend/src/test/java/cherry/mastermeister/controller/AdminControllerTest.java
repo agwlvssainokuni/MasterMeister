@@ -65,11 +65,11 @@ class AdminControllerTest {
     void shouldGetPendingUsersWhenAdmin() throws Exception {
         // Arrange
         UserSummary user1 = new UserSummary(
-                1L, "user1", "user1@example.com", "User One",
+                1L, "user1", "user1@example.com",
                 UserStatus.PENDING, true, LocalDateTime.now()
         );
         UserSummary user2 = new UserSummary(
-                2L, "user2", "user2@example.com", "User Two",
+                2L, "user2", "user2@example.com",
                 UserStatus.PENDING, false, LocalDateTime.now()
         );
         when(userService.getPendingUsers()).thenReturn(List.of(user1, user2));

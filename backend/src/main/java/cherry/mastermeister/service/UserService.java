@@ -88,7 +88,6 @@ public class UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getFullName(),
                 user.getStatus(),
                 user.isEmailConfirmed(),
                 user.getCreatedAt()

@@ -16,9 +16,9 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.exception.UserAlreadyExistsException;
+import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,7 +55,6 @@ class UserRegistrationServiceTest {
                 null,
                 "testuser",
                 "test@example.com",
-                "Test User",
                 "password123",
                 null,
                 null,
@@ -66,7 +65,7 @@ class UserRegistrationServiceTest {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
-        
+
         UserEntity savedUser = new UserEntity();
         savedUser.setId(1L);
         savedUser.setUsername("testuser");
@@ -95,7 +94,6 @@ class UserRegistrationServiceTest {
                 null,
                 "testuser",
                 "test@example.com",
-                "Test User",
                 "password123",
                 null,
                 null,
@@ -105,7 +103,7 @@ class UserRegistrationServiceTest {
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(new UserEntity()));
 
-        assertThrows(UserAlreadyExistsException.class, 
+        assertThrows(UserAlreadyExistsException.class,
                 () -> userRegistrationService.registerUser(request));
 
         verify(userRepository, never()).save(any(UserEntity.class));
@@ -117,7 +115,6 @@ class UserRegistrationServiceTest {
                 null,
                 "testuser",
                 "test@example.com",
-                "Test User",
                 "password123",
                 null,
                 null,
@@ -128,7 +125,7 @@ class UserRegistrationServiceTest {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(new UserEntity()));
 
-        assertThrows(UserAlreadyExistsException.class, 
+        assertThrows(UserAlreadyExistsException.class,
                 () -> userRegistrationService.registerUser(request));
 
         verify(userRepository, never()).save(any(UserEntity.class));
@@ -152,7 +149,7 @@ class UserRegistrationServiceTest {
         assertTrue(result);
         assertTrue(user.isEmailConfirmed());
         assertNull(user.getEmailConfirmationToken());
-        
+
         verify(userRepository).save(user);
         verify(emailService).sendEmailConfirmed(
                 eq("test@example.com"),

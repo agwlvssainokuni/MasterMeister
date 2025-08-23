@@ -17,8 +17,8 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.UserEntity;
-import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.enums.UserStatus;
+import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.model.UserSummary;
 import cherry.mastermeister.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -178,7 +178,6 @@ class UserServiceTest {
         user.setId(id);
         user.setUsername(username);
         user.setEmail(username + "@example.com");
-        user.setFullName(username.toUpperCase());
         user.setStatus(status);
         user.setEmailConfirmed(true);
         user.setPreferredLanguage("en");

@@ -22,7 +22,6 @@ public record UserSummaryResult(
         Long id,
         String username,
         String email,
-        String fullName,
         String status,
         boolean emailConfirmed,
         LocalDateTime createdAt

@@ -43,7 +43,6 @@ public class AdminUserInitializer implements ApplicationRunner {
     private final String adminUsername;
     private final String adminPassword;
     private final String adminEmail;
-    private final String adminFullName;
     private final String adminLanguage;
 
     public AdminUserInitializer(
@@ -53,7 +52,6 @@ public class AdminUserInitializer implements ApplicationRunner {
             @Value("${mm.admin.username}") String adminUsername,
             @Value("${mm.admin.password}") String adminPassword,
             @Value("${mm.admin.email}") String adminEmail,
-            @Value("${mm.admin.full-name}") String adminFullName,
             @Value("${mm.admin.language}") String adminLanguage
     ) {
         this.userRepository = userRepository;
@@ -62,7 +60,6 @@ public class AdminUserInitializer implements ApplicationRunner {
         this.adminUsername = adminUsername;
         this.adminPassword = adminPassword;
         this.adminEmail = adminEmail;
-        this.adminFullName = adminFullName;
         this.adminLanguage = adminLanguage;
     }
 
@@ -78,7 +75,6 @@ public class AdminUserInitializer implements ApplicationRunner {
         adminUser.setUsername(adminUsername);
         adminUser.setEmail(adminEmail);
         adminUser.setPassword(passwordEncoder.encode(adminPassword));
-        adminUser.setFullName(adminFullName);
         adminUser.setStatus(UserStatus.APPROVED);
         adminUser.setRole(UserRole.ADMIN);
         adminUser.setEmailConfirmed(true);

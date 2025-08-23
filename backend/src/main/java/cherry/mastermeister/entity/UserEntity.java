@@ -43,9 +43,6 @@ public class UserEntity {
     @Column(nullable = false, length = 255)
     private String password;
 
-    @Column(name = "full_name", nullable = false, length = 100)
-    private String fullName;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserStatus status = UserStatus.PENDING;
@@ -99,14 +96,6 @@ public class UserEntity {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
     }
 
     public UserStatus getStatus() {
@@ -199,7 +188,6 @@ public class UserEntity {
                 .append("id", id)
                 .append("username", username)
                 .append("email", email)
-                .append("fullName", fullName)
                 .append("status", status)
                 .append("role", role)
                 .append("emailConfirmed", emailConfirmed)

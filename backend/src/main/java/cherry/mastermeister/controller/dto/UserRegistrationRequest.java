@@ -34,10 +34,6 @@ public record UserRegistrationRequest(
         @Size(min = 8, message = "Password must be at least 8 characters")
         String password,
 
-        @NotBlank(message = "Full name is required")
-        @Size(max = 100, message = "Full name must not exceed 100 characters")
-        String fullName,
-
         @Size(max = 5, message = "Language code must not exceed 5 characters")
         String language
 ) {
