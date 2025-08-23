@@ -42,8 +42,8 @@ public class EmailService {
             JavaMailSender mailSender,
             EmailTemplateRepository emailTemplateRepository,
             @Value("${mm.app.base-url:http://localhost:8080}") String baseUrl,
-            @Value("${mm.app.user-registration-path:/register}") String registrationPath,
-            @Value("${mm.app.token-param:token}") String tokenParam,
+            @Value("${mm.app.user-registration.path:/register}") String registrationPath,
+            @Value("${mm.app.user-registration.token-param:token}") String tokenParam,
             @Value("${mm.mail.default-language:en}") String defaultLanguage
     ) {
         this.mailSender = mailSender;

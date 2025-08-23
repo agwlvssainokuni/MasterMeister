@@ -25,6 +25,7 @@ import cherry.mastermeister.model.RegistrationToken;
 import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.repository.RegistrationTokenRepository;
 import cherry.mastermeister.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,17 +43,20 @@ public class UserRegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final SecureRandom secureRandom;
+    private final int tokenExpiryHours;
 
     public UserRegistrationService(
             UserRepository userRepository,
             RegistrationTokenRepository registrationTokenRepository,
             PasswordEncoder passwordEncoder,
-            EmailService emailService
+            EmailService emailService,
+            @Value("${mm.app.user-registration.token-expiry-hours:3}") int tokenExpiryHours
     ) {
         this.userRepository = userRepository;
         this.registrationTokenRepository = registrationTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.tokenExpiryHours = tokenExpiryHours;
         this.secureRandom = new SecureRandom();
     }
 
@@ -72,7 +76,7 @@ public class UserRegistrationService {
 
         // 新しいトークンを生成
         String token = generateRegistrationToken();
-        LocalDateTime expiresAt = LocalDateTime.now().plusHours(24);
+        LocalDateTime expiresAt = LocalDateTime.now().plusHours(tokenExpiryHours);
 
         RegistrationTokenEntity tokenEntity = new RegistrationTokenEntity();
         tokenEntity.setEmail(email);
