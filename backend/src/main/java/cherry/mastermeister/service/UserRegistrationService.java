@@ -82,7 +82,7 @@ public class UserRegistrationService {
         RegistrationTokenEntity savedToken = registrationTokenRepository.save(tokenEntity);
 
         // 登録開始メール送信
-        emailService.sendRegistrationStart(email, token, language);
+        emailService.sendEmailRegistration(email, token, language);
 
         return toRegistrationTokenModel(savedToken);
     }
@@ -118,7 +118,7 @@ public class UserRegistrationService {
         UserEntity savedUser = userRepository.save(user);
 
         // メール確認送信
-        emailService.sendEmailConfirmation(
+        emailService.sendUserRegistration(
                 savedUser.getEmail(),
                 emailConfirmationToken,
                 savedUser.getPreferredLanguage()

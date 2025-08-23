@@ -94,7 +94,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/users/register", "/api/users/confirm-email",
+                                "/api/users/register-email", "/api/users/register",
                                 "/api/health"
                         ).permitAll()
 

@@ -34,7 +34,6 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final EmailTemplateRepository emailTemplateRepository;
     private final String baseUrl;
-    private final String confirmationPath;
     private final String registrationPath;
     private final String tokenParam;
     private final String defaultLanguage;
@@ -43,21 +42,19 @@ public class EmailService {
             JavaMailSender mailSender,
             EmailTemplateRepository emailTemplateRepository,
             @Value("${mm.app.base-url:http://localhost:8080}") String baseUrl,
-            @Value("${mm.app.confirmation-path:/confirm-email}") String confirmationPath,
-            @Value("${mm.app.registration-path:/complete-registration}") String registrationPath,
+            @Value("${mm.app.user-register-path:/register}") String registrationPath,
             @Value("${mm.app.token-param:token}") String tokenParam,
             @Value("${mm.mail.default-language:en}") String defaultLanguage
     ) {
         this.mailSender = mailSender;
         this.emailTemplateRepository = emailTemplateRepository;
         this.baseUrl = baseUrl;
-        this.confirmationPath = confirmationPath;
         this.registrationPath = registrationPath;
         this.tokenParam = tokenParam;
         this.defaultLanguage = defaultLanguage;
     }
 
-    public void sendRegistrationStart(String toAddress, String registrationToken, String language) {
+    public void sendEmailRegistration(String toAddress, String registrationToken, String language) {
         URI registrationUrl = UriComponentsBuilder
                 .fromUriString(baseUrl)
                 .path(registrationPath)
@@ -70,37 +67,28 @@ public class EmailService {
                 "registrationUrl", registrationUrl.toString()
         );
 
-        sendTemplatedEmail(TemplateType.REGISTRATION_START, toAddress, variables, language);
+        sendTemplatedEmail(TemplateType.REGISTER_EMAIL, toAddress, variables, language);
     }
 
-    public void sendEmailConfirmation(String toAddress, String confirmationToken, String language) {
-        URI confirmationUrl = UriComponentsBuilder
-                .fromUriString(baseUrl)
-                .path(confirmationPath)
-                .queryParam(tokenParam, confirmationToken)
-                .build()
-                .toUri();
-
+    public void sendUserRegistration(String toAddress, String confirmationToken, String language) {
         Map<String, String> variables = Map.of(
-                "username", toAddress,
-                "confirmationUrl", confirmationUrl.toString()
+                "username", toAddress
         );
 
-        sendTemplatedEmail(TemplateType.EMAIL_CONFIRMATION, toAddress, variables, language);
-    }
-
-    public void sendEmailConfirmed(String toAddress, String language) {
-        Map<String, String> variables = Map.of("username", toAddress);
-        sendTemplatedEmail(TemplateType.EMAIL_CONFIRMED, toAddress, variables, language);
+        sendTemplatedEmail(TemplateType.REGISTER_USER, toAddress, variables, language);
     }
 
     public void sendAccountApproved(String toAddress, String language) {
-        Map<String, String> variables = Map.of("username", toAddress);
+        Map<String, String> variables = Map.of(
+                "username", toAddress
+        );
         sendTemplatedEmail(TemplateType.ACCOUNT_APPROVED, toAddress, variables, language);
     }
 
     public void sendAccountRejected(String toAddress, String language) {
-        Map<String, String> variables = Map.of("username", toAddress);
+        Map<String, String> variables = Map.of(
+                "username", toAddress
+        );
         sendTemplatedEmail(TemplateType.ACCOUNT_REJECTED, toAddress, variables, language);
     }
 

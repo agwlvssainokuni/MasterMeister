@@ -80,7 +80,7 @@ class UserRegistrationServiceTest {
         assertFalse(result.isExistingUser());
 
         verify(registrationTokenRepository).save(any(RegistrationTokenEntity.class));
-        verify(emailService).sendRegistrationStart(eq(email), anyString(), eq(language));
+        verify(emailService).sendEmailRegistration(eq(email), anyString(), eq(language));
     }
 
     @Test
@@ -99,7 +99,7 @@ class UserRegistrationServiceTest {
         assertTrue(result.isExistingUser());
 
         verify(registrationTokenRepository, never()).save(any(RegistrationTokenEntity.class));
-        verify(emailService, never()).sendRegistrationStart(anyString(), anyString(), anyString());
+        verify(emailService, never()).sendEmailRegistration(anyString(), anyString(), anyString());
     }
 
     @Test

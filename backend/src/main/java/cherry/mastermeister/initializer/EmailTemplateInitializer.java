@@ -54,7 +54,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
     }
 
     private void initializeDefaultTemplates() {
-        initializeTemplate(TemplateType.REGISTRATION_START, "en",
+        initializeTemplate(TemplateType.REGISTER_EMAIL, "en",
                 "MasterMeister - Complete Your Registration",
                 """
                 Dear {username},
@@ -70,7 +70,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeister Team
                 """);
 
-        initializeTemplate(TemplateType.REGISTRATION_START, "ja",
+        initializeTemplate(TemplateType.REGISTER_EMAIL, "ja",
                 "MasterMeister - 登録を完了してください",
                 """
                 {username} 様
@@ -85,38 +85,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeisterチーム
                 """);
 
-        initializeTemplate(TemplateType.EMAIL_CONFIRMATION, "en",
-                "MasterMeister - Email Confirmation Required",
-                """
-                Dear {username},
-                
-                Thank you for registering with MasterMeister.
-                
-                To complete your registration, please click the link below to confirm your email address:
-                {confirmationUrl}
-                
-                If you did not register for this account, please ignore this email.
-                
-                Best regards,
-                MasterMeister Team
-                """);
-
-        initializeTemplate(TemplateType.EMAIL_CONFIRMATION, "ja",
-                "MasterMeister - メールアドレス確認が必要です",
-                """
-                {username} 様
-                
-                MasterMeisterへのご登録ありがとうございます。
-                
-                登録を完了するため、以下のリンクをクリックしてメールアドレスを確認してください：
-                {confirmationUrl}
-                
-                このメールに心当たりがない場合は、無視してください。
-                
-                MasterMeisterチーム
-                """);
-
-        initializeTemplate(TemplateType.EMAIL_CONFIRMED, "en",
+        initializeTemplate(TemplateType.REGISTER_USER, "en",
                 "MasterMeister - Email Address Confirmed",
                 """
                 Dear {username},
@@ -130,7 +99,7 @@ public class EmailTemplateInitializer implements ApplicationRunner {
                 MasterMeister Team
                 """);
 
-        initializeTemplate(TemplateType.EMAIL_CONFIRMED, "ja",
+        initializeTemplate(TemplateType.REGISTER_USER, "ja",
                 "MasterMeister - メールアドレス確認完了",
                 """
                 {username} 様
