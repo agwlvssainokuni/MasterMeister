@@ -22,7 +22,7 @@ MasterMeister is a web-based application designed to provide a secure, user-frie
 - Role-based authorization
 - Permission-based data access control
 - Audit trail for all operations
-- Email-based user verification
+- Two-step email-first registration flow
 
 ## Technology Stack
 
@@ -67,7 +67,7 @@ MasterMeister is a web-based application designed to provide a secure, user-frie
 **Completed Features:**
 - ✅ **Phase 1**: Project foundation and development environment
 - ✅ **Phase 2**: Authentication & User Management **COMPLETE**
-  - ✅ User registration with email confirmation
+  - ✅ Two-step email-first registration with configurable token expiry
   - ✅ Administrator approval workflow with notifications  
   - ✅ JWT-based authentication with token rotation
   - ✅ Comprehensive audit logging
@@ -178,9 +178,8 @@ MasterMeister/
 - **H2 Console** (dev only): http://localhost:8080/h2-console
 
 #### Default Admin User
-- **Username**: admin
-- **Password**: password
 - **Email**: admin@example.com
+- **Password**: password
 
 ## Documentation
 

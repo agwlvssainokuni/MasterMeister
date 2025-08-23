@@ -165,27 +165,34 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Login/logout/token refresh audit trails
   - [x] IP address and User-Agent tracking
 
-#### 2.6 User Registration Frontend ✅ COMPLETED
-- [x] Create user registration form page
-  - [x] Registration form with username, email, password fields (RegisterForm.tsx with fullName, confirmPassword)
-  - [x] Form validation and error handling (8+ char password, email format, password match, required fields)
-  - [x] Integration with existing authentication flow (authService.register integration)
-- [x] Implement email confirmation workflow
-  - [x] Registration success messaging (RegisterPage success state with i18n)
-  - [x] Email confirmation status display (EmailConfirmationPage with StrictMode API duplication fix)
-  - [x] Redirect to login after successful registration (success screen with login button)
-- [x] Add registration link to login page
-  - [x] Navigation between login/register forms (bidirectional navigation links)
-  - [x] Consistent styling with existing design system (auth-link class usage)
-- [x] Technical Enhancements
-  - [x] React StrictMode duplicate API execution prevention (useRef implementation)
-  - [x] i18n message consistency over API responses
-  - [x] CSS Alert layout optimization for text readability
-- [x] Frontend Architecture Improvements
-  - [x] Service layer responsibility separation implementation
-  - [x] API type leakage prevention (API types confined to Service layer)
-  - [x] Frontend/API type conversion within Service layer
-  - [x] Complete type isolation between UI and API layers
+#### 2.6 User Registration System Refactor ✅ COMPLETED
+- [x] Email-first registration flow implementation
+  - [x] Two-step registration process: email submission → password completion
+  - [x] RegisterEmailPage with email input and confirmation messaging
+  - [x] RegisterUserPage with token validation and password setup
+  - [x] Security enhancement: email enumeration prevention
+- [x] Backend 2-step registration architecture
+  - [x] RegistrationTokenEntity and repository for token management
+  - [x] UserRegistrationService refactor with registerEmail/registerUser methods
+  - [x] Stream API validation with filter chaining for security
+  - [x] Configurable token expiry (default: 3 hours via mm.app.user-registration.token-expiry-hours)
+- [x] Frontend registration flow updates
+  - [x] RegisterEmailForm component with email-only input
+  - [x] URL routing: /register-email → /register with token parameter
+  - [x] Session storage integration for email display in success messages
+  - [x] Updated authService with registerEmail/registerUser methods
+- [x] Email service and template updates
+  - [x] REGISTER_EMAIL template for initial registration email
+  - [x] REGISTER_USER template for completion notification
+  - [x] Consolidated email template architecture
+- [x] i18n localization updates
+  - [x] registerEmail and register sections with step-specific messages
+  - [x] Error handling messages for token validation and expiry
+  - [x] Japanese/English bilingual support for new flow
+- [x] Security and architecture improvements
+  - [x] UserEntity email confirmation field removal (responsibility separation)
+  - [x] Property naming standardization (mm.app.user-registration.* prefix)
+  - [x] Comprehensive test coverage updates for new registration flow
 
 **Milestone 2**: ✅ COMPLETED - MVP user management system operational
 
