@@ -64,14 +64,8 @@ class AdminControllerTest {
     @WithMockUser(roles = "ADMIN")
     void shouldGetPendingUsersWhenAdmin() throws Exception {
         // Arrange
-        UserSummary user1 = new UserSummary(
-                1L, "user1@example.com",
-                UserStatus.PENDING, true, LocalDateTime.now()
-        );
-        UserSummary user2 = new UserSummary(
-                2L, "user2@example.com",
-                UserStatus.PENDING, false, LocalDateTime.now()
-        );
+        UserSummary user1 = new UserSummary(1L, "user1@example.com", UserStatus.PENDING, LocalDateTime.now());
+        UserSummary user2 = new UserSummary(2L, "user2@example.com", UserStatus.PENDING, LocalDateTime.now());
         when(userService.getPendingUsers()).thenReturn(List.of(user1, user2));
 
         // Act & Assert

@@ -32,8 +32,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByEmail(String email);
 
-    Optional<UserEntity> findByEmailConfirmationToken(String token);
-
     @Query("SELECT u FROM UserEntity u WHERE u.status = :status")
     List<UserEntity> findByStatus(UserStatus status);
 

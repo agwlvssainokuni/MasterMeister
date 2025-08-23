@@ -25,7 +25,6 @@ public record UserRegistration(
         @Nullable Long id,
         @Nonnull String email,
         @Nonnull String password,
-        @Nullable String confirmationToken,
         @Nullable String preferredLanguage,
         @Nullable LocalDateTime createdAt,
         @Nullable LocalDateTime updatedAt

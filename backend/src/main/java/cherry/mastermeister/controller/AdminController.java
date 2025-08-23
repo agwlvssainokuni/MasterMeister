@@ -116,7 +116,6 @@ public class AdminController {
                 userSummary.id(),
                 userSummary.email(),
                 userSummary.status().name(),
-                userSummary.emailConfirmed(),
                 userSummary.createdAt()
         );
     }

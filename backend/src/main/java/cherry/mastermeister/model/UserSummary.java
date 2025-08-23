@@ -24,7 +24,6 @@ public record UserSummary(
         Long id,
         String email,
         UserStatus status,
-        boolean emailConfirmed,
         LocalDateTime createdAt
 ) {
 }

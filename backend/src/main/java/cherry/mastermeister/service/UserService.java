@@ -17,8 +17,8 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.UserEntity;
-import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.enums.UserStatus;
+import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.model.UserSummary;
 import cherry.mastermeister.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -86,7 +86,6 @@ public class UserService {
                 user.getId(),
                 user.getEmail(),
                 user.getStatus(),
-                user.isEmailConfirmed(),
                 user.getCreatedAt()
         );
     }

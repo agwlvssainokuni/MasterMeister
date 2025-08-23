@@ -52,12 +52,6 @@ public class UserEntity {
     @Column(nullable = false, length = 20)
     private UserRole role = UserRole.USER;
 
-    @Column(name = "email_confirmed")
-    private boolean emailConfirmed = false;
-
-    @Column(name = "email_confirmation_token", length = 255)
-    private String emailConfirmationToken;
-
     @Column(name = "preferred_language", length = 5)
     private String preferredLanguage = "en";
 
@@ -113,22 +107,6 @@ public class UserEntity {
 
     public void setRole(UserRole role) {
         this.role = role;
-    }
-
-    public boolean isEmailConfirmed() {
-        return emailConfirmed;
-    }
-
-    public void setEmailConfirmed(boolean emailConfirmed) {
-        this.emailConfirmed = emailConfirmed;
-    }
-
-    public String getEmailConfirmationToken() {
-        return emailConfirmationToken;
-    }
-
-    public void setEmailConfirmationToken(String emailConfirmationToken) {
-        this.emailConfirmationToken = emailConfirmationToken;
     }
 
     public String getPreferredLanguage() {
@@ -194,7 +172,6 @@ public class UserEntity {
                 .append("email", email)
                 .append("status", status)
                 .append("role", role)
-                .append("emailConfirmed", emailConfirmed)
                 .append("preferredLanguage", preferredLanguage)
                 .append("createdAt", createdAt)
                 .append("updatedAt", updatedAt)

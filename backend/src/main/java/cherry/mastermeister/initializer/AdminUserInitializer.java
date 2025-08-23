@@ -76,7 +76,6 @@ public class AdminUserInitializer implements ApplicationRunner {
         adminUser.setPassword(passwordEncoder.encode(adminPassword));
         adminUser.setStatus(UserStatus.APPROVED);
         adminUser.setRole(UserRole.ADMIN);
-        adminUser.setEmailConfirmed(true);
         adminUser.setPreferredLanguage(adminLanguage);
 
         userRepository.save(adminUser);

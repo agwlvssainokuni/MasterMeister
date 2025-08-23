@@ -42,7 +42,7 @@ public class EmailService {
             JavaMailSender mailSender,
             EmailTemplateRepository emailTemplateRepository,
             @Value("${mm.app.base-url:http://localhost:8080}") String baseUrl,
-            @Value("${mm.app.user-register-path:/register}") String registrationPath,
+            @Value("${mm.app.user-registration-path:/register}") String registrationPath,
             @Value("${mm.app.token-param:token}") String tokenParam,
             @Value("${mm.mail.default-language:en}") String defaultLanguage
     ) {
@@ -70,7 +70,7 @@ public class EmailService {
         sendTemplatedEmail(TemplateType.REGISTER_EMAIL, toAddress, variables, language);
     }
 
-    public void sendUserRegistration(String toAddress, String confirmationToken, String language) {
+    public void sendUserRegistration(String toAddress, String language) {
         Map<String, String> variables = Map.of(
                 "username", toAddress
         );

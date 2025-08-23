@@ -104,13 +104,9 @@ public class UserRegistrationService {
         tokenEntity.setUsed(true);
         registrationTokenRepository.save(tokenEntity);
 
-        // ユーザー登録
-        String emailConfirmationToken = generateEmailConfirmationToken();
-
         UserEntity user = new UserEntity();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        user.setEmailConfirmationToken(emailConfirmationToken);
         user.setPreferredLanguage(language);
         user.setStatus(UserStatus.PENDING);
         user.setRole(UserRole.USER);
@@ -120,7 +116,6 @@ public class UserRegistrationService {
         // メール確認送信
         emailService.sendUserRegistration(
                 savedUser.getEmail(),
-                emailConfirmationToken,
                 savedUser.getPreferredLanguage()
         );
 
@@ -134,18 +129,11 @@ public class UserRegistrationService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
-    private String generateEmailConfirmationToken() {
-        byte[] randomBytes = new byte[32];
-        secureRandom.nextBytes(randomBytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
-    }
-
     private UserRegistration toModel(UserEntity entity) {
         return new UserRegistration(
                 entity.getId(),
                 entity.getEmail(),
                 entity.getPassword(),
-                entity.getEmailConfirmationToken(),
                 entity.getPreferredLanguage(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()

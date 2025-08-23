@@ -176,7 +176,6 @@ class UserServiceTest {
         user.setId(id);
         user.setEmail(emailPrefix + "@example.com");
         user.setStatus(status);
-        user.setEmailConfirmed(true);
         user.setPreferredLanguage("en");
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
