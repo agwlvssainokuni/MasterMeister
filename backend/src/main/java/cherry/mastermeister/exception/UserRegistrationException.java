@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.controller.dto;
+package cherry.mastermeister.exception;
 
-public record EmailConfirmationResult(
-        String status,
-        String message
-) {
+public class UserRegistrationException extends RuntimeException {
+
+    public UserRegistrationException(String message) {
+        super(message);
+    }
+
+    public UserRegistrationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

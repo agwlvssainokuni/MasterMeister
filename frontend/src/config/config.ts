@@ -23,8 +23,8 @@ export const API_ENDPOINTS = {
     REFRESH: '/auth/refresh'
   },
   USERS: {
-    REGISTER: '/users/register',
-    CONFIRM_EMAIL: '/users/confirm-email'
+    REGISTER_EMAIL: '/users/register-email',
+    REGISTER: '/users/register'
   },
   ADMIN: {
     PENDING_USERS: '/admin/users/pending',

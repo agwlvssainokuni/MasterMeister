@@ -35,6 +35,7 @@ public class EmailService {
     private final EmailTemplateRepository emailTemplateRepository;
     private final String baseUrl;
     private final String confirmationPath;
+    private final String registrationPath;
     private final String tokenParam;
     private final String defaultLanguage;
 
@@ -43,6 +44,7 @@ public class EmailService {
             EmailTemplateRepository emailTemplateRepository,
             @Value("${mm.app.base-url:http://localhost:8080}") String baseUrl,
             @Value("${mm.app.confirmation-path:/confirm-email}") String confirmationPath,
+            @Value("${mm.app.registration-path:/complete-registration}") String registrationPath,
             @Value("${mm.app.token-param:token}") String tokenParam,
             @Value("${mm.mail.default-language:en}") String defaultLanguage
     ) {
@@ -50,8 +52,25 @@ public class EmailService {
         this.emailTemplateRepository = emailTemplateRepository;
         this.baseUrl = baseUrl;
         this.confirmationPath = confirmationPath;
+        this.registrationPath = registrationPath;
         this.tokenParam = tokenParam;
         this.defaultLanguage = defaultLanguage;
+    }
+
+    public void sendRegistrationStart(String toAddress, String registrationToken, String language) {
+        URI registrationUrl = UriComponentsBuilder
+                .fromUriString(baseUrl)
+                .path(registrationPath)
+                .queryParam(tokenParam, registrationToken)
+                .build()
+                .toUri();
+
+        Map<String, String> variables = Map.of(
+                "username", toAddress,
+                "registrationUrl", registrationUrl.toString()
+        );
+
+        sendTemplatedEmail(TemplateType.REGISTRATION_START, toAddress, variables, language);
     }
 
     public void sendEmailConfirmation(String toAddress, String confirmationToken, String language) {

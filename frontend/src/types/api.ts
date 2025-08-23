@@ -64,25 +64,24 @@ export interface RejectUserRequest {
   // No body required
 }
 
-// User Registration
-export interface UserRegistrationRequest {
+// User Registration - Email First Flow
+export interface RegisterEmailRequest {
+  email: string
+  language: string
+}
+
+export interface RegisterEmailResult {
+  email: string
+}
+
+export interface RegisterUserRequest {
+  token: string
   email: string
   password: string
   language: string
 }
 
-export interface UserRegistrationResult {
+export interface RegisterUserResult {
   userId: number
   email: string
-  message: string
-}
-
-// Email Confirmation
-export interface EmailConfirmationRequest {
-  token: string
-}
-
-export interface EmailConfirmationResult {
-  status: string
-  message: string
 }

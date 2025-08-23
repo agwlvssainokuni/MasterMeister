@@ -71,9 +71,9 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(List.of(ex.getMessage())));
     }
 
-    @ExceptionHandler(EmailConfirmationException.class)
-    public ResponseEntity<ApiResponse<Object>> handleEmailConfirmationException(
-            EmailConfirmationException ex) {
+    @ExceptionHandler(UserRegistrationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUserRegistrationException(
+            UserRegistrationException ex) {
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error(List.of(ex.getMessage())));
     }

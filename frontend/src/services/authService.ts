@@ -18,20 +18,21 @@ import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
-  EmailConfirmationRequest,
-  EmailConfirmationResult as ApiEmailConfirmationResult,
   LoginRequest,
   LoginResult,
   LogoutRequest,
-  UserRegistrationRequest,
-  UserRegistrationResult as ApiUserRegistrationResult
+  RegisterEmailRequest,
+  RegisterEmailResult as ApiRegisterEmailResult,
+  RegisterUserRequest,
+  RegisterUserResult as ApiRegisterUserResult
 } from '../types/api'
 import type {
   AuthState,
-  EmailConfirmationResult,
   LoginCredentials,
-  RegistrationCredentials,
-  RegistrationResult,
+  RegisterEmailCredentials,
+  RegisterEmailResult,
+  RegisterUserCredentials,
+  RegisterUserResult,
   User
 } from '../types/frontend'
 import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
@@ -93,48 +94,48 @@ class AuthService {
     localStorage.removeItem('refreshToken')
   }
 
-  async register(credentials: RegistrationCredentials): Promise<RegistrationResult> {
-    const registerRequest: UserRegistrationRequest = {
+  async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {
+    const request: RegisterEmailRequest = {
+      email: credentials.email,
+      language: navigator.language.startsWith('ja') ? 'ja' : 'en'
+    }
+
+    const response = await apiClient.post<ApiResponse<ApiRegisterEmailResult>>(
+      API_ENDPOINTS.USERS.REGISTER_EMAIL,
+      request
+    )
+
+    if (!response.data.ok || !response.data.data) {
+      throw new Error(response.data.error?.[0] || 'Email registration failed')
+    }
+
+    return response.data.data
+  }
+
+  async registerUser(credentials: RegisterUserCredentials): Promise<RegisterUserResult> {
+    const request: RegisterUserRequest = {
+      token: credentials.token,
       email: credentials.email,
       password: credentials.password,
       language: navigator.language.startsWith('ja') ? 'ja' : 'en'
     }
 
-    const response = await apiClient.post<ApiResponse<ApiUserRegistrationResult>>(
+    const response = await apiClient.post<ApiResponse<ApiRegisterUserResult>>(
       API_ENDPOINTS.USERS.REGISTER,
-      registerRequest
+      request
     )
 
     if (!response.data.ok || !response.data.data) {
-      throw new Error(response.data.error?.[0] || 'Registration failed')
+      throw new Error(response.data.error?.[0] || 'User registration failed')
     }
 
     const apiResult = response.data.data
     return {
       userId: apiResult.userId,
-      email: apiResult.email,
-      message: apiResult.message
+      email: apiResult.email
     }
   }
 
-  async confirmEmail(token: string): Promise<EmailConfirmationResult> {
-    const request: EmailConfirmationRequest = {token}
-
-    const response = await apiClient.post<ApiResponse<ApiEmailConfirmationResult>>(
-      API_ENDPOINTS.USERS.CONFIRM_EMAIL,
-      request
-    )
-
-    if (!response.data.ok || !response.data.data) {
-      throw new Error(response.data.error?.[0] || 'Email confirmation failed')
-    }
-
-    const apiResult = response.data.data
-    return {
-      status: apiResult.status,
-      message: apiResult.message
-    }
-  }
 
   getCurrentAuthState(): AuthState {
     const accessToken = localStorage.getItem('accessToken')

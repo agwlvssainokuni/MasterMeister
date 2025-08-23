@@ -1,11 +1,26 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom'
 import {AuthProvider} from './contexts/AuthContext'
 import {NotificationProvider} from './contexts/NotificationContext'
-import {ProtectedRoute} from './components/ProtectedRoute'
-import {AdminRoute} from './components/ProtectedRoute'
+import {AdminRoute, ProtectedRoute} from './components/ProtectedRoute'
 import {LoginPage} from './pages/LoginPage'
-import {RegisterPage} from './pages/RegisterPage'
-import {EmailConfirmationPage} from './pages/EmailConfirmationPage'
+import {RegisterEmailPage} from './pages/RegisterEmailPage.tsx'
+import {RegisterUserPage} from './pages/RegisterUserPage.tsx'
 import {AdminDashboard} from './pages/AdminDashboard'
 import {LogoutButton} from './components/LogoutButton'
 import './App.css'
@@ -27,8 +42,8 @@ const App = () => {
         <NotificationProvider>
           <Routes>
             <Route path="/login" element={<LoginPage/>}/>
-            <Route path="/register" element={<RegisterPage/>}/>
-            <Route path="/confirm-email" element={<EmailConfirmationPage/>}/>
+            <Route path="/register-email" element={<RegisterEmailPage/>}/>
+            <Route path="/register" element={<RegisterUserPage/>}/>
             <Route
               path="/dashboard"
               element={

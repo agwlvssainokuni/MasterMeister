@@ -46,19 +46,23 @@ export interface AdminAction {
   email: string
 }
 
-export interface RegistrationCredentials {
+// Email First Registration Flow
+export interface RegisterEmailCredentials {
+  email: string
+}
+
+export interface RegisterEmailResult {
+  email: string
+}
+
+export interface RegisterUserCredentials {
+  token: string
   email: string
   password: string
   confirmPassword: string
 }
 
-export interface RegistrationResult {
+export interface RegisterUserResult {
   userId: number
   email: string
-  message: string
-}
-
-export interface EmailConfirmationResult {
-  status: string
-  message: string
 }

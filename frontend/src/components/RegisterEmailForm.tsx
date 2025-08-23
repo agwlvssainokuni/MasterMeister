@@ -17,21 +17,19 @@
 import {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {authService} from '../services/authService'
-import type {RegistrationCredentials} from '../types/frontend'
+import type {RegisterEmailCredentials} from '../types/frontend'
 import '../styles/components/Form.css'
 import '../styles/components/Button.css'
 import '../styles/components/Alert.css'
 
-interface RegisterFormProps {
+interface RegisterEmailFormProps {
   onRegisterSuccess?: () => void
 }
 
-export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
+export const RegisterEmailForm = ({onRegisterSuccess}: RegisterEmailFormProps) => {
   const {t} = useTranslation()
-  const [credentials, setCredentials] = useState<RegistrationCredentials>({
+  const [credentials, setCredentials] = useState<RegisterEmailCredentials>({
     email: '',
-    password: '',
-    confirmPassword: '',
   })
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -43,21 +41,13 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
   }
 
   const validateForm = (): string | null => {
-    if (!credentials.email || !credentials.password) {
-      return t('register.validation.required')
-    }
-
-    if (credentials.password !== credentials.confirmPassword) {
-      return t('register.validation.passwordMismatch')
-    }
-
-    if (credentials.password.length < 8) {
-      return t('register.validation.passwordTooShort')
+    if (!credentials.email) {
+      return t('registerEmail.validation.required')
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(credentials.email)) {
-      return t('register.validation.invalidEmail')
+      return t('registerEmail.validation.invalidEmail')
     }
 
     return null
@@ -74,10 +64,12 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
 
     setIsLoading(true)
     try {
-      await authService.register(credentials)
+      await authService.registerEmail(credentials)
+      // Store email for success message display
+      sessionStorage.setItem('registrationEmail', credentials.email)
       onRegisterSuccess?.()
     } catch (error) {
-      setError(error instanceof Error ? error.message : t('register.error.failed'))
+      setError(error instanceof Error ? error.message : t('registerEmail.error.failed'))
     } finally {
       setIsLoading(false)
     }
@@ -86,7 +78,8 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
   return (
     <form className="form" onSubmit={handleSubmit}>
       <div className="form-header">
-        <h1 className="form-title">{t('register.title')}</h1>
+        <h1 className="form-title">{t('registerEmail.title')}</h1>
+        <p className="form-subtitle">{t('registerEmail.description')}</p>
       </div>
 
       {error && (
@@ -97,7 +90,7 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
 
       <div className="form-group">
         <label htmlFor="email" className="form-label">
-          {t('register.email.label')}
+          {t('registerEmail.email.label')}
         </label>
         <input
           id="email"
@@ -108,41 +101,7 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
           className="form-input"
           required
           autoComplete="email"
-          placeholder={t('register.email.placeholder')}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="password" className="form-label">
-          {t('register.password.label')}
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          value={credentials.password}
-          onChange={handleInputChange}
-          className="form-input"
-          required
-          autoComplete="new-password"
-          placeholder={t('register.password.placeholder')}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="confirmPassword" className="form-label">
-          {t('register.confirmPassword.label')}
-        </label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          value={credentials.confirmPassword}
-          onChange={handleInputChange}
-          className="form-input"
-          required
-          autoComplete="new-password"
-          placeholder={t('register.confirmPassword.placeholder')}
+          placeholder={t('registerEmail.email.placeholder')}
         />
       </div>
 
@@ -152,7 +111,7 @@ export const RegisterForm = ({onRegisterSuccess}: RegisterFormProps) => {
           className="button button-primary button-lg button-full"
           disabled={isLoading}
         >
-          {isLoading ? t('register.submitting') : t('register.submit')}
+          {isLoading ? t('registerEmail.submitting') : t('registerEmail.submit')}
         </button>
       </div>
     </form>

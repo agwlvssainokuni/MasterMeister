@@ -54,6 +54,37 @@ public class EmailTemplateInitializer implements ApplicationRunner {
     }
 
     private void initializeDefaultTemplates() {
+        initializeTemplate(TemplateType.REGISTRATION_START, "en",
+                "MasterMeister - Complete Your Registration",
+                """
+                Dear {username},
+                
+                Thank you for starting your registration with MasterMeister.
+                
+                To complete your registration, please click the link below to set your password:
+                {registrationUrl}
+                
+                This link will expire in 24 hours. If you did not start this registration, please ignore this email.
+                
+                Best regards,
+                MasterMeister Team
+                """);
+
+        initializeTemplate(TemplateType.REGISTRATION_START, "ja",
+                "MasterMeister - 登録を完了してください",
+                """
+                {username} 様
+                
+                MasterMeisterへの登録を開始いただきありがとうございます。
+                
+                登録を完了するため、以下のリンクをクリックしてパスワードを設定してください：
+                {registrationUrl}
+                
+                このリンクは24時間で期限切れとなります。このメールに心当たりがない場合は、無視してください。
+                
+                MasterMeisterチーム
+                """);
+
         initializeTemplate(TemplateType.EMAIL_CONFIRMATION, "en",
                 "MasterMeister - Email Confirmation Required",
                 """

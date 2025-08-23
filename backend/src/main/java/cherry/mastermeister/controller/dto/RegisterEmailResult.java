@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.enums;
+package cherry.mastermeister.controller.dto;
 
-public enum TemplateType {
-    REGISTRATION_START,      // (0) 登録開始（email-firstフロー）
-    EMAIL_CONFIRMATION,      // (1) メールアドレス確認用（登録時）
-    EMAIL_CONFIRMED,         // (2) メールアドレス確認済み（確認後）
-    ACCOUNT_APPROVED,        // (3) アカウント承認通知
-    ACCOUNT_REJECTED,        // (3) アカウント却下通知
-    PASSWORD_RESET           // 将来拡張用
+public record RegisterEmailResult(
+        String email
+) {
 }

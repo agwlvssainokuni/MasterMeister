@@ -54,7 +54,7 @@ export const LoginPage = () => {
           <div className="auth-links">
             <p>
               {t('auth.noAccount')}
-              <Link to="/register" className="auth-link">
+              <Link to="/register-email" className="auth-link">
                 {t('auth.register')}
               </Link>
               {t('auth.registerSuffix')}

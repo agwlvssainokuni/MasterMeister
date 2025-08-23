@@ -41,11 +41,36 @@
       "failed": "Logout failed"
     }
   },
-  "register": {
-    "title": "Register",
+  "registerEmail": {
+    "title": "Register - Email Address",
+    "description": "Enter your email address to start registration",
     "email": {
       "label": "Email Address",
       "placeholder": "Enter your email address"
+    },
+    "submit": "Send Confirmation Email",
+    "submitting": "Sending...",
+    "validation": {
+      "required": "Please enter your email address",
+      "invalidEmail": "Please enter a valid email address"
+    },
+    "error": {
+      "failed": "Failed to send confirmation email"
+    },
+    "success": {
+      "title": "Confirmation Email Sent",
+      "message": "A confirmation email has been sent to {{email}}.",
+      "instruction": "Please click the link in the email to complete your registration."
+    },
+    "hasAccount": "Already have an account? ",
+    "loginLink": "Login"
+  },
+  "register": {
+    "title": "Register - Create Account",
+    "description": "Set your password to create your account",
+    "email": {
+      "label": "Email Address",
+      "placeholder": "Email address"
     },
     "password": {
       "label": "Password",
@@ -55,38 +80,27 @@
       "label": "Confirm Password",
       "placeholder": "Re-enter your password"
     },
-    "submit": "Register",
-    "submitting": "Registering...",
+    "submit": "Create Account",
+    "submitting": "Creating...",
     "validation": {
       "required": "Please enter your email and password",
       "passwordMismatch": "Passwords do not match",
       "passwordTooShort": "Password must be at least 8 characters",
-      "invalidEmail": "Please enter a valid email address"
+      "invalidEmail": "Please enter a valid email address",
+      "invalidToken": "Invalid token. Please check the link in your email."
     },
     "error": {
-      "failed": "Registration failed"
+      "failed": "Account creation failed",
+      "tokenMismatch": "Token and email address do not match"
     },
     "success": {
-      "title": "Registration Complete",
-      "message": "Your account has been successfully registered.",
+      "title": "Account Created",
+      "message": "Your account has been successfully created.",
       "confirmation": "Please wait for administrator approval. You will be able to log in once approved.",
       "loginButton": "Go to Login"
     },
-    "hasAccount": "Already have an account? ",
-    "loginLink": "Login"
-  },
-  "emailConfirmation": {
-    "confirming": "Confirming email...",
-    "success": {
-      "title": "Email Confirmed",
-      "message": "Your email address has been confirmed successfully. Please wait for administrator approval."
-    },
-    "error": {
-      "title": "Email Confirmation Error",
-      "missingToken": "Confirmation token not found. Please check the link in your email.",
-      "failed": "Email confirmation failed"
-    },
-    "loginButton": "Go to Login"
+    "invalidToken": "Invalid token. Please check the link in your email.",
+    "startOver": "Start over"
   },
   "navigation": {
     "dashboard": "Dashboard",

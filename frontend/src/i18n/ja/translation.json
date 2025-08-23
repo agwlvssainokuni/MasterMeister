@@ -41,11 +41,36 @@
       "failed": "ログアウトに失敗しました"
     }
   },
-  "register": {
-    "title": "新規登録",
+  "registerEmail": {
+    "title": "新規登録 - メールアドレス",
+    "description": "登録を開始するにはメールアドレスを入力してください",
     "email": {
       "label": "メールアドレス",
       "placeholder": "メールアドレスを入力してください"
+    },
+    "submit": "確認メール送信",
+    "submitting": "送信中...",
+    "validation": {
+      "required": "メールアドレスを入力してください",
+      "invalidEmail": "正しいメールアドレスを入力してください"
+    },
+    "error": {
+      "failed": "確認メールの送信に失敗しました"
+    },
+    "success": {
+      "title": "確認メール送信完了",
+      "message": "{{email}} に確認メールを送信しました。",
+      "instruction": "メール内のリンクをクリックして登録を完了してください。"
+    },
+    "hasAccount": "既にアカウントをお持ちの場合は、",
+    "loginLink": "ログイン"
+  },
+  "register": {
+    "title": "新規登録 - アカウント作成",
+    "description": "パスワードを設定してアカウントを作成してください",
+    "email": {
+      "label": "メールアドレス",
+      "placeholder": "メールアドレス"
     },
     "password": {
       "label": "パスワード",
@@ -55,38 +80,27 @@
       "label": "パスワード確認",
       "placeholder": "パスワードを再度入力してください"
     },
-    "submit": "登録",
-    "submitting": "登録中...",
+    "submit": "アカウント作成",
+    "submitting": "作成中...",
     "validation": {
       "required": "メールアドレスとパスワードを入力してください",
       "passwordMismatch": "パスワードが一致しません",
       "passwordTooShort": "パスワードは8文字以上で入力してください",
-      "invalidEmail": "正しいメールアドレスを入力してください"
+      "invalidEmail": "正しいメールアドレスを入力してください",
+      "invalidToken": "無効なトークンです。メールのリンクを確認してください。"
     },
     "error": {
-      "failed": "登録に失敗しました"
+      "failed": "アカウント作成に失敗しました",
+      "tokenMismatch": "トークンとメールアドレスが一致しません"
     },
     "success": {
-      "title": "登録完了",
-      "message": "アカウントの登録が完了しました。",
+      "title": "アカウント作成完了",
+      "message": "アカウントの作成が完了しました。",
       "confirmation": "管理者の承認をお待ちください。承認後にログインできるようになります。",
       "loginButton": "ログインページへ"
     },
-    "hasAccount": "既にアカウントをお持ちの場合は、",
-    "loginLink": "ログイン"
-  },
-  "emailConfirmation": {
-    "confirming": "メール確認中...",
-    "success": {
-      "title": "メール確認完了",
-      "message": "メールアドレスの確認が完了しました。管理者の承認をお待ちください。"
-    },
-    "error": {
-      "title": "メール確認エラー",
-      "missingToken": "確認トークンが見つかりません。メールのリンクを確認してください。",
-      "failed": "メール確認に失敗しました"
-    },
-    "loginButton": "ログインページへ"
+    "invalidToken": "無効なトークンです。メールのリンクを確認してください。",
+    "startOver": "最初からやり直す"
   },
   "navigation": {
     "dashboard": "ダッシュボード",

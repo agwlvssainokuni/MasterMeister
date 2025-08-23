@@ -18,11 +18,11 @@ import {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Link, useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
-import {RegisterForm} from '../components/RegisterForm'
+import {RegisterEmailForm} from '../components/RegisterEmailForm.tsx'
 import '../styles/layouts/AuthLayout.css'
 import '../styles/components/Alert.css'
 
-export const RegisterPage = () => {
+export const RegisterEmailPage = () => {
   const {t} = useTranslation()
   const {isAuthenticated} = useAuth()
   const navigate = useNavigate()
@@ -53,9 +53,9 @@ export const RegisterPage = () => {
 
           <div className="auth-content">
             <div className="alert alert-success" role="alert">
-              <h2>{t('register.success.title')}</h2>
-              <p>{t('register.success.message')}</p>
-              <p>{t('register.success.confirmation')}</p>
+              <h2>{t('registerEmail.success.title')}</h2>
+              <p>{t('registerEmail.success.message', { email: sessionStorage.getItem('registrationEmail') || '' })}</p>
+              <p>{t('registerEmail.success.instruction')}</p>
             </div>
 
             <div className="form-actions" style={{marginTop: '1.5rem'}}>
@@ -63,7 +63,7 @@ export const RegisterPage = () => {
                 to="/login"
                 className="button button-primary button-lg button-full"
               >
-                {t('register.success.loginButton')}
+                {t('common.confirm')}
               </Link>
             </div>
           </div>
@@ -81,13 +81,13 @@ export const RegisterPage = () => {
         </div>
 
         <div className="auth-content">
-          <RegisterForm onRegisterSuccess={handleRegisterSuccess}/>
+          <RegisterEmailForm onRegisterSuccess={handleRegisterSuccess}/>
 
           <div className="auth-links">
             <p>
-              {t('register.hasAccount')}
+              {t('registerEmail.hasAccount')}
               <Link to="/login" className="auth-link">
-                {t('register.loginLink')}
+                {t('registerEmail.loginLink')}
               </Link>
             </p>
           </div>

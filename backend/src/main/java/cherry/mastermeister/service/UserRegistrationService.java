@@ -16,18 +16,21 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.entity.RegistrationTokenEntity;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.enums.UserRole;
 import cherry.mastermeister.enums.UserStatus;
-import cherry.mastermeister.exception.EmailConfirmationException;
-import cherry.mastermeister.exception.UserAlreadyExistsException;
+import cherry.mastermeister.exception.UserRegistrationException;
+import cherry.mastermeister.model.RegistrationToken;
 import cherry.mastermeister.model.UserRegistration;
+import cherry.mastermeister.repository.RegistrationTokenRepository;
 import cherry.mastermeister.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Base64;
 
 @Service
@@ -35,36 +38,86 @@ import java.util.Base64;
 public class UserRegistrationService {
 
     private final UserRepository userRepository;
+    private final RegistrationTokenRepository registrationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final SecureRandom secureRandom;
 
-    public UserRegistrationService(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
+    public UserRegistrationService(
+            UserRepository userRepository,
+            RegistrationTokenRepository registrationTokenRepository,
+            PasswordEncoder passwordEncoder,
+            EmailService emailService
+    ) {
         this.userRepository = userRepository;
+        this.registrationTokenRepository = registrationTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.secureRandom = new SecureRandom();
     }
 
-    public UserRegistration registerUser(UserRegistration registration) {
+    // Step 1: Register email (initiate registration)
+    public RegistrationToken registerEmail(String email, String language) {
+        // 既存ユーザーチェック
+        boolean userExists = userRepository.findByEmail(email).isPresent();
 
-        if (userRepository.findByEmail(registration.email()).isPresent()) {
-            throw new UserAlreadyExistsException("Email already exists");
+        if (userExists) {
+            // 既存ユーザーの場合はtoken=null, expiresAt=nullで返す
+            return new RegistrationToken(null, email, null, null, false, LocalDateTime.now());
         }
 
+        // 新規ユーザーの場合の処理
+        // 既存のトークンを無効化
+        registrationTokenRepository.markTokensAsUsedByEmail(email);
+
+        // 新しいトークンを生成
+        String token = generateRegistrationToken();
+        LocalDateTime expiresAt = LocalDateTime.now().plusHours(24);
+
+        RegistrationTokenEntity tokenEntity = new RegistrationTokenEntity();
+        tokenEntity.setEmail(email);
+        tokenEntity.setToken(token);
+        tokenEntity.setExpiresAt(expiresAt);
+
+        RegistrationTokenEntity savedToken = registrationTokenRepository.save(tokenEntity);
+
+        // 登録開始メール送信
+        emailService.sendRegistrationStart(email, token, language);
+
+        return toRegistrationTokenModel(savedToken);
+    }
+
+    // Step 3: Register user with token + password
+    public UserRegistration registerUser(String token, String email, String password, String language) {
+        // Stream APIでトークン検証（セキュリティ: 常に同じエラーメッセージ）
+        RegistrationTokenEntity tokenEntity = registrationTokenRepository.findByToken(token)
+                .filter(RegistrationTokenEntity::isValid)
+                .filter(t -> t.getEmail().equals(email))
+                .orElseThrow(() -> new UserRegistrationException("Token and email do not match or token is invalid"));
+
+        // 既存ユーザーチェック
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new UserRegistrationException("Token and email do not match or token is invalid");
+        }
+
+        // トークンを使用済みにマーク
+        tokenEntity.setUsed(true);
+        registrationTokenRepository.save(tokenEntity);
+
+        // ユーザー登録
         String emailConfirmationToken = generateEmailConfirmationToken();
 
         UserEntity user = new UserEntity();
-        user.setEmail(registration.email());
-        user.setPassword(passwordEncoder.encode(registration.password()));
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
         user.setEmailConfirmationToken(emailConfirmationToken);
-        user.setPreferredLanguage(registration.preferredLanguage());
+        user.setPreferredLanguage(language);
         user.setStatus(UserStatus.PENDING);
         user.setRole(UserRole.USER);
 
         UserEntity savedUser = userRepository.save(user);
 
-        // メール確認用メール送信
+        // メール確認送信
         emailService.sendEmailConfirmation(
                 savedUser.getEmail(),
                 emailConfirmationToken,
@@ -74,25 +127,11 @@ public class UserRegistrationService {
         return toModel(savedUser);
     }
 
-    public boolean confirmEmail(String token) {
-        return userRepository.findByEmailConfirmationToken(token)
-                .map(user -> {
-                    if (user.isEmailConfirmed()) {
-                        throw new EmailConfirmationException("Email already confirmed");
-                    }
-                    user.setEmailConfirmed(true);
-                    user.setEmailConfirmationToken(null);
-                    userRepository.save(user);
 
-                    // メール確認完了通知送信
-                    emailService.sendEmailConfirmed(
-                            user.getEmail(),
-                            user.getPreferredLanguage()
-                    );
-
-                    return true;
-                })
-                .orElseThrow(() -> new EmailConfirmationException("Invalid or expired confirmation token"));
+    private String generateRegistrationToken() {
+        byte[] randomBytes = new byte[32];
+        secureRandom.nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
     private String generateEmailConfirmationToken() {
@@ -110,6 +149,17 @@ public class UserRegistrationService {
                 entity.getPreferredLanguage(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
+        );
+    }
+
+    private RegistrationToken toRegistrationTokenModel(RegistrationTokenEntity entity) {
+        return new RegistrationToken(
+                entity.getId(),
+                entity.getEmail(),
+                entity.getToken(),
+                entity.getExpiresAt(),
+                entity.isUsed(),
+                entity.getCreatedAt()
         );
     }
 }

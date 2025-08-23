@@ -17,15 +17,16 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.*;
+import cherry.mastermeister.model.RegistrationToken;
 import cherry.mastermeister.model.UserRegistration;
 import cherry.mastermeister.service.UserRegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/users")
@@ -37,45 +38,34 @@ public class UserController {
         this.userRegistrationService = userRegistrationService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserRegistrationResult>> register(
-            @Valid @RequestBody UserRegistrationRequest request) {
-        UserRegistration model = toModel(request);
-        UserRegistration registeredUser = userRegistrationService.registerUser(model);
-        UserRegistrationResult result = toResult(registeredUser);
+    @PostMapping("/register-email")
+    public ResponseEntity<ApiResponse<RegisterEmailResult>> registerEmail(
+            @Valid @RequestBody RegisterEmailRequest request) {
+        RegistrationToken result = userRegistrationService.registerEmail(request.email(), request.language());
+        
+        // セキュリティ: 既存ユーザーの有無に関係なく同じレスポンス
+        RegisterEmailResult dto = new RegisterEmailResult(result.email());
+        
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(result));
+                .body(ApiResponse.success(dto));
     }
 
-    @PostMapping("/confirm-email")
-    public ApiResponse<EmailConfirmationResult> confirmEmail(
-            @Valid @RequestBody EmailConfirmationRequest request) {
-        userRegistrationService.confirmEmail(request.token());
-
-        EmailConfirmationResult result = new EmailConfirmationResult(
-                "confirmed",
-                "Email confirmed successfully. Please wait for administrator approval."
-        );
-        return ApiResponse.success(result);
-    }
-
-    private UserRegistration toModel(UserRegistrationRequest request) {
-        return new UserRegistration(
-                null,
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<RegisterUserResult>> registerUser(
+            @Valid @RequestBody RegisterUserRequest request) {
+        UserRegistration registration = userRegistrationService.registerUser(
+                request.token(),
                 request.email(),
                 request.password(),
-                null,
-                request.language(),
-                null,
-                null
+                request.language()
         );
-    }
 
-    private UserRegistrationResult toResult(UserRegistration model) {
-        return new UserRegistrationResult(
-                model.id(),
-                model.email(),
-                "Registration successful. Please check your email to confirm your account."
+        RegisterUserResult result = new RegisterUserResult(
+                registration.id(),
+                registration.email()
         );
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(result));
     }
 }
