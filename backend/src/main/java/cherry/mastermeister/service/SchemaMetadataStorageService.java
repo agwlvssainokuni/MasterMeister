@@ -37,7 +37,9 @@ public class SchemaMetadataStorageService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final SchemaMetadataRepository schemaMetadataRepository;
 
-    public SchemaMetadataStorageService(SchemaMetadataRepository schemaMetadataRepository) {
+    public SchemaMetadataStorageService(
+            SchemaMetadataRepository schemaMetadataRepository
+    ) {
         this.schemaMetadataRepository = schemaMetadataRepository;
     }
 

@@ -21,6 +21,7 @@ import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.SchemaMetadata;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.service.SchemaReaderService;
+import cherry.mastermeister.service.SchemaUpdateService;
 import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +53,9 @@ class SchemaControllerTest {
     private SchemaReaderService schemaReaderService;
 
     @MockitoBean
+    private SchemaUpdateService schemaUpdateService;
+
+    @MockitoBean
     private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
@@ -74,10 +78,10 @@ class SchemaControllerTest {
                 1L, "testdb", List.of("PUBLIC"), List.of(table), LocalDateTime.now()
         );
 
-        when(schemaReaderService.readSchema(1L)).thenReturn(schema);
+        when(schemaUpdateService.executeSchemaRead(1L)).thenReturn(schema);
 
         // Execute and verify
-        mockMvc.perform(get("/api/admin/schema/connections/1")
+        mockMvc.perform(get("/api/admin/schema/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -98,7 +102,7 @@ class SchemaControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testReadSchemaForbiddenForUser() throws Exception {
-        mockMvc.perform(get("/api/admin/schema/connections/1")
+        mockMvc.perform(get("/api/admin/schema/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -106,7 +110,7 @@ class SchemaControllerTest {
 
     @Test
     void testReadSchemaUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/admin/schema/connections/1")
+        mockMvc.perform(get("/api/admin/schema/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }

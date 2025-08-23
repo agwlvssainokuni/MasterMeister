@@ -40,8 +40,10 @@ public class SchemaReaderService {
     private final DatabaseConnectionService databaseConnectionService;
     private final SchemaMetadataStorageService schemaMetadataStorageService;
 
-    public SchemaReaderService(DatabaseConnectionService databaseConnectionService,
-                              SchemaMetadataStorageService schemaMetadataStorageService) {
+    public SchemaReaderService(
+            DatabaseConnectionService databaseConnectionService,
+            SchemaMetadataStorageService schemaMetadataStorageService
+    ) {
         this.databaseConnectionService = databaseConnectionService;
         this.schemaMetadataStorageService = schemaMetadataStorageService;
     }
