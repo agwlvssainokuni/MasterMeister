@@ -20,12 +20,22 @@ This project aims to develop an application for maintaining master data stored i
 ## Application Workflow
 
 ### 1. User Registration
-- Users submit registration applications
-- Confirmation email sent to users
-- Registration applications displayed in admin dashboard
-- Administrators approve or reject applications
-- Approval/rejection result emails sent to users
-- Approved users can log in
+- Two-step email-first registration flow:
+  1. Users submit email addresses to initiate registration
+  2. Registration confirmation email with time-limited link sent to new users only
+  3. Users complete registration by setting password through email link
+  4. Completed registrations displayed in admin dashboard
+- Administrator approval workflow:
+  - Administrators approve or reject completed registrations
+  - Approval/rejection result emails sent to users
+  - Only approved users can log in
+- Security features:
+  - Email enumeration prevention (consistent API responses regardless of user existence)
+  - Configurable registration token expiry (default: 3 hours)
+  - Separate token management system for registration process
+- Configuration:
+  - Token expiry period configurable via `mm.app.user-registration.token-expiry-hours`
+  - Registration path and token parameter customizable
 
 ### 2. Target RDBMS Setup
 - Administrators input RDBMS connection information in admin dashboard
