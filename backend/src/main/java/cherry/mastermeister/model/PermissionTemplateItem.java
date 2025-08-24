@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.enums;
+package cherry.mastermeister.model;
 
-public enum SchemaUpdateOperation {
-    READ_SCHEMA,
-    REFRESH_SCHEMA,
-    IMPORT_SCHEMA,
-    EXPORT_SCHEMA
+import cherry.mastermeister.enums.PermissionScope;
+import cherry.mastermeister.enums.PermissionType;
+
+public record PermissionTemplateItem(
+        Long id,
+        Long templateId,
+        PermissionScope scope,
+        PermissionType permissionType,
+        String schemaName,
+        String tableName,
+        String columnName,
+        Boolean granted,
+        String comment
+) {
 }

@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.enums;
+package cherry.mastermeister.model;
 
-public enum SchemaUpdateOperation {
-    READ_SCHEMA,
-    REFRESH_SCHEMA,
-    IMPORT_SCHEMA,
-    EXPORT_SCHEMA
+import java.time.LocalDateTime;
+import java.util.List;
+
+public record PermissionTemplate(
+        Long id,
+        String name,
+        String description,
+        Long connectionId,
+        Boolean isActive,
+        String createdBy,
+        LocalDateTime createdAt,
+        String updatedBy,
+        LocalDateTime updatedAt,
+        List<PermissionTemplateItem> items
+) {
 }

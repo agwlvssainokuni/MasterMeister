@@ -37,7 +37,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SchemaReaderServiceTest {
@@ -130,7 +131,7 @@ class SchemaReaderServiceTest {
         when(columnsResultSet.getInt("NULLABLE"))
                 .thenReturn(DatabaseMetaData.columnNoNulls)
                 .thenReturn(DatabaseMetaData.columnNullable);
-        when(columnsResultSet.getString("COLUMN_DEF")).thenReturn(null, null);
+        when(columnsResultSet.getString("COLUMN_DEF")).thenReturn(null);
         when(columnsResultSet.getString("REMARKS")).thenReturn("ID column", "Name column");
         when(columnsResultSet.getString("IS_AUTOINCREMENT")).thenReturn("YES", "NO");
         when(columnsResultSet.getInt("ORDINAL_POSITION")).thenReturn(1, 2);
@@ -171,7 +172,7 @@ class SchemaReaderServiceTest {
         assertFalse(nameColumn.autoIncrement());
         assertTrue(nameColumn.nullable());
         assertEquals(2, nameColumn.ordinalPosition());
-        
+
         // Verify storage service was called
         verify(schemaMetadataStorageService).saveSchemaMetadata(any(SchemaMetadata.class));
     }

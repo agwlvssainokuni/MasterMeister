@@ -16,9 +16,9 @@
 
 package cherry.mastermeister.enums;
 
-public enum SchemaUpdateOperation {
-    READ_SCHEMA,
-    REFRESH_SCHEMA,
-    IMPORT_SCHEMA,
-    EXPORT_SCHEMA
+public enum PermissionType {
+    READ,
+    WRITE,
+    DELETE,
+    ADMIN
 }
