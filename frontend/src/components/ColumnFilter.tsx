@@ -146,7 +146,7 @@ export const ColumnFilterComponent: React.FC<ColumnFilterProps> = ({
     setIsOpen(false)
   }
 
-  const convertValue = (val: string): any => {
+  const convertValue = (val: string): string | number | boolean | string[] => {
     const dataType = column.dataType.toLowerCase()
 
     if (dataType.includes('int')) {

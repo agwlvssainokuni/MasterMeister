@@ -25,7 +25,6 @@ import {RecordDeleteModal} from '../components/RecordDeleteModal'
 import {PermissionGuard} from '../components/PermissionGuard'
 import {dataAccessService} from '../services/dataAccessService'
 import type {AccessibleTable, TableMetadata, TableRecord} from '../types/frontend'
-import '../styles/pages/DataAccessPage.css'
 
 export const DataAccessPage: React.FC = () => {
   const {t} = useTranslation()

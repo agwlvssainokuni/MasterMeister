@@ -15,6 +15,7 @@
  */
 
 import apiClient from './apiClient'
+import {API_ENDPOINTS} from '../config/config'
 import type {
   AccessibleTableResult,
   ApiResponse,
@@ -45,7 +46,7 @@ class DataAccessService {
 
   async getAccessibleTables(connectionId: number): Promise<AccessibleTable[]> {
     const response = await apiClient.get<ApiResponse<AccessibleTableResult[]>>(
-      `/api/data/${connectionId}/tables`
+      API_ENDPOINTS.DATA_ACCESS.ACCESSIBLE_TABLES(connectionId)
     )
 
     if (!response.data.ok || !response.data.data) {
@@ -57,7 +58,7 @@ class DataAccessService {
 
   async getTableMetadata(connectionId: number, schemaName: string, tableName: string): Promise<TableMetadata> {
     const response = await apiClient.get<ApiResponse<TableMetadataResult>>(
-      `/api/data/${connectionId}/tables/${schemaName}/${tableName}/metadata`
+      API_ENDPOINTS.DATA_ACCESS.TABLE_METADATA(connectionId, schemaName, tableName)
     )
 
     if (!response.data.ok || !response.data.data) {
@@ -85,7 +86,7 @@ class DataAccessService {
       requestBody = this.convertToRecordFilterRequest(filter)
     }
 
-    const url = `/api/data/${connectionId}/tables/${schemaName}/${tableName}/records?${params.toString()}`
+    const url = `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS(connectionId, schemaName, tableName)}?${params.toString()}`
 
     const response = requestBody
       ? await apiClient.post<ApiResponse<RecordQueryResult>>(url, requestBody)
@@ -109,7 +110,7 @@ class DataAccessService {
     }
 
     const response = await apiClient.post<ApiResponse<RecordCreateResult>>(
-      `/api/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
+      API_ENDPOINTS.DATA_ACCESS.RECORD_CREATE(connectionId, schemaName, tableName),
       requestBody
     )
 
@@ -132,7 +133,7 @@ class DataAccessService {
     }
 
     const response = await apiClient.put<ApiResponse<RecordUpdateResult>>(
-      `/api/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
+      API_ENDPOINTS.DATA_ACCESS.RECORD_UPDATE(connectionId, schemaName, tableName),
       requestBody
     )
 
@@ -154,7 +155,7 @@ class DataAccessService {
     }
 
     const response = await apiClient.post<ApiResponse<RecordDeleteResult>>(
-      `/api/data/${connectionId}/tables/${schemaName}/${tableName}/records:delete`,
+      API_ENDPOINTS.DATA_ACCESS.RECORD_DELETE(connectionId, schemaName, tableName),
       requestBody
     )
 

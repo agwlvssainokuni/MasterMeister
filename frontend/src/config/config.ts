@@ -30,5 +30,18 @@ export const API_ENDPOINTS = {
     PENDING_USERS: '/admin/users/pending',
     APPROVE_USER: (id: number) => `/admin/users/${id}/approve`,
     REJECT_USER: (id: number) => `/admin/users/${id}/reject`
+  },
+  DATA_ACCESS: {
+    ACCESSIBLE_TABLES: (connectionId: number) => `/data/${connectionId}/tables`,
+    TABLE_METADATA: (connectionId: number, schemaName: string, tableName: string) => 
+      `/data/${connectionId}/tables/${schemaName}/${tableName}/metadata`,
+    TABLE_RECORDS: (connectionId: number, schemaName: string, tableName: string) => 
+      `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
+    RECORD_CREATE: (connectionId: number, schemaName: string, tableName: string) => 
+      `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
+    RECORD_UPDATE: (connectionId: number, schemaName: string, tableName: string) => 
+      `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
+    RECORD_DELETE: (connectionId: number, schemaName: string, tableName: string) => 
+      `/data/${connectionId}/tables/${schemaName}/${tableName}/records:delete`
   }
 }
