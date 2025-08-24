@@ -21,7 +21,6 @@ import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.SchemaMetadata;
 import cherry.mastermeister.model.SchemaUpdateLog;
 import cherry.mastermeister.model.TableMetadata;
-import cherry.mastermeister.service.SchemaReaderService;
 import cherry.mastermeister.service.SchemaUpdateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -42,14 +41,11 @@ import java.util.Optional;
 public class SchemaController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final SchemaReaderService schemaReaderService;
     private final SchemaUpdateService schemaUpdateService;
 
     public SchemaController(
-            SchemaReaderService schemaReaderService,
             SchemaUpdateService schemaUpdateService
     ) {
-        this.schemaReaderService = schemaReaderService;
         this.schemaUpdateService = schemaUpdateService;
     }
 

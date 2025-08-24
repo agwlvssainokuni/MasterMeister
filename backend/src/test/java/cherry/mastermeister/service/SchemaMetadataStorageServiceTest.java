@@ -33,8 +33,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SchemaMetadataStorageServiceTest {
@@ -54,6 +53,9 @@ class SchemaMetadataStorageServiceTest {
     @Test
     void testSaveSchemaMetadata() {
         // Setup test data
+        SchemaMetadataEntity toBeDeleted = mock(SchemaMetadataEntity.class);
+        when(schemaMetadataRepository.findByConnectionId(1L)).thenReturn(Optional.of(toBeDeleted));
+
         ColumnMetadata column = new ColumnMetadata(
                 "ID", "BIGINT", 19, null, false, null, "ID column",
                 true, true, 1
@@ -85,7 +87,8 @@ class SchemaMetadataStorageServiceTest {
         assertEquals(1L, result.connectionId());
         assertEquals("testdb", result.databaseName());
 
-        verify(schemaMetadataRepository).deleteByConnectionId(1L);
+        verify(schemaMetadataRepository).findByConnectionId(1L);
+        verify(schemaMetadataRepository).delete(eq(toBeDeleted));
         verify(schemaMetadataRepository).save(any(SchemaMetadataEntity.class));
     }
 
@@ -119,9 +122,14 @@ class SchemaMetadataStorageServiceTest {
 
     @Test
     void testDeleteSchemaMetadata() {
+        // Setup test data
+        SchemaMetadataEntity toBeDeleted = mock(SchemaMetadataEntity.class);
+        when(schemaMetadataRepository.findByConnectionId(1L)).thenReturn(Optional.of(toBeDeleted));
+
         service.deleteSchemaMetadata(1L);
 
-        verify(schemaMetadataRepository).deleteByConnectionId(1L);
+        verify(schemaMetadataRepository).findByConnectionId(1L);
+        verify(schemaMetadataRepository).delete(eq(toBeDeleted));
     }
 
     @Test

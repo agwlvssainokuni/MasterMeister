@@ -17,9 +17,9 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.SchemaUpdateLogEntity;
+import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.SchemaUpdateOperation;
-import cherry.mastermeister.model.SchemaMetadata;
-import cherry.mastermeister.model.SchemaUpdateLog;
+import cherry.mastermeister.model.*;
 import cherry.mastermeister.repository.SchemaUpdateLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,25 +30,32 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Service
 public class SchemaUpdateService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final SchemaReaderService schemaReaderService;
+    private final DatabaseConnectionService databaseConnectionService;
+    private final SchemaMetadataStorageService schemaMetadataStorageService;
     private final SchemaUpdateLogRepository schemaUpdateLogRepository;
     private final AuditLogService auditLogService;
 
     public SchemaUpdateService(
-            SchemaReaderService schemaReaderService,
+            DatabaseConnectionService databaseConnectionService,
+            SchemaMetadataStorageService schemaMetadataStorageService,
             SchemaUpdateLogRepository schemaUpdateLogRepository,
             AuditLogService auditLogService
     ) {
-        this.schemaReaderService = schemaReaderService;
+        this.databaseConnectionService = databaseConnectionService;
+        this.schemaMetadataStorageService = schemaMetadataStorageService;
         this.schemaUpdateLogRepository = schemaUpdateLogRepository;
         this.auditLogService = auditLogService;
     }
@@ -56,19 +63,19 @@ public class SchemaUpdateService {
     @Transactional
     public SchemaMetadata executeSchemaRead(Long connectionId) {
         return executeWithLogging(connectionId, SchemaUpdateOperation.READ_SCHEMA,
-                () -> schemaReaderService.readSchema(connectionId));
+                () -> readAndRefreshSchema(connectionId));
     }
 
     @Transactional
     public SchemaMetadata executeSchemaRefresh(Long connectionId) {
         return executeWithLogging(connectionId, SchemaUpdateOperation.REFRESH_SCHEMA,
-                () -> schemaReaderService.readAndRefreshSchema(connectionId));
+                () -> readAndRefreshSchema(connectionId));
     }
 
     @Transactional
     public Optional<SchemaMetadata> getStoredSchema(Long connectionId) {
         // This doesn't need logging as it's just a read operation
-        return schemaReaderService.getStoredSchemaMetadata(connectionId);
+        return getStoredSchemaMetadata(connectionId);
     }
 
     @Transactional(readOnly = true)
@@ -148,7 +155,7 @@ public class SchemaUpdateService {
                     operation, connectionId, executionTime);
 
             // Log admin action
-            auditLogService.logSchemaOperation(userEmail, operation.name(), connectionId, true, 
+            auditLogService.logSchemaOperation(userEmail, operation.name(), connectionId, true,
                     logEntity.getDetails(), null);
 
             return result;
@@ -167,7 +174,7 @@ public class SchemaUpdateService {
                     operation, connectionId, executionTime, e);
 
             // Log admin action failure
-            auditLogService.logSchemaOperation(userEmail, operation.name(), connectionId, false, 
+            auditLogService.logSchemaOperation(userEmail, operation.name(), connectionId, false,
                     logEntity.getDetails(), e.getMessage());
 
             throw e;
@@ -180,6 +187,184 @@ public class SchemaUpdateService {
             return authentication.getName();
         }
         return "system";
+    }
+
+    // Schema reading methods integrated from SchemaReaderService
+    public SchemaMetadata readAndRefreshSchema(Long connectionId) {
+        logger.info("Reading and refreshing schema metadata for connection ID: {}", connectionId);
+
+        DatabaseConnection connection = databaseConnectionService.getConnection(connectionId);
+        DataSource dataSource = databaseConnectionService.getDataSource(connectionId);
+
+        try (Connection conn = dataSource.getConnection()) {
+            DatabaseMetaData metaData = conn.getMetaData();
+
+            List<String> schemas = readSchemas(metaData, connection.dbType());
+            List<TableMetadata> tables = readTables(metaData, connection, schemas);
+
+            SchemaMetadata schemaMetadata = new SchemaMetadata(
+                    connectionId,
+                    connection.databaseName(),
+                    schemas,
+                    tables,
+                    LocalDateTime.now()
+            );
+
+            // Save the schema metadata to the database
+            return schemaMetadataStorageService.saveSchemaMetadata(schemaMetadata);
+        } catch (SQLException e) {
+            logger.error("Failed to read schema metadata for connection ID: {}", connectionId, e);
+            throw new RuntimeException("Schema reading failed", e);
+        }
+    }
+
+    public Optional<SchemaMetadata> getStoredSchemaMetadata(Long connectionId) {
+        logger.debug("Retrieving stored schema metadata for connection ID: {}", connectionId);
+        return schemaMetadataStorageService.getSchemaMetadata(connectionId);
+    }
+
+    private List<String> readSchemas(DatabaseMetaData metaData, DatabaseType dbType) throws SQLException {
+        List<String> schemas = new ArrayList<>();
+
+        switch (dbType) {
+            case MYSQL, MARIADB -> {
+                // MySQL/MariaDB: schemas are databases
+                try (ResultSet rs = metaData.getCatalogs()) {
+                    while (rs.next()) {
+                        String schema = rs.getString("TABLE_CAT");
+                        if (!isSystemSchema(schema, dbType)) {
+                            schemas.add(schema);
+                        }
+                    }
+                }
+            }
+            case POSTGRESQL -> {
+                // PostgreSQL: use schemas within database
+                try (ResultSet rs = metaData.getSchemas()) {
+                    while (rs.next()) {
+                        String schema = rs.getString("TABLE_SCHEM");
+                        if (!isSystemSchema(schema, dbType)) {
+                            schemas.add(schema);
+                        }
+                    }
+                }
+            }
+            case H2 -> {
+                // H2: use schemas
+                try (ResultSet rs = metaData.getSchemas()) {
+                    while (rs.next()) {
+                        String schema = rs.getString("TABLE_SCHEM");
+                        if (!isSystemSchema(schema, dbType)) {
+                            schemas.add(schema);
+                        }
+                    }
+                }
+            }
+        }
+
+        return schemas;
+    }
+
+    private List<TableMetadata> readTables(DatabaseMetaData metaData, DatabaseConnection connection, List<String> schemas) throws SQLException {
+        List<TableMetadata> tables = new ArrayList<>();
+        String[] tableTypes = {"TABLE", "VIEW"};
+
+        for (String schema : schemas) {
+            String catalog = getCatalogForSchema(connection.dbType(), schema, connection.databaseName());
+            String schemaParam = getSchemaParam(connection.dbType(), schema);
+
+            try (ResultSet rs = metaData.getTables(catalog, schemaParam, null, tableTypes)) {
+                while (rs.next()) {
+                    String tableName = rs.getString("TABLE_NAME");
+                    String tableType = rs.getString("TABLE_TYPE");
+                    String comment = rs.getString("REMARKS");
+
+                    List<ColumnMetadata> columns = readColumns(metaData, catalog, schemaParam, tableName, connection.dbType());
+
+                    tables.add(new TableMetadata(schema, tableName, tableType, comment, columns));
+                }
+            }
+        }
+
+        return tables;
+    }
+
+    private List<ColumnMetadata> readColumns(DatabaseMetaData metaData, String catalog, String schema,
+                                             String tableName, DatabaseType dbType) throws SQLException {
+        List<ColumnMetadata> columns = new ArrayList<>();
+        Set<String> primaryKeys = readPrimaryKeys(metaData, catalog, schema, tableName);
+
+        try (ResultSet rs = metaData.getColumns(catalog, schema, tableName, null)) {
+            while (rs.next()) {
+                String columnName = rs.getString("COLUMN_NAME");
+                String dataType = rs.getString("TYPE_NAME");
+                Integer columnSize = rs.getInt("COLUMN_SIZE");
+                if (rs.wasNull()) columnSize = null;
+
+                Integer decimalDigits = rs.getInt("DECIMAL_DIGITS");
+                if (rs.wasNull()) decimalDigits = null;
+
+                boolean nullable = rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable;
+                String defaultValue = rs.getString("COLUMN_DEF");
+                String comment = rs.getString("REMARKS");
+                boolean isPrimaryKey = primaryKeys.contains(columnName);
+                boolean autoIncrement = "YES".equalsIgnoreCase(rs.getString("IS_AUTOINCREMENT"));
+                int ordinalPosition = rs.getInt("ORDINAL_POSITION");
+
+                columns.add(new ColumnMetadata(
+                        columnName, dataType, columnSize, decimalDigits, nullable,
+                        defaultValue, comment, isPrimaryKey, autoIncrement, ordinalPosition
+                ));
+            }
+        }
+
+        return columns.stream()
+                .sorted(Comparator.comparing(ColumnMetadata::ordinalPosition))
+                .toList();
+    }
+
+    private Set<String> readPrimaryKeys(DatabaseMetaData metaData, String catalog, String schema, String tableName) throws SQLException {
+        Set<String> primaryKeys = new HashSet<>();
+
+        try (ResultSet rs = metaData.getPrimaryKeys(catalog, schema, tableName)) {
+            while (rs.next()) {
+                primaryKeys.add(rs.getString("COLUMN_NAME"));
+            }
+        }
+
+        return primaryKeys;
+    }
+
+    private boolean isSystemSchema(String schema, DatabaseType dbType) {
+        if (schema == null) return true;
+
+        return switch (dbType) {
+            case MYSQL, MARIADB -> Set.of(
+                    "information_schema", "performance_schema", "mysql", "sys"
+            ).contains(schema.toLowerCase());
+
+            case POSTGRESQL -> Set.of(
+                    "information_schema", "pg_catalog", "pg_toast"
+            ).contains(schema.toLowerCase()) || schema.toLowerCase().startsWith("pg_");
+
+            case H2 -> Set.of(
+                    "INFORMATION_SCHEMA"
+            ).contains(schema.toUpperCase());
+        };
+    }
+
+    private String getCatalogForSchema(DatabaseType dbType, String schema, String databaseName) {
+        return switch (dbType) {
+            case MYSQL, MARIADB -> schema; // schema IS catalog in MySQL/MariaDB
+            case POSTGRESQL, H2 -> databaseName; // use database name as catalog
+        };
+    }
+
+    private String getSchemaParam(DatabaseType dbType, String schema) {
+        return switch (dbType) {
+            case MYSQL, MARIADB -> null; // don't use schema parameter for MySQL/MariaDB
+            case POSTGRESQL, H2 -> schema; // use schema parameter
+        };
     }
 
     private SchemaUpdateLog toModel(SchemaUpdateLogEntity entity) {

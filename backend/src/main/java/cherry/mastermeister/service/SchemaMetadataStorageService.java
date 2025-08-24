@@ -47,8 +47,12 @@ public class SchemaMetadataStorageService {
     public SchemaMetadata saveSchemaMetadata(SchemaMetadata metadata) {
         logger.info("Saving schema metadata for connection ID: {}", metadata.connectionId());
 
-        // Delete existing metadata for this connection
-        schemaMetadataRepository.deleteByConnectionId(metadata.connectionId());
+        // Delete existing metadata for this connection by getting entity first
+        Optional<SchemaMetadataEntity> existingEntity = schemaMetadataRepository.findByConnectionId(metadata.connectionId());
+        if (existingEntity.isPresent()) {
+            logger.debug("Deleting existing schema metadata entity with ID: {}", existingEntity.get().getId());
+            schemaMetadataRepository.delete(existingEntity.get());
+        }
 
         // Create new entity
         SchemaMetadataEntity entity = toEntity(metadata);
@@ -71,7 +75,14 @@ public class SchemaMetadataStorageService {
     @Transactional
     public void deleteSchemaMetadata(Long connectionId) {
         logger.info("Deleting schema metadata for connection ID: {}", connectionId);
-        schemaMetadataRepository.deleteByConnectionId(connectionId);
+
+        Optional<SchemaMetadataEntity> existingEntity = schemaMetadataRepository.findByConnectionId(connectionId);
+        if (existingEntity.isPresent()) {
+            logger.debug("Deleting schema metadata entity with ID: {}", existingEntity.get().getId());
+            schemaMetadataRepository.delete(existingEntity.get());
+        } else {
+            logger.debug("No schema metadata found to delete for connection ID: {}", connectionId);
+        }
     }
 
     @Transactional(readOnly = true)

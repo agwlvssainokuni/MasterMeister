@@ -20,7 +20,6 @@ import cherry.mastermeister.config.SecurityConfig;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.SchemaMetadata;
 import cherry.mastermeister.model.TableMetadata;
-import cherry.mastermeister.service.SchemaReaderService;
 import cherry.mastermeister.service.SchemaUpdateService;
 import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.util.JwtUtil;
@@ -48,9 +47,6 @@ class SchemaControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @MockitoBean
-    private SchemaReaderService schemaReaderService;
 
     @MockitoBean
     private SchemaUpdateService schemaUpdateService;
