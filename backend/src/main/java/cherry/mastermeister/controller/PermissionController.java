@@ -17,6 +17,9 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.ApiResponse;
+import cherry.mastermeister.controller.dto.BulkPermissionRequest;
+import cherry.mastermeister.controller.dto.BulkPermissionResult;
+import cherry.mastermeister.service.PermissionBulkService;
 import cherry.mastermeister.service.PermissionYamlService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.Valid;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -36,15 +40,54 @@ import java.nio.charset.StandardCharsets;
 @RestController
 @RequestMapping("/api/admin/permissions")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "Permission Export/Import", description = "YAML-based permission configuration management")
+@Tag(name = "Permission Management", description = "Permission configuration management including YAML import/export and bulk operations")
 @SecurityRequirement(name = "bearerAuth")
-public class PermissionExportController {
+public class PermissionController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final PermissionYamlService permissionYamlService;
+    private final PermissionBulkService permissionBulkService;
 
-    public PermissionExportController(PermissionYamlService permissionYamlService) {
+    public PermissionController(PermissionYamlService permissionYamlService, PermissionBulkService permissionBulkService) {
         this.permissionYamlService = permissionYamlService;
+        this.permissionBulkService = permissionBulkService;
+    }
+
+    @PostMapping("/{connectionId}/bulk-grant")
+    @Operation(summary = "Bulk grant permissions", description = "Grant permissions to multiple users across multiple tables")
+    public ApiResponse<cherry.mastermeister.controller.dto.BulkPermissionResult> bulkGrantPermissions(
+            @PathVariable Long connectionId,
+            @Valid @RequestBody cherry.mastermeister.controller.dto.BulkPermissionRequest request
+    ) {
+        logger.info("Starting bulk permission grant for connection ID: {}, type: {}, scope: {}", 
+                   connectionId, request.permissionType(), request.scope());
+
+        // Convert DTO to Model
+        cherry.mastermeister.model.BulkPermissionRequest modelRequest = new cherry.mastermeister.model.BulkPermissionRequest(
+                request.scope(),
+                request.permissionType(),
+                request.userEmails(),
+                request.schemaNames(),
+                request.tableNames(),
+                request.includeSystemTables(),
+                request.description()
+        );
+
+        cherry.mastermeister.model.BulkPermissionResult modelResult = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
+
+        // Convert Model to DTO
+        cherry.mastermeister.controller.dto.BulkPermissionResult dtoResult = new cherry.mastermeister.controller.dto.BulkPermissionResult(
+                modelResult.processedUsers(),
+                modelResult.processedTables(),
+                modelResult.createdPermissions(),
+                modelResult.skippedExisting(),
+                modelResult.errors()
+        );
+
+        logger.info("Bulk permission grant completed: {} permissions created, {} errors", 
+                   dtoResult.createdPermissions(), dtoResult.errors().size());
+
+        return ApiResponse.success(dtoResult);
     }
 
     @GetMapping("/{connectionId}/export")
