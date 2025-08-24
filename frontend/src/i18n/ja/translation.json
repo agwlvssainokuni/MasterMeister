@@ -108,6 +108,7 @@
     "dataAccess": "データアクセス",
     "admin": "管理者",
     "userManagement": "ユーザー管理",
+    "databaseConnections": "DB接続設定",
     "permissions": "権限",
     "settings": "設定"
   },
@@ -266,6 +267,80 @@
       "title": "管理パネル",
       "description": "ユーザー・権限・システム設定を管理します",
       "button": "管理パネル"
+    }
+  },
+  "databaseConnections": {
+    "title": "データベース接続設定",
+    "description": "外部データベースへの接続設定を管理します",
+    "createConnection": "新しい接続を作成",
+    "editConnection": "接続設定を編集",
+    "createDescription": "新しいデータベース接続を設定してください",
+    "editDescription": "データベース接続設定を変更してください",
+    "noConnections": "データベース接続がありません",
+    "noConnectionsDescription": "新しい接続を作成してマスタデータアクセスを開始しましょう",
+    "confirmDelete": "接続「{{name}}」を削除してもよろしいですか？この操作は取り消せません。",
+    "lastTested": "最終テスト日時",
+    "created": "作成日時",
+    "updated": "更新日時",
+    "fields": {
+      "name": "接続名",
+      "dbType": "データベース種別",
+      "host": "ホスト名",
+      "port": "ポート番号",
+      "database": "データベース名",
+      "username": "ユーザー名",
+      "password": "パスワード",
+      "connectionParams": "接続パラメータ",
+      "active": "接続を有効にする"
+    },
+    "placeholders": {
+      "name": "本番DB接続",
+      "host": "localhost",
+      "database": "production_db",
+      "username": "db_user",
+      "password": "パスワードを入力",
+      "passwordEdit": "変更する場合のみ入力",
+      "connectionParams": "useSSL=false&serverTimezone=UTC"
+    },
+    "hints": {
+      "connectionParams": "追加の接続パラメータをkey=value&key2=value2形式で指定",
+      "active": "チェックを外すと接続を無効にします",
+      "passwordEdit": "パスワードを変更する場合のみ入力してください"
+    },
+    "validation": {
+      "nameRequired": "接続名は必須です",
+      "hostRequired": "ホスト名は必須です",
+      "portInvalid": "ポート番号は1-65535の範囲で入力してください",
+      "databaseNameRequired": "データベース名は必須です",
+      "usernameRequired": "ユーザー名は必須です",
+      "passwordRequired": "パスワードは必須です"
+    },
+    "status": {
+      "active": "有効",
+      "inactive": "無効",
+      "connected": "接続成功",
+      "connectionFailed": "接続失敗",
+      "untested": "未テスト"
+    },
+    "actions": {
+      "test": "接続テスト",
+      "edit": "編集",
+      "delete": "削除",
+      "activate": "有効化",
+      "deactivate": "無効化"
+    },
+    "messages": {
+      "createSuccess": "接続「{{name}}」を作成しました",
+      "updateSuccess": "接続「{{name}}」を更新しました",
+      "deleteSuccess": "接続「{{name}}」を削除しました",
+      "activateSuccess": "接続「{{name}}」を有効化しました",
+      "deactivateSuccess": "接続「{{name}}」を無効化しました",
+      "testSuccess": "接続「{{name}}」のテストが成功しました（{{responseTime}}ms）",
+      "testFailed": "接続「{{name}}」のテストが失敗しました: {{error}}",
+      "saveError": "接続の保存に失敗しました",
+      "deleteError": "接続の削除に失敗しました",
+      "testError": "接続テストに失敗しました",
+      "toggleError": "接続状態の変更に失敗しました"
     }
   }
 }

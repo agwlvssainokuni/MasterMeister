@@ -108,6 +108,7 @@
     "dataAccess": "Data Access",
     "admin": "Admin",
     "userManagement": "User Management",
+    "databaseConnections": "DB Connections",
     "permissions": "Permissions",
     "settings": "Settings"
   },
@@ -266,6 +267,80 @@
       "title": "Admin Panel", 
       "description": "Manage users, permissions, and system configuration",
       "button": "Admin Panel"
+    }
+  },
+  "databaseConnections": {
+    "title": "Database Connections",
+    "description": "Manage connections to external databases",
+    "createConnection": "Create New Connection",
+    "editConnection": "Edit Connection",
+    "createDescription": "Configure a new database connection",
+    "editDescription": "Modify the database connection settings",
+    "noConnections": "No database connections",
+    "noConnectionsDescription": "Create a new connection to start accessing master data",
+    "confirmDelete": "Are you sure you want to delete connection '{{name}}'? This action cannot be undone.",
+    "lastTested": "Last tested",
+    "created": "Created",
+    "updated": "Updated",
+    "fields": {
+      "name": "Connection Name",
+      "dbType": "Database Type",
+      "host": "Host",
+      "port": "Port",
+      "database": "Database Name",
+      "username": "Username",
+      "password": "Password",
+      "connectionParams": "Connection Parameters",
+      "active": "Enable connection"
+    },
+    "placeholders": {
+      "name": "Production DB Connection",
+      "host": "localhost",
+      "database": "production_db",
+      "username": "db_user",
+      "password": "Enter password",
+      "passwordEdit": "Enter only to change",
+      "connectionParams": "useSSL=false&serverTimezone=UTC"
+    },
+    "hints": {
+      "connectionParams": "Additional connection parameters in key=value&key2=value2 format",
+      "active": "Uncheck to disable this connection",
+      "passwordEdit": "Enter password only if you want to change it"
+    },
+    "validation": {
+      "nameRequired": "Connection name is required",
+      "hostRequired": "Host is required",
+      "portInvalid": "Port must be between 1 and 65535",
+      "databaseNameRequired": "Database name is required",
+      "usernameRequired": "Username is required",
+      "passwordRequired": "Password is required"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "connected": "Connected",
+      "connectionFailed": "Connection Failed",
+      "untested": "Untested"
+    },
+    "actions": {
+      "test": "Test",
+      "edit": "Edit",
+      "delete": "Delete",
+      "activate": "Activate",
+      "deactivate": "Deactivate"
+    },
+    "messages": {
+      "createSuccess": "Created connection '{{name}}'",
+      "updateSuccess": "Updated connection '{{name}}'",
+      "deleteSuccess": "Deleted connection '{{name}}'",
+      "activateSuccess": "Activated connection '{{name}}'",
+      "deactivateSuccess": "Deactivated connection '{{name}}'",
+      "testSuccess": "Connection '{{name}}' test successful ({{responseTime}}ms)",
+      "testFailed": "Connection '{{name}}' test failed: {{error}}",
+      "saveError": "Failed to save connection",
+      "deleteError": "Failed to delete connection",
+      "testError": "Connection test failed",
+      "toggleError": "Failed to change connection status"
     }
   }
 }

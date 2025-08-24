@@ -186,3 +186,41 @@ export interface RecordDeleteResult {
   executionTimeMs: number
   query: string
 }
+
+// Database Connection Types
+export type DatabaseType = 'MYSQL' | 'MARIADB' | 'POSTGRESQL' | 'H2'
+
+export interface DatabaseConnectionRequest {
+  name: string
+  dbType: DatabaseType
+  host: string
+  port: number
+  databaseName: string
+  username: string
+  password: string
+  connectionParams?: string
+  active: boolean
+}
+
+export interface DatabaseConnectionResult {
+  id: number
+  name: string
+  dbType: DatabaseType
+  host: string
+  port: number
+  databaseName: string
+  username: string
+  connectionParams?: string
+  active: boolean
+  lastTestedAt?: string
+  testResult?: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ConnectionTestResult {
+  connected: boolean
+  message?: string
+  errorDetails?: string
+  responseTimeMs?: number
+}

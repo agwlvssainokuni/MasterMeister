@@ -171,3 +171,41 @@ export interface RecordDeleteResponse {
   executionTimeMs: number
   query: string
 }
+
+// Database Connection Types (Frontend)
+export type DatabaseType = 'MYSQL' | 'MARIADB' | 'POSTGRESQL' | 'H2'
+
+export interface DatabaseConnectionForm {
+  name: string
+  dbType: DatabaseType
+  host: string
+  port: number
+  databaseName: string
+  username: string
+  password: string
+  connectionParams?: string
+  active: boolean
+}
+
+export interface DatabaseConnection {
+  id: number
+  name: string
+  dbType: DatabaseType
+  host: string
+  port: number
+  databaseName: string
+  username: string
+  connectionParams?: string
+  active: boolean
+  lastTestedAt?: Date
+  testResult?: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface ConnectionTestResult {
+  connected: boolean
+  message?: string
+  errorDetails?: string
+  responseTimeMs?: number
+}

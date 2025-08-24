@@ -24,6 +24,7 @@ import {RegisterUserPage} from './pages/RegisterUserPage.tsx'
 import {AdminDashboard} from './pages/AdminDashboard'
 import {DashboardPage} from './pages/DashboardPage'
 import {DataAccessPage} from './pages/DataAccessPage'
+import {DatabaseConnectionsPage} from './pages/DatabaseConnectionsPage'
 import './App.css'
 
 const App = () => {
@@ -56,6 +57,14 @@ const App = () => {
               element={
                 <AdminRoute>
                   <AdminDashboard/>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/database-connections"
+              element={
+                <AdminRoute>
+                  <DatabaseConnectionsPage/>
                 </AdminRoute>
               }
             />

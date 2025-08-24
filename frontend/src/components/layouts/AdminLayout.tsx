@@ -56,6 +56,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
       icon: '👥'
     },
     {
+      path: '/admin/database-connections',
+      label: t('navigation.databaseConnections'),
+      icon: '🔗'
+    },
+    {
       path: '/admin/permissions',
       label: t('navigation.permissions'),
       icon: '🔐'

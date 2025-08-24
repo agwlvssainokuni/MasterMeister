@@ -43,5 +43,15 @@ export const API_ENDPOINTS = {
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
     RECORD_DELETE: (connectionId: number, schemaName: string, tableName: string) => 
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records:delete`
+  },
+  DATABASE_CONNECTIONS: {
+    LIST: '/admin/database-connections',
+    GET: (id: number) => `/admin/database-connections/${id}`,
+    CREATE: '/admin/database-connections',
+    UPDATE: (id: number) => `/admin/database-connections/${id}`,
+    DELETE: (id: number) => `/admin/database-connections/${id}`,
+    TEST: (id: number) => `/admin/database-connections/${id}/test`,
+    ACTIVATE: (id: number) => `/admin/database-connections/${id}/activate`,
+    DEACTIVATE: (id: number) => `/admin/database-connections/${id}/deactivate`
   }
 }
