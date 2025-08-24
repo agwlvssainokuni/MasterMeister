@@ -1,7 +1,8 @@
 {
   "app": {
     "title": "Master Meister",
-    "subtitle": "Master Data Maintenance System"
+    "subtitle": "Master Data Maintenance System",
+    "copyright": "© 2025 agwlvssainokuni. All rights reserved."
   },
   "auth": {
     "login": "Login",
@@ -104,7 +105,10 @@
   },
   "navigation": {
     "dashboard": "Dashboard",
+    "dataAccess": "Data Access",
     "admin": "Admin",
+    "userManagement": "User Management",
+    "permissions": "Permissions",
     "settings": "Settings"
   },
   "admin": {

@@ -1,7 +1,8 @@
 {
   "app": {
     "title": "Master Meister",
-    "subtitle": "マスターデータ保守システム"
+    "subtitle": "マスターデータ保守システム",
+    "copyright": "© 2025 agwlvssainokuni. All rights reserved."
   },
   "auth": {
     "login": "ログイン",
@@ -104,7 +105,10 @@
   },
   "navigation": {
     "dashboard": "ダッシュボード",
+    "dataAccess": "データアクセス",
     "admin": "管理者",
+    "userManagement": "ユーザー管理",
+    "permissions": "権限",
     "settings": "設定"
   },
   "admin": {

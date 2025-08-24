@@ -16,7 +16,7 @@
 
 import {useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {LogoutButton} from '../components/LogoutButton'
+import {AdminLayout} from '../components/layouts/AdminLayout'
 import {PendingUsersList} from '../components/PendingUsersList'
 import '../styles/components/Tabs.css'
 import '../styles/components/Card.css'
@@ -27,14 +27,7 @@ export const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'database' | 'permissions'>('users')
 
   return (
-    <div className="admin-dashboard">
-      <header className="admin-header">
-        <div className="admin-header-content">
-          <h1>{t('admin.dashboard.title')}</h1>
-          <LogoutButton variant="secondary" size="sm"/>
-        </div>
-      </header>
-
+    <AdminLayout title={t('admin.dashboard.title')}>
       <div className="tabs">
         <ul className="tabs-list">
           <li className={`tab-item ${activeTab === 'users' ? 'active' : ''}`}>
@@ -102,6 +95,6 @@ export const AdminDashboard = () => {
           </div>
         </div>
       </main>
-    </div>
+    </AdminLayout>
   )
 }

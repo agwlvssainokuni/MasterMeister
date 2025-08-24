@@ -17,6 +17,7 @@
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {useNotification} from '../contexts/NotificationContext'
+import {UserLayout} from '../components/layouts/UserLayout'
 import {TablesList} from '../components/TablesList'
 import {DataTable} from '../components/DataTable'
 import {RecordEditModal} from '../components/RecordEditModal'
@@ -110,11 +111,8 @@ export const DataAccessPage: React.FC = () => {
   }
 
   return (
-    <div className="data-access-page">
-      <header className="page-header">
-        <h1>{t('dataAccess.title')}</h1>
-        <p className="page-description">{t('dataAccess.description')}</p>
-      </header>
+    <UserLayout title={t('dataAccess.title')}>
+      <p className="page-description">{t('dataAccess.description')}</p>
 
       <div className="data-access-layout">
         <aside className="tables-sidebar">
@@ -192,6 +190,6 @@ export const DataAccessPage: React.FC = () => {
           </button>
         </PermissionGuard>
       )}
-    </div>
+    </UserLayout>
   )
 }

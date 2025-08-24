@@ -15,50 +15,40 @@
  */
 
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useAuth } from '../contexts/AuthContext'
-import { LogoutButton } from '../components/LogoutButton'
+import {Link} from 'react-router-dom'
+import {useTranslation} from 'react-i18next'
+import {useAuth} from '../contexts/AuthContext'
+import {UserLayout} from '../components/layouts/UserLayout'
 
 export const DashboardPage: React.FC = () => {
-  const { t } = useTranslation()
-  const { user } = useAuth()
+  const {t} = useTranslation()
+  const {user} = useAuth()
 
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>{t('dashboard.title')}</h1>
-        <div className="dashboard-user-info">
-          <span className="user-email">{user?.email}</span>
-          <LogoutButton />
-        </div>
-      </header>
+    <UserLayout title={t('dashboard.title')}>
+      <p className="dashboard-welcome">{t('dashboard.welcome')}</p>
 
-      <main className="dashboard-main">
-        <p className="dashboard-welcome">{t('dashboard.welcome')}</p>
-        
-        <div className="dashboard-cards">
+      <div className="dashboard-cards">
+        <div className="dashboard-card">
+          <div className="card-icon">📊</div>
+          <h3>{t('dashboard.dataAccess.title')}</h3>
+          <p>{t('dashboard.dataAccess.description')}</p>
+          <Link to="/data" className="button button-primary">
+            {t('dashboard.dataAccess.button')}
+          </Link>
+        </div>
+
+        {user?.role === 'ADMIN' && (
           <div className="dashboard-card">
-            <div className="card-icon">📊</div>
-            <h3>{t('dashboard.dataAccess.title')}</h3>
-            <p>{t('dashboard.dataAccess.description')}</p>
-            <Link to="/data" className="button button-primary">
-              {t('dashboard.dataAccess.button')}
+            <div className="card-icon">⚙️</div>
+            <h3>{t('dashboard.adminPanel.title')}</h3>
+            <p>{t('dashboard.adminPanel.description')}</p>
+            <Link to="/admin" className="button button-secondary">
+              {t('dashboard.adminPanel.button')}
             </Link>
           </div>
-
-          {user?.role === 'ADMIN' && (
-            <div className="dashboard-card">
-              <div className="card-icon">⚙️</div>
-              <h3>{t('dashboard.adminPanel.title')}</h3>
-              <p>{t('dashboard.adminPanel.description')}</p>
-              <Link to="/admin" className="button button-secondary">
-                {t('dashboard.adminPanel.button')}
-              </Link>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
+        )}
+      </div>
+    </UserLayout>
   )
 }
