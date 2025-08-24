@@ -18,6 +18,7 @@ package cherry.mastermeister.controller;
 
 import cherry.mastermeister.annotation.RequirePermission;
 import cherry.mastermeister.controller.dto.*;
+import cherry.mastermeister.model.RecordCreationResult;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.RecordFilter;
@@ -25,12 +26,16 @@ import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.service.DataAccessService;
 import cherry.mastermeister.service.PermissionAuthService;
 import cherry.mastermeister.service.RecordAccessService;
+import cherry.mastermeister.service.RecordCreationService;
 import cherry.mastermeister.service.RecordFilterConverterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,17 +55,20 @@ public class DataAccessController {
     private final DataAccessService dataAccessService;
     private final PermissionAuthService permissionAuthService;
     private final RecordAccessService recordAccessService;
+    private final RecordCreationService recordCreationService;
     private final RecordFilterConverterService recordFilterConverterService;
 
     public DataAccessController(
             DataAccessService dataAccessService,
             PermissionAuthService permissionAuthService,
             RecordAccessService recordAccessService,
+            RecordCreationService recordCreationService,
             RecordFilterConverterService recordFilterConverterService
     ) {
         this.dataAccessService = dataAccessService;
         this.permissionAuthService = permissionAuthService;
         this.recordAccessService = recordAccessService;
+        this.recordCreationService = recordCreationService;
         this.recordFilterConverterService = recordFilterConverterService;
     }
 
@@ -149,6 +157,38 @@ public class DataAccessController {
 
         RecordQueryResult dto = convertToRecordQueryResultDto(result);
         return ApiResponse.success(dto);
+    }
+
+    @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
+    @Operation(summary = "Create table record", description = "Create a new record in table with column-level permission validation")
+    @RequirePermission(value = PermissionType.WRITE, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName")
+    public ResponseEntity<ApiResponse<RecordCreateResult>> createTableRecord(
+            @PathVariable Long connectionId,
+            @PathVariable String schemaName,
+            @PathVariable String tableName,
+            @Valid @RequestBody RecordCreateRequest request
+    ) {
+
+        logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
+
+        RecordCreationResult result = recordCreationService.createRecord(
+                connectionId, schemaName, tableName, request.data());
+
+        RecordCreateResult dto = convertToRecordCreateResult(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(dto));
+    }
+
+    /**
+     * Convert model RecordCreationResult to DTO
+     */
+    private RecordCreateResult convertToRecordCreateResult(RecordCreationResult model) {
+        return new RecordCreateResult(
+                model.createdRecord(),
+                model.columnTypes(),
+                model.executionTimeMs(),
+                model.query()
+        );
     }
 
     /**

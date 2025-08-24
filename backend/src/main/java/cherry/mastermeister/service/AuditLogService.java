@@ -120,6 +120,21 @@ public class AuditLogService {
         auditLogRepository.save(auditLog);
     }
 
+    /**
+     * Log data modification operations (CREATE, UPDATE, DELETE)
+     */
+    public void logDataModification(Long connectionId, String schemaName, String tableName,
+                                    String operation, int recordCount, long executionTimeMs) {
+        String username = getCurrentUsername();
+        String target = String.format("connection:%d, table:%s.%s", connectionId, schemaName, tableName);
+
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "DATA_" + operation, target);
+        auditLog.setDetails(String.format("Records %s: %d, Execution time: %dms",
+                operation.toLowerCase(), recordCount, executionTimeMs));
+
+        auditLogRepository.save(auditLog);
+    }
+
     private AuditLogEntity createBaseAuditLogEntity(String username, String action, String target) {
         HttpServletRequest request = getCurrentRequest();
         AuditLogEntity auditLog = new AuditLogEntity();
