@@ -17,16 +17,15 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.annotation.RequirePermission;
-import cherry.mastermeister.controller.dto.AccessibleTableResult;
-import cherry.mastermeister.controller.dto.ApiResponse;
-import cherry.mastermeister.controller.dto.ColumnMetadataResult;
-import cherry.mastermeister.controller.dto.RecordQueryResult;
+import cherry.mastermeister.controller.dto.*;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
+import cherry.mastermeister.model.RecordFilter;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.service.DataAccessService;
 import cherry.mastermeister.service.PermissionAuthService;
 import cherry.mastermeister.service.RecordAccessService;
+import cherry.mastermeister.service.RecordFilterConverterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,15 +51,18 @@ public class DataAccessController {
     private final DataAccessService dataAccessService;
     private final PermissionAuthService permissionAuthService;
     private final RecordAccessService recordAccessService;
+    private final RecordFilterConverterService recordFilterConverterService;
 
     public DataAccessController(
             DataAccessService dataAccessService,
             PermissionAuthService permissionAuthService,
-            RecordAccessService recordAccessService
+            RecordAccessService recordAccessService,
+            RecordFilterConverterService recordFilterConverterService
     ) {
         this.dataAccessService = dataAccessService;
         this.permissionAuthService = permissionAuthService;
         this.recordAccessService = recordAccessService;
+        this.recordFilterConverterService = recordFilterConverterService;
     }
 
     @GetMapping("/{connectionId}/tables")
@@ -148,6 +150,40 @@ public class DataAccessController {
                     schemaName, tableName, connectionId, e);
             return ResponseEntity.internalServerError()
                     .body(ApiResponse.error("Failed to get table records"));
+        }
+    }
+
+    @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records/search")
+    @Operation(summary = "Search table records with filters", description = "Get filtered records from table with column-level permission filtering")
+    @RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName")
+    public ResponseEntity<ApiResponse<RecordQueryResult>> searchTableRecords(
+            @PathVariable Long connectionId,
+            @PathVariable String schemaName,
+            @PathVariable String tableName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int pageSize,
+            @RequestBody(required = false) RecordFilterRequest filterRequest
+    ) {
+
+        logger.info("Searching records for table {}.{} on connection: {}, page: {}, size: {}, filters: {}",
+                schemaName, tableName, connectionId, page, pageSize,
+                filterRequest != null ? "present" : "none");
+
+        try {
+            RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
+
+            cherry.mastermeister.model.RecordQueryResult result = recordAccessService.getRecords(
+                    connectionId, schemaName, tableName, filter, page, pageSize);
+
+            RecordQueryResult dto = convertToRecordQueryResultDto(result);
+            return ResponseEntity.ok(ApiResponse.success(dto));
+
+        } catch (Exception e) {
+            logger.error("Failed to search records for table {}.{} on connection: {}",
+                    schemaName, tableName, connectionId, e);
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.error("Failed to search table records: " + e.getMessage()));
         }
     }
 

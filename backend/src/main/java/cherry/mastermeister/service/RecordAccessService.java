@@ -17,16 +17,13 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.PermissionType;
-import cherry.mastermeister.model.ColumnMetadata;
-import cherry.mastermeister.model.RecordQueryResult;
-import cherry.mastermeister.model.TableMetadata;
-import cherry.mastermeister.model.TableRecord;
+import cherry.mastermeister.model.*;
 import cherry.mastermeister.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +46,7 @@ public class RecordAccessService {
     private final PermissionAuthService permissionAuthService;
     private final PermissionUtils permissionUtils;
     private final AuditLogService auditLogService;
+    private final QueryBuilderService queryBuilderService;
 
     @Value("${mm.app.data-access.large-dataset-threshold:100}")
     private int largeDatasetThreshold;
@@ -58,13 +56,15 @@ public class RecordAccessService {
             SchemaMetadataStorageService schemaMetadataStorageService,
             PermissionAuthService permissionAuthService,
             PermissionUtils permissionUtils,
-            AuditLogService auditLogService
+            AuditLogService auditLogService,
+            QueryBuilderService queryBuilderService
     ) {
         this.databaseConnectionService = databaseConnectionService;
         this.schemaMetadataStorageService = schemaMetadataStorageService;
         this.permissionAuthService = permissionAuthService;
         this.permissionUtils = permissionUtils;
         this.auditLogService = auditLogService;
+        this.queryBuilderService = queryBuilderService;
     }
 
     /**
@@ -72,6 +72,15 @@ public class RecordAccessService {
      */
     public RecordQueryResult getRecords(
             Long connectionId, String schemaName, String tableName, int page, int pageSize
+    ) {
+        return getRecords(connectionId, schemaName, tableName, RecordFilter.empty(), page, pageSize);
+    }
+
+    /**
+     * Get records from table with filtering and column-level permission filtering
+     */
+    public RecordQueryResult getRecords(
+            Long connectionId, String schemaName, String tableName, RecordFilter filter, int page, int pageSize
     ) {
         logger.info("Getting records for table {}.{} on connection: {}, page: {}, size: {}",
                 schemaName, tableName, connectionId, page, pageSize);
@@ -96,28 +105,33 @@ public class RecordAccessService {
 
             // Build and execute query
             DataSource dataSource = databaseConnectionService.getDataSource(connectionId);
-            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+            NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
-            String query = buildSelectQuery(schemaName, tableName, accessibleColumns, page, pageSize);
-            String countQuery = buildCountQuery(schemaName, tableName);
+            // Use QueryBuilderService for dynamic query generation
+            QueryBuilderService.QueryResult selectQueryResult = queryBuilderService.buildSelectQuery(
+                    schemaName, tableName, accessibleColumns, filter, page, pageSize);
+            QueryBuilderService.QueryResult countQueryResult = queryBuilderService.buildCountQuery(
+                    schemaName, tableName, filter);
 
-            logger.debug("Executing query: {}", query);
+            logger.debug("Executing query: {}", selectQueryResult.query());
+            logger.debug("Query parameters: {}", selectQueryResult.parameters());
 
             // Get total count
-            Long totalRecords = jdbcTemplate.queryForObject(countQuery, Long.class);
+            Long totalRecords = namedJdbcTemplate.queryForObject(
+                    countQueryResult.query(), countQueryResult.parameters(), Long.class);
             if (totalRecords == null) {
                 totalRecords = 0L;
             }
 
             // Execute main query
-            List<TableRecord> records = jdbcTemplate.query(query, (rs, rowNum) -> {
-                return mapResultSetToRecord(rs, accessibleColumns, connectionId, schemaName, tableName);
-            });
+            List<TableRecord> records = namedJdbcTemplate.query(
+                    selectQueryResult.query(), selectQueryResult.parameters(),
+                    (rs, rowNum) -> mapResultSetToRecord(rs, accessibleColumns, connectionId, schemaName, tableName));
 
             long executionTime = System.currentTimeMillis() - startTime;
 
             RecordQueryResult result = new RecordQueryResult(
-                    records, accessibleColumns, totalRecords, page, pageSize, executionTime, query);
+                    records, accessibleColumns, totalRecords, page, pageSize, executionTime, selectQueryResult.query());
 
             // Log large dataset access
             if (result.isLargeDataset(largeDatasetThreshold)) {
