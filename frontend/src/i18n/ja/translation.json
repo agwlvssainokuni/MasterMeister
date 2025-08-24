@@ -161,9 +161,59 @@
     "confirm": "確認",
     "save": "保存",
     "delete": "削除",
+    "deleting": "削除中...",
     "edit": "編集",
     "approve": "承認",
     "reject": "拒否",
-    "retry": "再試行"
+    "retry": "再試行",
+    "create": "作成",
+    "update": "更新",
+    "saving": "保存中...",
+    "previous": "前へ",
+    "next": "次へ",
+    "actions": "操作"
+  },
+  "dataAccess": {
+    "title": "データアクセス",
+    "description": "権限に基づいてデータベースレコードを参照・管理します",
+    "selectTable": "テーブルを選択",
+    "selectTableDescription": "サイドバーからテーブルを選択してデータを表示・管理してください",
+    "metadataLoadError": "テーブルメタデータの読み込みに失敗しました"
+  },
+  "tablesList": {
+    "title": "利用可能なテーブル",
+    "searchPlaceholder": "テーブルを検索...",
+    "tableCount": "{{total}}テーブル中{{count}}テーブル",
+    "noTables": "利用可能なテーブルがありません",
+    "noTablesFound": "検索条件に一致するテーブルが見つかりません"
+  },
+  "dataTable": {
+    "recordCount": "{{count}}件のレコード",
+    "executionTime": "クエリ実行時間: {{time}}ms",
+    "createRecord": "レコード作成",
+    "pageSize": "ページサイズ",
+    "pageInfo": "{{total}}ページ中{{current}}ページ（{{totalRecords}}件）",
+    "noData": "データがありません"
+  },
+  "recordEdit": {
+    "createTitle": "新規レコード作成 - {{tableName}}",
+    "editTitle": "レコード編集 - {{tableName}}",
+    "requiredField": "この項目は必須です",
+    "autoIncrementField": "自動インクリメント項目は手動で設定できません",
+    "createSuccess": "レコードを作成しました",
+    "updateSuccess": "レコードを更新しました",
+    "saveError": "レコードの保存に失敗しました"
+  },
+  "recordDelete": {
+    "title": "レコード削除",
+    "warning": "この操作は取り消せません",
+    "table": "テーブル",
+    "record": "レコード",
+    "recordData": "レコードデータ",
+    "noPrimaryKey": "主キーが定義されていません",
+    "moreFields": "... 他{{count}}項目",
+    "confirmText": "このレコードを削除してもよろしいですか？",
+    "success": "レコードを削除しました",
+    "error": "レコードの削除に失敗しました"
   }
 }

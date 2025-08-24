@@ -66,3 +66,108 @@ export interface RegisterUserResult {
   userId: number
   email: string
 }
+
+// Data Access & Display Types
+export interface AccessibleTable {
+  connectionId: number
+  schemaName: string
+  tableName: string
+  fullTableName: string
+  tableType: string
+  comment?: string
+  permissions: string[]
+  canRead: boolean
+  canWrite: boolean
+  canDelete: boolean
+  canAdmin: boolean
+  canModifyData: boolean
+  canPerformCrud: boolean
+}
+
+export interface ColumnMetadata {
+  columnName: string
+  dataType: string
+  columnSize?: number
+  decimalDigits?: number
+  nullable: boolean
+  defaultValue?: string
+  comment?: string
+  primaryKey: boolean
+  autoIncrement: boolean
+  ordinalPosition: number
+}
+
+export interface TableMetadata {
+  schema: string
+  tableName: string
+  tableType: string
+  comment?: string
+  columns: ColumnMetadata[]
+}
+
+export interface TableRecord {
+  [columnName: string]: unknown
+}
+
+export interface RecordQueryData {
+  records: TableRecord[]
+  accessibleColumns: ColumnMetadata[]
+  totalRecords: number
+  currentPage: number
+  pageSize: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+  executionTimeMs: number
+  query: string
+}
+
+export interface ColumnFilter {
+  columnName: string
+  operator: 'EQUALS' | 'NOT_EQUALS' | 'LIKE' | 'NOT_LIKE' | 'GREATER_THAN' | 'LESS_THAN' | 'GREATER_EQUALS' | 'LESS_EQUALS' | 'BETWEEN' | 'IN' | 'NOT_IN' | 'IS_NULL' | 'IS_NOT_NULL'
+  value?: unknown
+  value2?: unknown
+}
+
+export interface SortOrder {
+  columnName: string
+  direction: 'ASC' | 'DESC'
+}
+
+export interface RecordFilter {
+  columnFilters: ColumnFilter[]
+  customWhere?: string
+  sortOrders: SortOrder[]
+}
+
+export interface RecordCreateData {
+  data: Record<string, unknown>
+}
+
+export interface RecordCreateResponse {
+  createdRecord: TableRecord
+  columnTypes: Record<string, string>
+  executionTimeMs: number
+  query: string
+}
+
+export interface RecordUpdateData {
+  updateData: Record<string, unknown>
+  whereConditions: Record<string, unknown>
+}
+
+export interface RecordUpdateResponse {
+  updatedRecords: number
+  executionTimeMs: number
+  query: string
+}
+
+export interface RecordDeleteData {
+  whereConditions: Record<string, unknown>
+}
+
+export interface RecordDeleteResponse {
+  deletedRecords: number
+  executionTimeMs: number
+  query: string
+}

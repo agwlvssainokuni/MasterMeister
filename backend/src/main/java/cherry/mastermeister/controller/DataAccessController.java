@@ -201,7 +201,7 @@ public class DataAccessController {
         return ApiResponse.success(dto);
     }
 
-    @DeleteMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
+    @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records:delete")
     @Operation(summary = "Delete table records", description = "Delete records from table with referential integrity checks and column-level permission validation")
     @RequirePermission(value = PermissionType.DELETE, connectionIdParam = "connectionId",
             schemaNameParam = "schemaName", tableNameParam = "tableName")
