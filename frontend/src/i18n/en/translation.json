@@ -249,5 +249,19 @@
     "noWriteAccess": "No write access to this data",
     "noDeleteAccess": "No delete access to this data",
     "noAdminAccess": "No admin access to this resource"
+  },
+  "dashboard": {
+    "title": "Master Meister Dashboard",
+    "welcome": "Welcome to Master Meister!",
+    "dataAccess": {
+      "title": "Data Access",
+      "description": "Browse and manage database records with role-based permissions",
+      "button": "Access Data"
+    },
+    "adminPanel": {
+      "title": "Admin Panel", 
+      "description": "Manage users, permissions, and system configuration",
+      "button": "Admin Panel"
+    }
   }
 }

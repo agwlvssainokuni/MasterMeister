@@ -22,18 +22,9 @@ import {LoginPage} from './pages/LoginPage'
 import {RegisterEmailPage} from './pages/RegisterEmailPage.tsx'
 import {RegisterUserPage} from './pages/RegisterUserPage.tsx'
 import {AdminDashboard} from './pages/AdminDashboard'
-import {LogoutButton} from './components/LogoutButton'
+import {DashboardPage} from './pages/DashboardPage'
+import {DataAccessPage} from './pages/DataAccessPage'
 import './App.css'
-
-const DashboardPage = () => (
-  <div style={{padding: '2rem'}}>
-    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem'}}>
-      <h1>Dashboard</h1>
-      <LogoutButton/>
-    </div>
-    <p>Welcome to Master Meister Dashboard!</p>
-  </div>
-)
 
 const App = () => {
   return (
@@ -49,6 +40,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <DashboardPage/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data"
+              element={
+                <ProtectedRoute>
+                  <DataAccessPage/>
                 </ProtectedRoute>
               }
             />

@@ -249,5 +249,19 @@
     "noWriteAccess": "このデータの書き込み権限がありません",
     "noDeleteAccess": "このデータの削除権限がありません",
     "noAdminAccess": "このリソースの管理者権限がありません"
+  },
+  "dashboard": {
+    "title": "Master Meister ダッシュボード",
+    "welcome": "Master Meister へようこそ！",
+    "dataAccess": {
+      "title": "データアクセス",
+      "description": "権限ベースでデータベースレコードを参照・管理します",
+      "button": "データアクセス"
+    },
+    "adminPanel": {
+      "title": "管理パネル",
+      "description": "ユーザー・権限・システム設定を管理します",
+      "button": "管理パネル"
+    }
   }
 }

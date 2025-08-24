@@ -18,7 +18,7 @@ import React, {useCallback, useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
 import {ColumnFilterComponent} from './ColumnFilter'
-import {PermissionGuard} from './PermissionGuard'
+import {ConditionalPermission, PermissionGuard} from './PermissionGuard'
 import type {
   AccessibleTable,
   ColumnFilter,
