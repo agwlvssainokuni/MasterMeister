@@ -16,13 +16,16 @@
 
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BulkPermissionSetup } from './BulkPermissionSetup'
+import { BulkPermissionConfirmDialog } from './BulkPermissionConfirmDialog'
 import type { 
   DatabaseConnection, 
   PermissionImportOptions, 
   PermissionImportResult, 
   PermissionValidationResult,
   BulkPermissionOptions,
-  BulkPermissionResult
+  BulkPermissionResult,
+  BulkPermissionType
 } from '../types/frontend'
 
 interface PermissionFileManagerProps {
@@ -56,6 +59,12 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
     clearExistingPermissions: false,
     skipDuplicates: true
   })
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [confirmOptions, setConfirmOptions] = useState<{
+    type: BulkPermissionType
+    options: BulkPermissionOptions
+    onConfirm: () => void
+  } | null>(null)
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -101,6 +110,27 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
     }
   }
 
+  const handleShowConfirmDialog = (
+    type: BulkPermissionType,
+    options: BulkPermissionOptions,
+    onConfirm: () => void
+  ) => {
+    setConfirmOptions({ type, options, onConfirm })
+    setShowConfirmDialog(true)
+  }
+
+  const handleConfirmDialogClose = () => {
+    setShowConfirmDialog(false)
+    setConfirmOptions(null)
+  }
+
+  const handleConfirm = () => {
+    if (confirmOptions) {
+      confirmOptions.onConfirm()
+    }
+    handleConfirmDialogClose()
+  }
+
   return (
     <div className="permission-file-manager">
       <div className="manager-header">
@@ -136,57 +166,19 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
       </div>
 
       <div className="tab-content">
-        {activeTab === 'quickSetup' && (
-          <div className="quick-setup-section">
-            <h4>{t('permissions.quickSetupTitle')}</h4>
-            <p className="section-description">
-              {t('permissions.quickSetupDescription')}
-            </p>
-            
-            <div className="quick-setup-options">
-              <div className="quick-option-card">
-                <div className="option-icon">📖</div>
-                <h5>{t('permissions.quickOptions.readAll.title')}</h5>
-                <p>{t('permissions.quickOptions.readAll.description')}</p>
-                <button 
-                  className="button button-secondary"
-                  disabled={!onBulkGrant || loading}
-                >
-                  {t('permissions.quickOptions.readAll.action')}
-                </button>
-              </div>
+        {activeTab === 'quickSetup' && onBulkGrant && (
+          <BulkPermissionSetup
+            connection={connection}
+            loading={loading}
+            onBulkGrant={onBulkGrant}
+            onShowConfirmDialog={handleShowConfirmDialog}
+          />
+        )}
 
-              <div className="quick-option-card">
-                <div className="option-icon">✏️</div>
-                <h5>{t('permissions.quickOptions.writeAll.title')}</h5>
-                <p>{t('permissions.quickOptions.writeAll.description')}</p>
-                <button 
-                  className="button button-primary"
-                  disabled={!onBulkGrant || loading}
-                >
-                  {t('permissions.quickOptions.writeAll.action')}
-                </button>
-              </div>
-
-              <div className="quick-option-card">
-                <div className="option-icon">🔒</div>
-                <h5>{t('permissions.quickOptions.readOnly.title')}</h5>
-                <p>{t('permissions.quickOptions.readOnly.description')}</p>
-                <button 
-                  className="button button-secondary"
-                  disabled={!onBulkGrant || loading}
-                >
-                  {t('permissions.quickOptions.readOnly.action')}
-                </button>
-              </div>
-            </div>
-
-            {!onBulkGrant && (
-              <div className="feature-notice">
-                <span className="notice-icon">⚠️</span>
-                <span>{t('permissions.quickSetupNotAvailable')}</span>
-              </div>
-            )}
+        {activeTab === 'quickSetup' && !onBulkGrant && (
+          <div className="feature-notice">
+            <span className="notice-icon">⚠️</span>
+            <span>{t('permissions.quickSetupNotAvailable')}</span>
           </div>
         )}
 
@@ -413,6 +405,17 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
           </div>
         )}
       </div>
+
+      {showConfirmDialog && confirmOptions && (
+        <BulkPermissionConfirmDialog
+          isOpen={showConfirmDialog}
+          permissionType={confirmOptions.type}
+          options={confirmOptions.options}
+          connectionName={connection.name}
+          onConfirm={handleConfirm}
+          onCancel={handleConfirmDialogClose}
+        />
+      )}
     </div>
   )
 }

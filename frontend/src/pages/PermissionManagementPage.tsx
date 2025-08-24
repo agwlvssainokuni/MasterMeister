@@ -22,7 +22,14 @@ import { PermissionFileManager } from '../components/PermissionFileManager'
 import { useNotification } from '../contexts/NotificationContext'
 import { databaseConnectionService } from '../services/databaseConnectionService'
 import { permissionService } from '../services/permissionService'
-import type { DatabaseConnection, PermissionImportOptions, PermissionImportResult, PermissionValidationResult } from '../types/frontend'
+import type { 
+  DatabaseConnection, 
+  PermissionImportOptions, 
+  PermissionImportResult, 
+  PermissionValidationResult,
+  BulkPermissionOptions,
+  BulkPermissionResult
+} from '../types/frontend'
 
 export const PermissionManagementPage: React.FC = () => {
   const { t } = useTranslation()
@@ -134,6 +141,35 @@ export const PermissionManagementPage: React.FC = () => {
     }
   }
 
+  const handleBulkGrantPermissions = async (
+    connectionId: number,
+    options: BulkPermissionOptions
+  ): Promise<BulkPermissionResult> => {
+    try {
+      setLoading(true)
+      const result = await permissionService.bulkGrantPermissions(connectionId, options)
+      
+      const connection = connections.find(c => c.id === connectionId)
+      showSuccess(
+        t('permissions.messages.bulkGrantSuccess', {
+          connection: connection?.name || `ID ${connectionId}`,
+          created: result.createdPermissions,
+          skipped: result.skippedExisting,
+          users: result.processedUsers,
+          tables: result.processedTables
+        })
+      )
+      
+      return result
+    } catch (error) {
+      console.error('Bulk grant failed:', error)
+      showError(t('permissions.messages.bulkGrantError'))
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <AdminLayout title={t('permissions.title')}>
       <div className="permission-management-page">
@@ -161,6 +197,7 @@ export const PermissionManagementPage: React.FC = () => {
                 onExport={handleExportPermissions}
                 onImport={handleImportPermissions}
                 onValidate={handleValidateYaml}
+                onBulkGrant={handleBulkGrantPermissions}
               />
             )}
           </>
