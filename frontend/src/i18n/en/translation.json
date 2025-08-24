@@ -215,5 +215,32 @@
     "confirmText": "Are you sure you want to delete this record?",
     "success": "Record deleted successfully",
     "error": "Failed to delete record"
+  },
+  "filter": {
+    "filterColumn": "Filter this column",
+    "filterBy": "Filter by {{column}}",
+    "operator": "Operator",
+    "value": "Value",
+    "value2": "End Value",
+    "clear": "Clear",
+    "apply": "Apply",
+    "likePlaceholder": "Use % for wildcards (e.g., %john%)",
+    "inPlaceholder": "Comma-separated values (e.g., val1, val2)",
+    "valuePlaceholder": "Enter value",
+    "operators": {
+      "equals": "Equals",
+      "notEquals": "Not Equals",
+      "like": "Contains",
+      "notLike": "Does not contain",
+      "greaterThan": "Greater than",
+      "lessThan": "Less than", 
+      "greaterEquals": "Greater than or equal",
+      "lessEquals": "Less than or equal",
+      "between": "Between",
+      "in": "In list",
+      "notIn": "Not in list",
+      "isNull": "Is empty",
+      "isNotNull": "Is not empty"
+    }
   }
 }

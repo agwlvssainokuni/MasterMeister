@@ -215,5 +215,32 @@
     "confirmText": "このレコードを削除してもよろしいですか？",
     "success": "レコードを削除しました",
     "error": "レコードの削除に失敗しました"
+  },
+  "filter": {
+    "filterColumn": "この列をフィルタリング",
+    "filterBy": "{{column}}でフィルタリング",
+    "operator": "演算子",
+    "value": "値",
+    "value2": "終了値",
+    "clear": "クリア",
+    "apply": "適用",
+    "likePlaceholder": "ワイルドカードに%を使用 (例: %john%)",
+    "inPlaceholder": "カンマ区切りの値 (例: val1, val2)",
+    "valuePlaceholder": "値を入力",
+    "operators": {
+      "equals": "等しい",
+      "notEquals": "等しくない",
+      "like": "含む",
+      "notLike": "含まない",
+      "greaterThan": "より大きい",
+      "lessThan": "より小さい",
+      "greaterEquals": "以上",
+      "lessEquals": "以下",
+      "between": "の間",
+      "in": "リストに含む",
+      "notIn": "リストに含まない",
+      "isNull": "空である",
+      "isNotNull": "空でない"
+    }
   }
 }

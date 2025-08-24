@@ -17,6 +17,7 @@
 import React, {useCallback, useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
+import {ColumnFilterComponent} from './ColumnFilter'
 import type {
   AccessibleTable,
   ColumnFilter,
@@ -121,6 +122,27 @@ export const DataTable: React.FC<DataTableProps> = (
     setPageSize(newPageSize)
     setCurrentPage(0)
     setSelectedRecords(new Set())
+  }
+
+  const handleFilterChange = (columnName: string, filter: ColumnFilter | null) => {
+    setColumnFilters(prev => {
+      if (filter === null) {
+        return prev.filter(f => f.columnName !== columnName)
+      } else {
+        const existing = prev.find(f => f.columnName === columnName)
+        if (existing) {
+          return prev.map(f => f.columnName === columnName ? filter : f)
+        } else {
+          return [...prev, filter]
+        }
+      }
+    })
+    setCurrentPage(0) // Reset to first page when filter changes
+    setSelectedRecords(new Set())
+  }
+
+  const getCurrentFilter = (columnName: string): ColumnFilter | undefined => {
+    return columnFilters.find(f => f.columnName === columnName)
   }
 
   const handleRecordSelect = (index: number, record: TableRecord) => {
@@ -259,11 +281,20 @@ export const DataTable: React.FC<DataTableProps> = (
               />
             </th>
             {accessibleColumns.map(column => (
-              <th key={column.columnName} className="sortable" onClick={() => handleSort(column.columnName)}>
+              <th key={column.columnName} className="sortable">
                 <div className="column-header">
-                  <span className="column-name">{column.columnName}</span>
-                  <span className="sort-icon">{getSortIcon(column.columnName)}</span>
-                  {column.primaryKey && <span className="pk-icon">🔑</span>}
+                  <div className="column-name-section" onClick={() => handleSort(column.columnName)}>
+                    <span className="column-name">{column.columnName}</span>
+                    <span className="sort-icon">{getSortIcon(column.columnName)}</span>
+                    {column.primaryKey && <span className="pk-icon">🔑</span>}
+                  </div>
+                  <div className="column-filter-section">
+                    <ColumnFilterComponent
+                      column={column}
+                      currentFilter={getCurrentFilter(column.columnName)}
+                      onFilterChange={(filter) => handleFilterChange(column.columnName, filter)}
+                    />
+                  </div>
                 </div>
                 <div className="column-info">
                   <span className="data-type">{column.dataType}</span>
