@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Master Data Maintenance Application - a Single Page Application (SPA) for maintaining master data stored in an RDBMS. The project is currently in Phase 4: Data Access & Display implementation.
+This is a Master Data Maintenance Application - a Single Page Application (SPA) for maintaining master data stored in an RDBMS. The project is currently in Phase 4: Data Access & Display (Backend APIs completed, Frontend UI pending).
 
 ## Technical Architecture
 
@@ -33,11 +33,12 @@ This is a Master Data Maintenance Application - a Single Page Application (SPA) 
 - YAML-based permission import/export
 
 **Master Data Maintenance:**
-- Table/view listing with access control
-- Record listing with pagination and filtering
-- In-place record editing with transaction management
-- CRUD operations based on permissions
-- Single unified API for all operations
+- Table/view listing with access control (Backend API ✅)
+- Record listing with pagination and filtering (Backend API ✅)
+- In-place record editing with transaction management (Backend API ✅)
+- CRUD operations based on permissions (Backend API ✅)
+- Single unified API for all operations (Backend API ✅)
+- Frontend UI implementation (Pending)
 
 **Query Features:**
 - Visual query builder with tab interface (SELECT, FROM, JOIN, WHERE, etc.)
@@ -76,6 +77,20 @@ This is a Master Data Maintenance Application - a Single Page Application (SPA) 
   - ✅ Permission enforcement: annotation-based, programmatic, SQL analysis
   - ✅ YAML-based permission configuration export/import
   - ✅ Backend architecture with strict responsibility separation
+- 🔄 **Phase 4 PARTIAL**: Data Access & Display
+  - ✅ **Phase 4.1 COMPLETED**: Secure Data Access
+    - ✅ Permission-based table listing with access control
+    - ✅ Secure record retrieval with column-level filtering
+    - ✅ Pagination and basic filtering with RecordFilter
+    - ✅ Large dataset query logging (100+ records threshold)
+  - ✅ **Phase 4.2 COMPLETED**: Backend CRUD APIs
+    - ✅ Record creation with permission validation (RecordCreateService)
+    - ✅ Record update with transaction management (RecordUpdateService)
+    - ✅ Record deletion with referential integrity checks (RecordDeleteService)
+    - ✅ Comprehensive audit logging with transaction propagation strategy
+    - ✅ Unified CRUD API with detailed error handling
+  - ⏳ **Phase 4.3 PENDING**: Frontend Data Display UI
+  - ⏳ **Phase 4.4 PENDING**: MVP Integration & Testing
 - ✅ **Frontend Complete**: React 19 with modern architecture
   - ✅ React 19 frontend with Node.js 22
   - ✅ i18n internationalization (Japanese/English)
