@@ -119,6 +119,7 @@
     "nav": {
       "users": "User Management",
       "database": "Database Config",
+      "schema": "Schema Management",
       "permissions": "Permissions"
     },
     "users": {
@@ -341,6 +342,65 @@
       "deleteError": "Failed to delete connection",
       "testError": "Connection test failed",
       "toggleError": "Failed to change connection status"
+    }
+  },
+  "schema": {
+    "title": "Schema Management",
+    "description": "Manage database schema metadata reading and updates",
+    "selectConnection": "Select Connection",
+    "selectConnectionDescription": "Choose a connection to read schema from",
+    "connectionSelected": "Selected",
+    "noActiveConnections": "No active connections",
+    "noActiveConnectionsDescription": "Create and activate database connections first to read schema",
+    "connectionInfo": "{{host}}:{{port}} ({{type}})",
+    "tabs": {
+      "metadata": "Schema Data",
+      "history": "Operation History"
+    },
+    "actions": {
+      "read": "Read Schema",
+      "refresh": "Refresh Schema",
+      "readFirst": "Read Schema First"
+    },
+    "reading": "Reading...",
+    "refreshing": "Refreshing...",
+    "schemasCount": "Schemas",
+    "tablesCount": "Tables",
+    "columnsCount": "Columns",
+    "lastUpdated": "Last Updated",
+    "searchPlaceholder": "Search tables and schemas...",
+    "columnsInTable": "{{count}} columns",
+    "columnName": "Column Name",
+    "dataType": "Data Type",
+    "attributes": "Attributes",
+    "noSchemaData": "No schema data available",
+    "noSchemaDataDescription": "Read schema information from the database",
+    "operationHistory": "Operation History",
+    "successfulOperations": "Success: {{count}}",
+    "failedOperations": "Failed: {{count}}",
+    "showFailedOnly": "Show failed only",
+    "noOperations": "No operations recorded",
+    "noOperationsDescription": "Schema operations will appear here when executed",
+    "noFailedOperations": "No failed operations",
+    "noFailedOperationsDescription": "All operations completed successfully",
+    "operations": {
+      "readSchema": "Read Schema",
+      "refreshSchema": "Refresh Schema",
+      "importSchema": "Import Schema",
+      "exportSchema": "Export Schema"
+    },
+    "operationBy": "By: {{user}}",
+    "tablesProcessed": "{{count}} tables processed",
+    "columnsProcessed": "{{count}} columns processed",
+    "errorDetails": "Error Details",
+    "operationDetails": "Operation Details",
+    "operationId": "Operation ID",
+    "executionTime": "Execution Time",
+    "messages": {
+      "readSuccess": "Read schema from {{database}} ({{tablesCount}} tables)",
+      "refreshSuccess": "Refreshed schema from {{database}} ({{tablesCount}} tables)",
+      "readError": "Failed to read schema",
+      "refreshError": "Failed to refresh schema"
     }
   }
 }

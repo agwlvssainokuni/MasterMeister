@@ -61,6 +61,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
       icon: '🔗'
     },
     {
+      path: '/admin/schema',
+      label: t('admin.nav.schema'),
+      icon: '📋'
+    },
+    {
       path: '/admin/permissions',
       label: t('navigation.permissions'),
       icon: '🔐'

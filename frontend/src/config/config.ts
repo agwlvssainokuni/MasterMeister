@@ -53,5 +53,12 @@ export const API_ENDPOINTS = {
     TEST: (id: number) => `/admin/database-connections/${id}/test`,
     ACTIVATE: (id: number) => `/admin/database-connections/${id}/activate`,
     DEACTIVATE: (id: number) => `/admin/database-connections/${id}/deactivate`
+  },
+  SCHEMA: {
+    READ: (connectionId: number) => `/admin/schema/${connectionId}`,
+    GET_CACHED: (connectionId: number) => `/admin/schema/${connectionId}/cached`,
+    REFRESH: (connectionId: number) => `/admin/schema/${connectionId}/refresh`,
+    HISTORY: (connectionId: number) => `/admin/schema/${connectionId}/history`,
+    FAILURES: (connectionId: number) => `/admin/schema/${connectionId}/failures`
   }
 }

@@ -119,6 +119,7 @@
     "nav": {
       "users": "ユーザー管理",
       "database": "データベース設定",
+      "schema": "スキーマ管理",
       "permissions": "権限管理"
     },
     "users": {
@@ -341,6 +342,65 @@
       "deleteError": "接続の削除に失敗しました",
       "testError": "接続テストに失敗しました",
       "toggleError": "接続状態の変更に失敗しました"
+    }
+  },
+  "schema": {
+    "title": "スキーマ管理",
+    "description": "データベーススキーマのメタデータ取得・更新を管理します",
+    "selectConnection": "接続を選択",
+    "selectConnectionDescription": "スキーマを読み取る接続を選択してください",
+    "connectionSelected": "選択済み",
+    "noActiveConnections": "有効な接続がありません",
+    "noActiveConnectionsDescription": "スキーマを読み取るには、まずデータベース接続を作成・有効化してください",
+    "connectionInfo": "{{host}}:{{port}} ({{type}})",
+    "tabs": {
+      "metadata": "スキーマ情報",
+      "history": "操作履歴"
+    },
+    "actions": {
+      "read": "スキーマ読み取り",
+      "refresh": "スキーマ更新",
+      "readFirst": "最初にスキーマを読み取る"
+    },
+    "reading": "読み取り中...",
+    "refreshing": "更新中...",
+    "schemasCount": "スキーマ数",
+    "tablesCount": "テーブル数",
+    "columnsCount": "カラム数",
+    "lastUpdated": "最終更新",
+    "searchPlaceholder": "テーブル・スキーマ名で検索...",
+    "columnsInTable": "{{count}}カラム",
+    "columnName": "カラム名",
+    "dataType": "データ型",
+    "attributes": "属性",
+    "noSchemaData": "スキーマデータがありません",
+    "noSchemaDataDescription": "データベースからスキーマ情報を読み取ってください",
+    "operationHistory": "操作履歴",
+    "successfulOperations": "成功: {{count}}件",
+    "failedOperations": "失敗: {{count}}件",
+    "showFailedOnly": "失敗のみ表示",
+    "noOperations": "操作履歴がありません",
+    "noOperationsDescription": "スキーマ操作を実行すると履歴が表示されます",
+    "noFailedOperations": "失敗した操作がありません",
+    "noFailedOperationsDescription": "すべての操作が正常に完了しています",
+    "operations": {
+      "readSchema": "スキーマ読み取り",
+      "refreshSchema": "スキーマ更新",
+      "importSchema": "スキーマインポート",
+      "exportSchema": "スキーマエクスポート"
+    },
+    "operationBy": "実行者: {{user}}",
+    "tablesProcessed": "{{count}}テーブル処理",
+    "columnsProcessed": "{{count}}カラム処理",
+    "errorDetails": "エラー詳細",
+    "operationDetails": "操作詳細",
+    "operationId": "操作ID",
+    "executionTime": "実行時間",
+    "messages": {
+      "readSuccess": "{{database}}のスキーマを読み取りました（{{tablesCount}}テーブル）",
+      "refreshSuccess": "{{database}}のスキーマを更新しました（{{tablesCount}}テーブル）",
+      "readError": "スキーマの読み取りに失敗しました",
+      "refreshError": "スキーマの更新に失敗しました"
     }
   }
 }

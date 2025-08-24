@@ -224,3 +224,28 @@ export interface ConnectionTestResult {
   errorDetails?: string
   responseTimeMs?: number
 }
+
+// Schema Management Types
+export type SchemaUpdateOperation = 'READ_SCHEMA' | 'REFRESH_SCHEMA' | 'IMPORT_SCHEMA' | 'EXPORT_SCHEMA'
+
+export interface SchemaMetadataResult {
+  connectionId: number
+  databaseName: string
+  schemas: string[]
+  tables: TableMetadataResult[]
+  lastUpdatedAt: string
+}
+
+export interface SchemaUpdateLogResult {
+  id: number
+  connectionId: number
+  operation: SchemaUpdateOperation
+  userEmail: string
+  executionTimeMs: number
+  success: boolean
+  errorMessage?: string
+  tablesCount?: number
+  columnsCount?: number
+  details?: string
+  createdAt: string
+}

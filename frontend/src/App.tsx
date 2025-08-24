@@ -25,6 +25,7 @@ import {AdminDashboard} from './pages/AdminDashboard'
 import {DashboardPage} from './pages/DashboardPage'
 import {DataAccessPage} from './pages/DataAccessPage'
 import {DatabaseConnectionsPage} from './pages/DatabaseConnectionsPage'
+import {SchemaManagementPage} from './pages/SchemaManagementPage'
 import './App.css'
 
 const App = () => {
@@ -65,6 +66,14 @@ const App = () => {
               element={
                 <AdminRoute>
                   <DatabaseConnectionsPage/>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/schema"
+              element={
+                <AdminRoute>
+                  <SchemaManagementPage/>
                 </AdminRoute>
               }
             />
