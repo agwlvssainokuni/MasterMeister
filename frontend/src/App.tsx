@@ -21,7 +21,8 @@ import {AdminRoute, ProtectedRoute} from './components/ProtectedRoute'
 import {LoginPage} from './pages/LoginPage'
 import {RegisterEmailPage} from './pages/RegisterEmailPage.tsx'
 import {RegisterUserPage} from './pages/RegisterUserPage.tsx'
-import {AdminDashboard} from './pages/AdminDashboard'
+import {AdminDashboardPage} from './pages/AdminDashboardPage'
+import {UserManagementPage} from './pages/UserManagementPage'
 import {DashboardPage} from './pages/DashboardPage'
 import {DataAccessPage} from './pages/DataAccessPage'
 import {DatabaseConnectionsPage} from './pages/DatabaseConnectionsPage'
@@ -58,7 +59,15 @@ const App = () => {
               path="/admin"
               element={
                 <AdminRoute>
-                  <AdminDashboard/>
+                  <AdminDashboardPage/>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <UserManagementPage/>
                 </AdminRoute>
               }
             />

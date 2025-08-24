@@ -114,7 +114,9 @@
   },
   "admin": {
     "dashboard": {
-      "title": "管理者ダッシュボード"
+      "title": "管理者ダッシュボード",
+      "welcome": "管理者ダッシュボードへようこそ",
+      "description": "一元化された管理パネルから、システム設定、ユーザー権限、データベース設定を管理します。"
     },
     "nav": {
       "users": "ユーザー管理",
@@ -156,6 +158,28 @@
       "reject": {
         "title": "ユーザー拒否",
         "message": "ユーザー「{{email}}」を拒否してもよろしいですか？この操作は取り消せません。"
+      }
+    },
+    "features": {
+      "userManagement": {
+        "title": "ユーザー管理",
+        "description": "ユーザー登録リクエストの確認と承認、ユーザーロールと権限の管理を行います。",
+        "action": "ユーザー管理"
+      },
+      "databaseConnections": {
+        "title": "データベース接続設定",
+        "description": "マスターデータアクセス用の外部データベース接続を設定・管理します。",
+        "action": "接続設定管理"
+      },
+      "schemaManagement": {
+        "title": "スキーマ管理",
+        "description": "接続されたデータベースからスキーマメタデータを読み取り・更新します。",
+        "action": "スキーマ管理"
+      },
+      "permissions": {
+        "title": "権限管理",
+        "description": "YAML設定ファイルを使用してユーザー権限とアクセス制御設定をエクスポート・インポートします。",
+        "action": "権限管理"
       }
     }
   },

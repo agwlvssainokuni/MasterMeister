@@ -51,7 +51,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
 
   const adminSubItems = [
     {
-      path: '/admin',
+      path: '/admin/users',
       label: t('navigation.userManagement'),
       icon: '👥'
     },

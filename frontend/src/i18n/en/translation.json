@@ -114,7 +114,9 @@
   },
   "admin": {
     "dashboard": {
-      "title": "Admin Dashboard"
+      "title": "Admin Dashboard",
+      "welcome": "Welcome to the Admin Dashboard",
+      "description": "Manage system configuration, user permissions, and database settings from centralized administration panel."
     },
     "nav": {
       "users": "User Management",
@@ -156,6 +158,28 @@
       "reject": {
         "title": "Reject User",
         "message": "Are you sure you want to reject user: {{email}}? This action cannot be undone."
+      }
+    },
+    "features": {
+      "userManagement": {
+        "title": "User Management",
+        "description": "Review and approve user registration requests, manage user roles and permissions.",
+        "action": "Manage Users"
+      },
+      "databaseConnections": {
+        "title": "Database Connections",
+        "description": "Configure and manage connections to external databases for master data access.",
+        "action": "Manage Connections"
+      },
+      "schemaManagement": {
+        "title": "Schema Management",
+        "description": "Read and update database schema metadata from connected databases.",
+        "action": "Manage Schema"
+      },
+      "permissions": {
+        "title": "Permission Management",
+        "description": "Export and import user permissions and access control settings via YAML configuration.",
+        "action": "Manage Permissions"
       }
     }
   },
