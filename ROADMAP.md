@@ -9,6 +9,7 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
 - ✅ Development planning phase
 - ✅ **Phase 1 COMPLETED** - Project structure setup (August 18, 2025)
 - ✅ **Phase 2 COMPLETED** - Authentication & User Management (August 21, 2025)
+- ✅ **Phase 3 COMPLETED** - Database Configuration System (August 24, 2025)
 
 ---
 
@@ -219,19 +220,48 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Controller → Service → Repository dependency flow with proper type conversion
   - [x] Dedicated enums package for cross-layer accessibility
 
-#### 3.2 Schema Import & Metadata Management
-- [ ] Create schema reader for different database types
-- [ ] Implement table/column metadata storage
-- [ ] Build schema update operations
-- [ ] Add admin logging for schema operations
+#### 3.2 Schema Import & Metadata Management ✅ COMPLETED
+- [x] Create schema reader for different database types
+  - [x] DatabaseSchemaService with multi-database support (MySQL/MariaDB/PostgreSQL/H2)
+  - [x] DatabaseMetaData integration for schema introspection
+  - [x] SchemaInfo/TableInfo/ColumnInfo/IndexInfo model hierarchy
+  - [x] DatabaseSchemaController with REST API endpoints
+- [x] Implement table/column metadata storage
+  - [x] SchemaInfoEntity/TableInfoEntity/ColumnInfoEntity JPA entities
+  - [x] Proper relationship mapping (OneToMany/ManyToOne)
+  - [x] Repository layer with JPA queries for schema operations
+- [x] Build schema update operations
+  - [x] Schema refresh functionality with transaction support
+  - [x] Incremental update detection and processing
+  - [x] Batch processing for large schema imports
+- [x] Add admin logging for schema operations
+  - [x] AuditLogService integration for all schema operations
+  - [x] Performance tracking and execution time logging
+  - [x] Error handling with detailed audit trails
 
-#### 3.3 Permission System Foundation
-- [ ] Design table/column permission entities
-- [ ] Implement basic permission assignment interface
-- [ ] Create permission enforcement utilities
-- [ ] Build YAML export/import foundation
+#### 3.3 Access Control System ✅ COMPLETED
+- [x] Design table/column permission entities
+  - [x] UserPermissionEntity/PermissionTemplateEntity with hierarchical scopes
+  - [x] PermissionScope enum (CONNECTION/SCHEMA/TABLE/COLUMN)
+  - [x] PermissionType enum (READ/WRITE/DELETE/ADMIN)
+  - [x] Proper JPA relationships and unique constraints
+- [x] Implement basic permission authentication interface
+  - [x] PermissionAuthService with hierarchical permission checking
+  - [x] PermissionManagementService for CRUD operations
+  - [x] PermissionTemplateService for template-based permissions
+  - [x] Spring Security integration with current user context
+- [x] Create permission enforcement utilities
+  - [x] @RequirePermission annotation for declarative access control
+  - [x] PermissionAspect (AOP) for automatic permission checking
+  - [x] PermissionUtils for programmatic permission validation
+  - [x] Three-layer enforcement: Annotation → Programmatic → SQL Analysis
+- [x] Build YAML export/import foundation
+  - [x] PermissionExportData record hierarchy for YAML serialization
+  - [x] PermissionYamlService with Jackson YAML processing
+  - [x] PermissionExportController for file upload/download operations
+  - [x] Validation endpoints and comprehensive error handling
 
-**Milestone 3**: Database configuration and schema import operational
+**Milestone 3**: ✅ COMPLETED - Database configuration and access control system operational
 
 ---
 
@@ -398,6 +428,7 @@ MasterMeister/
 *This roadmap prioritizes early MVP delivery with incremental feature expansion. All phases are designed for single-developer implementation with realistic timelines.*
 
 **Last Updated**: August 2025  
-**Version**: 1.1  
-**Next Review**: End of Phase 1  
-**Target MVP Delivery**: Week 8
+**Version**: 1.2  
+**Next Review**: End of Phase 3  
+**Target MVP Delivery**: Week 8  
+**Current Progress**: Phase 3 完了 - Data Access & Display 段階へ
