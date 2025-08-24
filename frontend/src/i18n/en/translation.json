@@ -437,6 +437,7 @@
     "noActiveConnectionsDescription": "Create and activate database connections first to manage permissions",
     "connectionInfo": "{{host}}:{{port}} ({{type}})",
     "tabs": {
+      "quickSetup": "Quick Setup",
       "export": "Export",
       "import": "Import"
     },
@@ -472,6 +473,87 @@
       "clearExistingPermissions": "Clear existing permissions before import",
       "skipDuplicates": "Skip duplicate permissions"
     },
+    "quickSetupTitle": "Quick Permission Setup",
+    "quickSetupDescription": "Set up common permission configurations with one click",
+    "quickSetupNotAvailable": "Quick setup is not available - bulk permission API not configured",
+    "customSetupTitle": "Custom Bulk Permission Setup",
+    "customSetupDescription": "Configure specific permission settings for selected users and tables",
+    "applying": "Applying...",
+    "quickOptions": {
+      "readAll": {
+        "title": "Read All Tables",
+        "description": "Grant READ access to all tables for all users",
+        "action": "Grant Read Access",
+        "defaultDescription": "Bulk READ access granted to all tables"
+      },
+      "writeAll": {
+        "title": "Write All Tables", 
+        "description": "Grant WRITE access to all tables for all users",
+        "action": "Grant Write Access",
+        "defaultDescription": "Bulk WRITE access granted to all tables"
+      },
+      "readOnly": {
+        "title": "Read-Only Access",
+        "description": "Grant READ-ONLY access excluding system tables",
+        "action": "Grant Read-Only Access",
+        "defaultDescription": "Read-only access granted excluding system tables"
+      }
+    },
+    "bulkSetup": {
+      "permissionType": "Permission Type",
+      "scope": "Permission Scope", 
+      "userEmails": "User Email Addresses",
+      "userEmailsPlaceholder": "user1@example.com, user2@example.com",
+      "userEmailsHint": "Enter email addresses separated by commas, or leave empty for all active users",
+      "description": "Description",
+      "descriptionPlaceholder": "Bulk permission setup",
+      "includeSystemTables": "Include system tables",
+      "apply": "Apply Permissions",
+      "result": "Operation Result",
+      "defaultDescription": {
+        "read": "Bulk READ permissions applied",
+        "write": "Bulk WRITE permissions applied",
+        "delete": "Bulk DELETE permissions applied"
+      }
+    },
+    "types": {
+      "read": "Read",
+      "write": "Write", 
+      "delete": "Delete"
+    },
+    "scopes": {
+      "allTables": "All Tables",
+      "schema": "Specific Schemas",
+      "tableList": "Specific Tables"
+    },
+    "bulkResult": {
+      "processedUsers": "Processed Users",
+      "processedTables": "Processed Tables",
+      "createdPermissions": "Created Permissions",
+      "skippedExisting": "Skipped Existing",
+      "errors": "Errors"
+    },
+    "confirmDialog": {
+      "title": "Confirm Bulk Permission Setup",
+      "connection": "Connection",
+      "permissionType": "Permission Type",
+      "scope": "Scope",
+      "users": "Target Users",
+      "userCount": "{{count}} users",
+      "allActiveUsers": "All active users",
+      "systemTables": "System Tables",
+      "included": "Included",
+      "securityWarning": "Security Warning",
+      "writeWarning": "You are about to grant WRITE permissions which allow data modification.",
+      "deleteWarning": "You are about to grant DELETE permissions which allow data deletion.",
+      "warnings": {
+        "dataModification": "Users will be able to modify data in the database",
+        "auditLogging": "All operations will be logged for auditing",
+        "irreversible": "This action cannot be easily undone"
+      },
+      "confirmMessage": "Are you sure you want to grant {{type}} permissions on {{connection}}?",
+      "confirmButton": "Confirm & Apply"
+    },
     "messages": {
       "loadConnectionsError": "Failed to load database connections",
       "exportSuccess": "Exported permissions for {{connection}}",
@@ -479,7 +561,9 @@
       "importSuccess": "Imported permissions for {{connection}}: {{users}} users, {{templates}} templates, {{permissions}} permissions",
       "importError": "Failed to import permissions",
       "validateSuccess": "YAML file is valid",
-      "validateError": "YAML validation failed: {{message}}"
+      "validateError": "YAML validation failed: {{message}}",
+      "bulkGrantSuccess": "Bulk permissions applied successfully: {{users}} users, {{tables}} tables, {{permissions}} permissions",
+      "bulkGrantError": "Failed to apply bulk permissions"
     }
   }
 }

@@ -64,6 +64,7 @@ export const API_ENDPOINTS = {
   PERMISSIONS: {
     EXPORT: (connectionId: number) => `/admin/permissions/${connectionId}/export`,
     IMPORT: (connectionId: number) => `/admin/permissions/${connectionId}/import`,
-    VALIDATE: (connectionId: number) => `/admin/permissions/${connectionId}/validate`
+    VALIDATE: (connectionId: number) => `/admin/permissions/${connectionId}/validate`,
+    BULK_GRANT: (connectionId: number) => `/admin/permissions/${connectionId}/bulk-grant`
   }
 }

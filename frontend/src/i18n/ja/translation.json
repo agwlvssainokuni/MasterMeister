@@ -437,6 +437,7 @@
     "noActiveConnectionsDescription": "権限を管理するには、まずデータベース接続を作成・有効化してください",
     "connectionInfo": "{{host}}:{{port}} ({{type}})",
     "tabs": {
+      "quickSetup": "クイックセットアップ",
       "export": "エクスポート",
       "import": "インポート"
     },
@@ -472,6 +473,87 @@
       "clearExistingPermissions": "インポート前に既存権限をクリア",
       "skipDuplicates": "重複権限をスキップ"
     },
+    "quickSetupTitle": "クイック権限設定",
+    "quickSetupDescription": "一般的な権限設定をワンクリックで設定",
+    "quickSetupNotAvailable": "クイックセットアップは利用できません - 一括権限APIが設定されていません",
+    "customSetupTitle": "カスタム一括権限設定",
+    "customSetupDescription": "選択したユーザーとテーブルに対して特定の権限設定を構成",
+    "applying": "適用中...",
+    "quickOptions": {
+      "readAll": {
+        "title": "全テーブル読み取り",
+        "description": "全ユーザーに全テーブルの読み取り権限を付与",
+        "action": "読み取り権限付与",
+        "defaultDescription": "全テーブルに一括読み取り権限を付与"
+      },
+      "writeAll": {
+        "title": "全テーブル書き込み",
+        "description": "全ユーザーに全テーブルの書き込み権限を付与",
+        "action": "書き込み権限付与", 
+        "defaultDescription": "全テーブルに一括書き込み権限を付与"
+      },
+      "readOnly": {
+        "title": "読み取り専用アクセス",
+        "description": "システムテーブルを除く読み取り専用権限を付与",
+        "action": "読み取り専用権限付与",
+        "defaultDescription": "システムテーブルを除く読み取り専用権限を付与"
+      }
+    },
+    "bulkSetup": {
+      "permissionType": "権限種別",
+      "scope": "権限範囲",
+      "userEmails": "ユーザーメールアドレス", 
+      "userEmailsPlaceholder": "user1@example.com, user2@example.com",
+      "userEmailsHint": "メールアドレスをカンマ区切りで入力、または空欄で全アクティブユーザー対象",
+      "description": "説明",
+      "descriptionPlaceholder": "一括権限設定",
+      "includeSystemTables": "システムテーブルを含む",
+      "apply": "権限適用",
+      "result": "実行結果",
+      "defaultDescription": {
+        "read": "一括読み取り権限を適用",
+        "write": "一括書き込み権限を適用", 
+        "delete": "一括削除権限を適用"
+      }
+    },
+    "types": {
+      "read": "読み取り",
+      "write": "書き込み",
+      "delete": "削除"
+    },
+    "scopes": {
+      "allTables": "全テーブル",
+      "schema": "特定スキーマ",
+      "tableList": "特定テーブル"
+    },
+    "bulkResult": {
+      "processedUsers": "処理ユーザー数",
+      "processedTables": "処理テーブル数",
+      "createdPermissions": "作成権限数",
+      "skippedExisting": "スキップ済み権限数",
+      "errors": "エラー"
+    },
+    "confirmDialog": {
+      "title": "一括権限設定の確認",
+      "connection": "接続",
+      "permissionType": "権限種別",
+      "scope": "範囲",
+      "users": "対象ユーザー",
+      "userCount": "{{count}}ユーザー",
+      "allActiveUsers": "全アクティブユーザー",
+      "systemTables": "システムテーブル",
+      "included": "含む",
+      "securityWarning": "セキュリティ警告",
+      "writeWarning": "データ変更を可能にする書き込み権限を付与しようとしています。",
+      "deleteWarning": "データ削除を可能にする削除権限を付与しようとしています。",
+      "warnings": {
+        "dataModification": "ユーザーはデータベースのデータを変更できるようになります",
+        "auditLogging": "すべての操作は監査のためログに記録されます",
+        "irreversible": "この操作は簡単には元に戻せません"
+      },
+      "confirmMessage": "{{connection}}に{{type}}権限を付与してもよろしいですか？",
+      "confirmButton": "確認して適用"
+    },
     "messages": {
       "loadConnectionsError": "データベース接続の読み込みに失敗しました",
       "exportSuccess": "{{connection}}の権限をエクスポートしました",
@@ -479,7 +561,9 @@
       "importSuccess": "{{connection}}の権限をインポートしました: ユーザー{{users}}件、テンプレート{{templates}}件、権限{{permissions}}件",
       "importError": "権限のインポートに失敗しました",
       "validateSuccess": "YAMLファイルは有効です",
-      "validateError": "YAML検証エラー: {{message}}"
+      "validateError": "YAML検証エラー: {{message}}",
+      "bulkGrantSuccess": "一括権限を正常に適用しました: ユーザー{{users}}件、テーブル{{tables}}件、権限{{permissions}}件",
+      "bulkGrantError": "一括権限の適用に失敗しました"
     }
   }
 }

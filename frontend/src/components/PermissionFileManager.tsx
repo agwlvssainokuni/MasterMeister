@@ -20,7 +20,9 @@ import type {
   DatabaseConnection, 
   PermissionImportOptions, 
   PermissionImportResult, 
-  PermissionValidationResult 
+  PermissionValidationResult,
+  BulkPermissionOptions,
+  BulkPermissionResult
 } from '../types/frontend'
 
 interface PermissionFileManagerProps {
@@ -29,6 +31,7 @@ interface PermissionFileManagerProps {
   onExport: (connectionId: number, description?: string) => Promise<void>
   onImport: (connectionId: number, file: File, options: PermissionImportOptions) => Promise<PermissionImportResult>
   onValidate: (connectionId: number, file: File) => Promise<PermissionValidationResult>
+  onBulkGrant?: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
 }
 
 export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
@@ -36,12 +39,13 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
   loading,
   onExport,
   onImport,
-  onValidate
+  onValidate,
+  onBulkGrant
 }) => {
   const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  const [activeTab, setActiveTab] = useState<'export' | 'import'>('export')
+  const [activeTab, setActiveTab] = useState<'quickSetup' | 'export' | 'import'>('quickSetup')
   const [exportDescription, setExportDescription] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [validationResult, setValidationResult] = useState<PermissionValidationResult | null>(null)
@@ -112,6 +116,12 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
 
       <div className="tab-navigation">
         <button
+          className={`tab-button ${activeTab === 'quickSetup' ? 'active' : ''}`}
+          onClick={() => setActiveTab('quickSetup')}
+        >
+          ⚡ {t('permissions.tabs.quickSetup')}
+        </button>
+        <button
           className={`tab-button ${activeTab === 'export' ? 'active' : ''}`}
           onClick={() => setActiveTab('export')}
         >
@@ -126,6 +136,60 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
       </div>
 
       <div className="tab-content">
+        {activeTab === 'quickSetup' && (
+          <div className="quick-setup-section">
+            <h4>{t('permissions.quickSetupTitle')}</h4>
+            <p className="section-description">
+              {t('permissions.quickSetupDescription')}
+            </p>
+            
+            <div className="quick-setup-options">
+              <div className="quick-option-card">
+                <div className="option-icon">📖</div>
+                <h5>{t('permissions.quickOptions.readAll.title')}</h5>
+                <p>{t('permissions.quickOptions.readAll.description')}</p>
+                <button 
+                  className="button button-secondary"
+                  disabled={!onBulkGrant || loading}
+                >
+                  {t('permissions.quickOptions.readAll.action')}
+                </button>
+              </div>
+
+              <div className="quick-option-card">
+                <div className="option-icon">✏️</div>
+                <h5>{t('permissions.quickOptions.writeAll.title')}</h5>
+                <p>{t('permissions.quickOptions.writeAll.description')}</p>
+                <button 
+                  className="button button-primary"
+                  disabled={!onBulkGrant || loading}
+                >
+                  {t('permissions.quickOptions.writeAll.action')}
+                </button>
+              </div>
+
+              <div className="quick-option-card">
+                <div className="option-icon">🔒</div>
+                <h5>{t('permissions.quickOptions.readOnly.title')}</h5>
+                <p>{t('permissions.quickOptions.readOnly.description')}</p>
+                <button 
+                  className="button button-secondary"
+                  disabled={!onBulkGrant || loading}
+                >
+                  {t('permissions.quickOptions.readOnly.action')}
+                </button>
+              </div>
+            </div>
+
+            {!onBulkGrant && (
+              <div className="feature-notice">
+                <span className="notice-icon">⚠️</span>
+                <span>{t('permissions.quickSetupNotAvailable')}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'export' && (
           <div className="export-section">
             <h4>{t('permissions.exportTitle')}</h4>

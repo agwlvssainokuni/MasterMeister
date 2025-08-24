@@ -202,6 +202,28 @@ export interface PermissionImportResult {
   errors: string[]
 }
 
+// Bulk Permission Types (Frontend)
+export type BulkPermissionScope = 'ALL_TABLES' | 'SCHEMA' | 'TABLE_LIST'
+export type BulkPermissionType = 'read' | 'write' | 'delete'
+
+export interface BulkPermissionOptions {
+  scope: BulkPermissionScope
+  permissionType: BulkPermissionType
+  userEmails: string[]
+  schemaNames?: string[]
+  tableNames?: string[]
+  includeSystemTables: boolean
+  description: string
+}
+
+export interface BulkPermissionResult {
+  processedUsers: number
+  processedTables: number
+  createdPermissions: number
+  skippedExisting: number
+  errors: string[]
+}
+
 export interface DatabaseConnectionForm {
   name: string
   dbType: DatabaseType
