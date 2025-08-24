@@ -115,9 +115,11 @@ public class RecordUpdateService {
             RecordUpdateResult result = new RecordUpdateResult(
                     rowsAffected, executionTime, updateQuery.query());
 
-            // Log record update
-            auditLogService.logDataModification(connectionId, schemaName, tableName,
-                    "UPDATE", rowsAffected, executionTime);
+            // Log detailed record update success
+            auditLogService.logDataModificationDetailed(connectionId, schemaName, tableName,
+                    "UPDATE", rowsAffected, executionTime, updateQuery.query(),
+                    String.format("Updated %d records, SET %d fields, WHERE %d conditions", 
+                            rowsAffected, updateData.size(), whereConditions.size()));
 
             logger.info("Successfully updated {} records in {}.{} in {}ms",
                     rowsAffected, schemaName, tableName, executionTime);
@@ -125,8 +127,36 @@ public class RecordUpdateService {
             return result;
 
         } catch (DataAccessException e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+            
+            // Log detailed database failure (REQUIRES_NEW ensures this is recorded)
+            auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
+                    "UPDATE", e.getMessage(), executionTime, 
+                    String.format("UPDATE failed: SET %d fields, WHERE %d conditions", 
+                            updateData.size(), whereConditions.size()));
+            
             logger.error("Failed to update records in table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw new RuntimeException("Failed to update records", e);
+        } catch (IllegalArgumentException e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+            
+            // Log validation failure (REQUIRES_NEW ensures this is recorded)
+            auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
+                    "UPDATE", "Validation failed: " + e.getMessage(), executionTime, 
+                    "Data validation, permission check, or WHERE clause validation failed");
+            
+            logger.error("Validation error updating records in table {}.{}: {}", schemaName, tableName, e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+            
+            // Log unexpected failure (REQUIRES_NEW ensures this is recorded)
+            auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
+                    "UPDATE", "Unexpected error: " + e.getMessage(), executionTime, 
+                    "Internal server error during record update");
+            
+            logger.error("Unexpected error updating records in table {}.{}: {}", schemaName, tableName, e.getMessage());
+            throw new RuntimeException("Failed to update records due to internal error", e);
         }
     }
 

@@ -119,17 +119,45 @@ public class RecordCreateService {
             RecordCreationResult result = new RecordCreationResult(
                     createdRecord, columnTypes, executionTime, insertQuery.query());
 
-            // Log record creation
-            auditLogService.logDataModification(connectionId, schemaName, tableName, 
-                    "CREATE", 1, executionTime);
+            // Log detailed record creation success
+            auditLogService.logDataModificationDetailed(connectionId, schemaName, tableName, 
+                    "CREATE", 1, executionTime, insertQuery.query(), 
+                    String.format("Created record with %d columns", validatedData.size()));
 
             logger.info("Successfully created record in {}.{} in {}ms", schemaName, tableName, executionTime);
 
             return result;
 
         } catch (DataAccessException e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+            
+            // Log detailed database failure (REQUIRES_NEW ensures this is recorded even if transaction rolls back)
+            auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
+                    "CREATE", e.getMessage(), executionTime, 
+                    recordData != null ? "INSERT with " + recordData.size() + " fields" : "INSERT failed");
+            
             logger.error("Failed to create record in table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw new RuntimeException("Failed to create record", e);
+        } catch (IllegalArgumentException e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+            
+            // Log validation failure (REQUIRES_NEW ensures this is recorded)
+            auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
+                    "CREATE", "Validation failed: " + e.getMessage(), executionTime, 
+                    "Data validation or permission check failed");
+            
+            logger.error("Validation error creating record in table {}.{}: {}", schemaName, tableName, e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            long executionTime = System.currentTimeMillis() - startTime;
+            
+            // Log unexpected failure (REQUIRES_NEW ensures this is recorded)
+            auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
+                    "CREATE", "Unexpected error: " + e.getMessage(), executionTime, 
+                    "Internal server error during record creation");
+            
+            logger.error("Unexpected error creating record in table {}.{}: {}", schemaName, tableName, e.getMessage());
+            throw new RuntimeException("Failed to create record due to internal error", e);
         }
     }
 

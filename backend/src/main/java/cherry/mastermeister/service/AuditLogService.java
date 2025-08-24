@@ -24,6 +24,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -45,6 +46,10 @@ public class AuditLogService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Log successful login - Uses REQUIRES_NEW to ensure logging regardless of subsequent operations
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logLoginSuccess(String username) {
         AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGIN", "AUTH");
         auditLog.setSuccess(true);
@@ -52,6 +57,10 @@ public class AuditLogService {
         auditLogRepository.save(auditLog);
     }
 
+    /**
+     * Log failed login - Uses REQUIRES_NEW to ensure security events are always recorded
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logLoginFailure(String username, String errorMessage) {
         AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGIN", "AUTH");
         auditLog.setSuccess(false);
@@ -60,6 +69,10 @@ public class AuditLogService {
         auditLogRepository.save(auditLog);
     }
 
+    /**
+     * Log logout - Uses REQUIRES_NEW to ensure logout is always recorded
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logLogout(String username) {
         AuditLogEntity auditLog = createBaseAuditLogEntity(username, "LOGOUT", "AUTH");
         auditLog.setSuccess(true);
@@ -67,6 +80,10 @@ public class AuditLogService {
         auditLogRepository.save(auditLog);
     }
 
+    /**
+     * Log token refresh success - Uses REQUIRES_NEW for security audit trail
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logTokenRefresh(String username) {
         AuditLogEntity auditLog = createBaseAuditLogEntity(username, "TOKEN_REFRESH", "AUTH");
         auditLog.setSuccess(true);
@@ -74,6 +91,10 @@ public class AuditLogService {
         auditLogRepository.save(auditLog);
     }
 
+    /**
+     * Log token refresh failure - Uses REQUIRES_NEW to ensure security events are recorded
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logTokenRefreshFailure(String username, String errorMessage) {
         AuditLogEntity auditLog = createBaseAuditLogEntity(username, "TOKEN_REFRESH", "AUTH");
         auditLog.setSuccess(false);
@@ -82,6 +103,10 @@ public class AuditLogService {
         auditLogRepository.save(auditLog);
     }
 
+    /**
+     * Log admin actions - Uses REQUIRES_NEW to ensure admin actions are always audited
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logAdminAction(String username, String action, String target, String details) {
         AuditLogEntity auditLog = createBaseAuditLogEntity(username, action, target);
         auditLog.setSuccess(true);
@@ -90,8 +115,10 @@ public class AuditLogService {
     }
 
     /**
-     * Log data access operation (for large datasets)
+     * Log data access operation (for large datasets) - Read operation
+     * Uses REQUIRED propagation as read operations typically don't have critical rollback concerns
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public void logDataAccess(Long connectionId, String schemaName, String tableName,
                               int recordCount, long executionTimeMs) {
         String target = String.format("connection:%d table:%s.%s",
@@ -108,6 +135,10 @@ public class AuditLogService {
         auditLogRepository.save(auditLog);
     }
 
+    /**
+     * Log schema operations - Uses REQUIRES_NEW for failures to ensure audit trail
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logSchemaOperation(String username, String operation, Long connectionId, boolean success,
                                    String details, String errorMessage) {
         String target = "SCHEMA_CONNECTION_" + connectionId;
@@ -121,16 +152,120 @@ public class AuditLogService {
     }
 
     /**
-     * Log data modification operations (CREATE, UPDATE, DELETE)
+     * Log data modification operations (CREATE, UPDATE, DELETE) - Success case
+     * Uses REQUIRED propagation to participate in main transaction
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public void logDataModification(Long connectionId, String schemaName, String tableName,
                                     String operation, int recordCount, long executionTimeMs) {
         String username = getCurrentUsername();
         String target = String.format("connection:%d, table:%s.%s", connectionId, schemaName, tableName);
 
         AuditLogEntity auditLog = createBaseAuditLogEntity(username, "DATA_" + operation, target);
+        auditLog.setSuccess(true);
         auditLog.setDetails(String.format("Records %s: %d, Execution time: %dms",
                 operation.toLowerCase(), recordCount, executionTimeMs));
+
+        auditLogRepository.save(auditLog);
+    }
+
+    /**
+     * Log data modification operations with detailed information - Success case
+     * Uses REQUIRED propagation to participate in main transaction
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void logDataModificationDetailed(Long connectionId, String schemaName, String tableName,
+                                           String operation, int recordCount, long executionTimeMs,
+                                           String query, String additionalDetails) {
+        String username = getCurrentUsername();
+        String target = String.format("connection:%d, table:%s.%s", connectionId, schemaName, tableName);
+
+        String details = String.format("{\"operation\":\"%s\",\"recordCount\":%d,\"executionTimeMs\":%d," +
+                        "\"query\":\"%s\",\"additionalDetails\":\"%s\"}",
+                operation, recordCount, executionTimeMs, 
+                query.replace("\"", "\\\""), additionalDetails != null ? additionalDetails : "");
+
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "DATA_" + operation + "_DETAILED", target);
+        auditLog.setSuccess(true);
+        auditLog.setDetails(details);
+
+        auditLogRepository.save(auditLog);
+    }
+
+    /**
+     * Log data modification failure - Failure case
+     * Uses REQUIRES_NEW propagation to ensure failure logs are always recorded
+     * even when main transaction is rolled back
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logDataModificationFailure(Long connectionId, String schemaName, String tableName,
+                                          String operation, String errorMessage, long executionTimeMs,
+                                          String query) {
+        String username = getCurrentUsername();
+        String target = String.format("connection:%d, table:%s.%s", connectionId, schemaName, tableName);
+
+        String details = String.format("{\"operation\":\"%s\",\"executionTimeMs\":%d," +
+                        "\"query\":\"%s\",\"error\":\"%s\"}",
+                operation, executionTimeMs, 
+                query != null ? query.replace("\"", "\\\"") : "", errorMessage.replace("\"", "\\\""));
+
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "DATA_" + operation + "_FAILED", target);
+        auditLog.setSuccess(false);
+        auditLog.setErrorMessage(errorMessage);
+        auditLog.setDetails(details);
+
+        auditLogRepository.save(auditLog);
+    }
+
+    /**
+     * Log permission check events - Critical for security audit
+     * Uses REQUIRES_NEW propagation to ensure all permission checks are recorded
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logPermissionCheck(Long connectionId, String schemaName, String tableName, 
+                                  String columnName, String permissionType, boolean granted,
+                                  String reason) {
+        String username = getCurrentUsername();
+        String target = String.format("connection:%d", connectionId);
+        if (schemaName != null) target += ", schema:" + schemaName;
+        if (tableName != null) target += ", table:" + tableName;
+        if (columnName != null) target += ", column:" + columnName;
+
+        String details = String.format("{\"permissionType\":\"%s\",\"granted\":%b,\"reason\":\"%s\"}",
+                permissionType, granted, reason != null ? reason : "");
+
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "PERMISSION_CHECK", target);
+        auditLog.setSuccess(granted);
+        if (!granted) {
+            auditLog.setErrorMessage("Permission denied: " + reason);
+        }
+        auditLog.setDetails(details);
+
+        auditLogRepository.save(auditLog);
+    }
+
+    /**
+     * Log bulk operation events - Mixed success/failure case
+     * Uses REQUIRES_NEW when there are failures to ensure logging is preserved
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logBulkOperation(Long connectionId, String schemaName, String tableName,
+                                String operation, int totalRecords, int successCount, 
+                                int failureCount, long executionTimeMs, String summary) {
+        String username = getCurrentUsername();
+        String target = String.format("connection:%d, table:%s.%s", connectionId, schemaName, tableName);
+
+        String details = String.format("{\"operation\":\"%s\",\"totalRecords\":%d," +
+                        "\"successCount\":%d,\"failureCount\":%d,\"executionTimeMs\":%d,\"summary\":\"%s\"}",
+                operation, totalRecords, successCount, failureCount, executionTimeMs, 
+                summary != null ? summary.replace("\"", "\\\"") : "");
+
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "DATA_BULK_" + operation, target);
+        auditLog.setSuccess(failureCount == 0);
+        if (failureCount > 0) {
+            auditLog.setErrorMessage(String.format("%d out of %d records failed", failureCount, totalRecords));
+        }
+        auditLog.setDetails(details);
 
         auditLogRepository.save(auditLog);
     }
