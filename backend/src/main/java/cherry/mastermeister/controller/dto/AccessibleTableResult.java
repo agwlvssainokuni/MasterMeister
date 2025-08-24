@@ -21,7 +21,7 @@ import java.util.Set;
 /**
  * DTO for accessible table information with permission details
  */
-public record AccessibleTableDto(
+public record AccessibleTableResult(
         Long connectionId,
         String schemaName,
         String tableName,

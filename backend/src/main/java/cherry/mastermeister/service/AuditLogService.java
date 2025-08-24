@@ -17,8 +17,12 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.AuditLogEntity;
+import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.repository.AuditLogRepository;
+import cherry.mastermeister.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -31,9 +35,14 @@ import java.util.Optional;
 public class AuditLogService {
 
     private final AuditLogRepository auditLogRepository;
+    private final UserRepository userRepository;
 
-    public AuditLogService(AuditLogRepository auditLogRepository) {
+    public AuditLogService(
+            AuditLogRepository auditLogRepository,
+            UserRepository userRepository
+    ) {
         this.auditLogRepository = auditLogRepository;
+        this.userRepository = userRepository;
     }
 
     public void logLoginSuccess(String username) {
@@ -75,6 +84,25 @@ public class AuditLogService {
 
     public void logAdminAction(String username, String action, String target, String details) {
         AuditLogEntity auditLog = createBaseAuditLogEntity(username, action, target);
+        auditLog.setSuccess(true);
+        auditLog.setDetails(details);
+        auditLogRepository.save(auditLog);
+    }
+
+    /**
+     * Log data access operation (for large datasets)
+     */
+    public void logDataAccess(Long connectionId, String schemaName, String tableName,
+                              int recordCount, long executionTimeMs) {
+        String target = String.format("connection:%d table:%s.%s",
+                connectionId, schemaName != null ? schemaName : "", tableName);
+
+        String details = String.format("{\"connectionId\":%d,\"schema\":\"%s\",\"table\":\"%s\"," +
+                        "\"recordCount\":%d,\"executionTimeMs\":%d}",
+                connectionId, schemaName != null ? schemaName : "", tableName, recordCount, executionTimeMs);
+
+        String username = getCurrentUsername();
+        AuditLogEntity auditLog = createBaseAuditLogEntity(username, "DATA_ACCESS", target);
         auditLog.setSuccess(true);
         auditLog.setDetails(details);
         auditLogRepository.save(auditLog);
@@ -125,5 +153,19 @@ public class AuditLogService {
         }
 
         return request.getRemoteAddr();
+    }
+
+    /**
+     * Get current username from security context
+     */
+    private String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getName() != null) {
+            String userUuid = authentication.getName(); // This is the UUID from JWT sub claim
+            return userRepository.findByUserUuid(userUuid)
+                    .map(UserEntity::getEmail)
+                    .orElse("unknown-user");
+        }
+        return "system";
     }
 }
