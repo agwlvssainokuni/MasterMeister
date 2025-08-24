@@ -31,7 +31,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,40 +67,29 @@ public class DataAccessController {
     @GetMapping("/{connectionId}/tables")
     @Operation(summary = "Get accessible tables", description = "Get tables accessible to current user with READ permission")
     @RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId")
-    public ResponseEntity<ApiResponse<List<AccessibleTableResult>>> getAccessibleTables(
+    public ApiResponse<List<AccessibleTableResult>> getAccessibleTables(
             @PathVariable Long connectionId,
             @RequestParam(defaultValue = "READ") String permissionType
     ) {
 
         logger.info("Getting accessible tables for connection: {} with permission: {}", connectionId, permissionType);
 
-        try {
-            PermissionType permission = PermissionType.valueOf(permissionType.toUpperCase());
-            List<TableMetadata> tables = dataAccessService.getAccessibleTables(connectionId, permission);
+        PermissionType permission = PermissionType.valueOf(permissionType.toUpperCase());
+        List<TableMetadata> tables = dataAccessService.getAccessibleTables(connectionId, permission);
 
-            // Convert to DTOs with permission information
-            List<AccessibleTableResult> accessibleTables = tables.stream()
-                    .map(table -> convertToAccessibleTableDto(table, connectionId))
-                    .collect(Collectors.toList());
+        // Convert to DTOs with permission information
+        List<AccessibleTableResult> accessibleTables = tables.stream()
+                .map(table -> convertToAccessibleTableDto(table, connectionId))
+                .collect(Collectors.toList());
 
-            return ResponseEntity.ok(ApiResponse.success(accessibleTables));
-
-        } catch (IllegalArgumentException e) {
-            logger.warn("Invalid permission type: {}", permissionType);
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Invalid permission type: " + permissionType));
-        } catch (Exception e) {
-            logger.error("Failed to get accessible tables for connection: {}", connectionId, e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error("Failed to get accessible tables"));
-        }
+        return ApiResponse.success(accessibleTables);
     }
 
     @GetMapping("/{connectionId}/tables/{schemaName}/{tableName}")
     @Operation(summary = "Get table information", description = "Get detailed information for a specific table")
     @RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId",
             schemaNameParam = "schemaName", tableNameParam = "tableName")
-    public ResponseEntity<ApiResponse<AccessibleTableResult>> getTableInfo(
+    public ApiResponse<AccessibleTableResult> getTableInfo(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName
@@ -109,25 +97,17 @@ public class DataAccessController {
 
         logger.info("Getting table info for {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        try {
-            TableMetadata tableInfo = dataAccessService.getTableInfo(connectionId, schemaName, tableName);
-            AccessibleTableResult accessibleTable = convertToAccessibleTableDto(tableInfo, connectionId);
+        TableMetadata tableInfo = dataAccessService.getTableInfo(connectionId, schemaName, tableName);
+        AccessibleTableResult accessibleTable = convertToAccessibleTableDto(tableInfo, connectionId);
 
-            return ResponseEntity.ok(ApiResponse.success(accessibleTable));
-
-        } catch (Exception e) {
-            logger.error("Failed to get table info for {}.{} on connection: {}",
-                    schemaName, tableName, connectionId, e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error("Failed to get table information"));
-        }
+        return ApiResponse.success(accessibleTable);
     }
 
     @GetMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
     @Operation(summary = "Get table records", description = "Get records from table with column-level permission filtering")
     @RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId",
             schemaNameParam = "schemaName", tableNameParam = "tableName")
-    public ResponseEntity<ApiResponse<RecordQueryResult>> getTableRecords(
+    public ApiResponse<RecordQueryResult> getTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -138,26 +118,18 @@ public class DataAccessController {
         logger.info("Getting records for table {}.{} on connection: {}, page: {}, size: {}",
                 schemaName, tableName, connectionId, page, pageSize);
 
-        try {
-            cherry.mastermeister.model.RecordQueryResult result = recordAccessService.getRecords(
-                    connectionId, schemaName, tableName, page, pageSize);
+        cherry.mastermeister.model.RecordQueryResult result = recordAccessService.getRecords(
+                connectionId, schemaName, tableName, page, pageSize);
 
-            RecordQueryResult dto = convertToRecordQueryResultDto(result);
-            return ResponseEntity.ok(ApiResponse.success(dto));
-
-        } catch (Exception e) {
-            logger.error("Failed to get records for table {}.{} on connection: {}",
-                    schemaName, tableName, connectionId, e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error("Failed to get table records"));
-        }
+        RecordQueryResult dto = convertToRecordQueryResultDto(result);
+        return ApiResponse.success(dto);
     }
 
     @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records/search")
     @Operation(summary = "Search table records with filters", description = "Get filtered records from table with column-level permission filtering")
     @RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId",
             schemaNameParam = "schemaName", tableNameParam = "tableName")
-    public ResponseEntity<ApiResponse<RecordQueryResult>> searchTableRecords(
+    public ApiResponse<RecordQueryResult> searchTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -170,21 +142,13 @@ public class DataAccessController {
                 schemaName, tableName, connectionId, page, pageSize,
                 filterRequest != null ? "present" : "none");
 
-        try {
-            RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
+        RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
 
-            cherry.mastermeister.model.RecordQueryResult result = recordAccessService.getRecords(
-                    connectionId, schemaName, tableName, filter, page, pageSize);
+        cherry.mastermeister.model.RecordQueryResult result = recordAccessService.getRecords(
+                connectionId, schemaName, tableName, filter, page, pageSize);
 
-            RecordQueryResult dto = convertToRecordQueryResultDto(result);
-            return ResponseEntity.ok(ApiResponse.success(dto));
-
-        } catch (Exception e) {
-            logger.error("Failed to search records for table {}.{} on connection: {}",
-                    schemaName, tableName, connectionId, e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error("Failed to search table records: " + e.getMessage()));
-        }
+        RecordQueryResult dto = convertToRecordQueryResultDto(result);
+        return ApiResponse.success(dto);
     }
 
     /**

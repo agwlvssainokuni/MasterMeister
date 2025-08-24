@@ -64,7 +64,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResult>> login(@Valid @RequestBody LoginRequest request) {
+    public ApiResponse<LoginResult> login(@Valid @RequestBody LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.email(), request.password())
@@ -87,24 +87,21 @@ public class AuthController {
             // ログイン成功のログ記録
             auditLogService.logLoginSuccess(userDetails.getUsername());
 
-            return ResponseEntity.ok(ApiResponse.success(result));
+            return ApiResponse.success(result);
         } catch (Exception e) {
             // ログイン失敗のログ記録
             auditLogService.logLoginFailure(request.email(), e.getMessage());
-
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(List.of("Invalid credentials")));
+            throw new IllegalArgumentException("Invalid credentials");
         }
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<LoginResult>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+    public ApiResponse<LoginResult> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         try {
             String refreshToken = request.refreshToken();
 
             if (!jwtUtil.isRefreshToken(refreshToken)) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.error(List.of("Invalid refresh token")));
+                throw new IllegalArgumentException("Invalid refresh token");
             }
 
             String userUuid = jwtUtil.extractUserUuid(refreshToken);
@@ -124,7 +121,7 @@ public class AuthController {
             // トークンリフレッシュ成功のログ記録
             auditLogService.logTokenRefresh(userDetails.getUsername());
 
-            return ResponseEntity.ok(ApiResponse.success(result));
+            return ApiResponse.success(result);
         } catch (Exception e) {
             // トークンリフレッシュ失敗のログ記録
             String username = null;
@@ -135,9 +132,7 @@ public class AuthController {
                 // トークンが無効な場合はusernameを取得できない
             }
             auditLogService.logTokenRefreshFailure(username, e.getMessage());
-
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(List.of("Failed to refresh token")));
+            throw new IllegalArgumentException("Failed to refresh token");
         }
     }
 
@@ -151,30 +146,24 @@ public class AuthController {
                     responseCode = "400",
                     description = "Invalid refresh token")
     })
-    public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody LogoutRequest request) {
-        try {
-            String refreshToken = request.refreshToken();
+    public ApiResponse<String> logout(@Valid @RequestBody LogoutRequest request) {
+        String refreshToken = request.refreshToken();
 
-            if (!jwtUtil.isRefreshToken(refreshToken)) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.error(List.of("Invalid refresh token")));
-            }
-
-            String tokenId = jwtUtil.extractTokenId(refreshToken);
-            String userUuid = jwtUtil.extractUserUuid(refreshToken);
-            String username = userDetailsService.loadUserByUserUuid(userUuid).getUsername();
-
-            if (tokenId != null) {
-                refreshTokenService.revokeRefreshToken(tokenId);
-            }
-
-            // ログアウト成功のログ記録
-            auditLogService.logLogout(username);
-
-            return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(List.of("Failed to logout")));
+        if (!jwtUtil.isRefreshToken(refreshToken)) {
+            throw new IllegalArgumentException("Invalid refresh token");
         }
+
+        String tokenId = jwtUtil.extractTokenId(refreshToken);
+        String userUuid = jwtUtil.extractUserUuid(refreshToken);
+        String username = userDetailsService.loadUserByUserUuid(userUuid).getUsername();
+
+        if (tokenId != null) {
+            refreshTokenService.revokeRefreshToken(tokenId);
+        }
+
+        // ログアウト成功のログ記録
+        auditLogService.logLogout(username);
+
+        return ApiResponse.success("Logged out successfully");
     }
 }

@@ -23,10 +23,10 @@ import cherry.mastermeister.service.UserRegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
@@ -40,19 +40,21 @@ public class UserController {
 
     @PostMapping("/register-email")
     public ResponseEntity<ApiResponse<RegisterEmailResult>> registerEmail(
-            @Valid @RequestBody RegisterEmailRequest request) {
+            @Valid @RequestBody RegisterEmailRequest request
+    ) {
         RegistrationToken result = userRegistrationService.registerEmail(request.email(), request.language());
-        
+
         // セキュリティ: 既存ユーザーの有無に関係なく同じレスポンス
         RegisterEmailResult dto = new RegisterEmailResult(result.email());
-        
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(dto));
     }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterUserResult>> registerUser(
-            @Valid @RequestBody RegisterUserRequest request) {
+            @Valid @RequestBody RegisterUserRequest request
+    ) {
         UserRegistration registration = userRegistrationService.registerUser(
                 request.token(),
                 request.email(),
