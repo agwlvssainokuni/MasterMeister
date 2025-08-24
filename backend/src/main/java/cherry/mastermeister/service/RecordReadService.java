@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
-public class RecordAccessService {
+public class RecordReadService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseConnectionService databaseConnectionService;
@@ -51,7 +51,7 @@ public class RecordAccessService {
     @Value("${mm.app.data-access.large-dataset-threshold:100}")
     private int largeDatasetThreshold;
 
-    public RecordAccessService(
+    public RecordReadService(
             DatabaseConnectionService databaseConnectionService,
             SchemaMetadataStorageService schemaMetadataStorageService,
             PermissionAuthService permissionAuthService,

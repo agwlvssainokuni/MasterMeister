@@ -34,46 +34,21 @@ public class DataAccessService {
     private final SchemaMetadataStorageService schemaMetadataStorageService;
     private final PermissionUtils permissionUtils;
 
-    public DataAccessService(SchemaMetadataStorageService schemaMetadataStorageService, PermissionUtils permissionUtils) {
+    public DataAccessService(
+            SchemaMetadataStorageService schemaMetadataStorageService,
+            PermissionUtils permissionUtils
+    ) {
         this.schemaMetadataStorageService = schemaMetadataStorageService;
         this.permissionUtils = permissionUtils;
     }
 
     /**
-     * Get accessible tables for current user with READ permission
-     */
-    public List<TableMetadata> getAccessibleTables(Long connectionId) {
-        logger.info("Retrieving accessible tables for connection: {}", connectionId);
-
-        // Get all tables for the connection
-        List<TableMetadata> allTables = schemaMetadataStorageService.getTablesForConnection(connectionId);
-
-        // Filter tables based on READ permission
-        List<TableMetadata> accessibleTables = permissionUtils.filterByTablePermission(
-                allTables, connectionId, PermissionType.READ,
-                new PermissionUtils.TableExtractor<TableMetadata>() {
-                    @Override
-                    public String getSchemaName(TableMetadata table) {
-                        return table.schema();
-                    }
-
-                    @Override
-                    public String getTableName(TableMetadata table) {
-                        return table.tableName();
-                    }
-                }
-        );
-
-        logger.info("Found {} accessible tables out of {} total tables",
-                accessibleTables.size(), allTables.size());
-
-        return accessibleTables;
-    }
-
-    /**
      * Get accessible tables with specific permission type
      */
-    public List<TableMetadata> getAccessibleTables(Long connectionId, PermissionType permissionType) {
+    public List<TableMetadata> getAccessibleTables(
+            Long connectionId,
+            PermissionType permissionType
+    ) {
         logger.info("Retrieving accessible tables for connection: {} with permission: {}",
                 connectionId, permissionType);
 
@@ -108,15 +83,21 @@ public class DataAccessService {
     /**
      * Check if user has access to specific table
      */
-    public boolean hasTableAccess(Long connectionId, String schemaName, String tableName,
-                                  PermissionType permissionType) {
+    public boolean hasTableAccess(
+            Long connectionId,
+            String schemaName, String tableName,
+            PermissionType permissionType
+    ) {
         return permissionUtils.hasTablePermission(connectionId, permissionType, schemaName, tableName);
     }
 
     /**
      * Get table info with permission check
      */
-    public TableMetadata getTableInfo(Long connectionId, String schemaName, String tableName) {
+    public TableMetadata getTableMetadata(
+            Long connectionId,
+            String schemaName, String tableName
+    ) {
         logger.debug("Getting table info for {}.{} on connection {}", schemaName, tableName, connectionId);
 
         // Check READ permission for the table

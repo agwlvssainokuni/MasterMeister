@@ -18,20 +18,12 @@ package cherry.mastermeister.controller;
 
 import cherry.mastermeister.annotation.RequirePermission;
 import cherry.mastermeister.controller.dto.*;
-import cherry.mastermeister.model.RecordCreationResult;
-import cherry.mastermeister.model.RecordUpdateResult;
-import cherry.mastermeister.model.RecordDeleteResult;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
+import cherry.mastermeister.model.RecordCreationResult;
 import cherry.mastermeister.model.RecordFilter;
 import cherry.mastermeister.model.TableMetadata;
-import cherry.mastermeister.service.DataAccessService;
-import cherry.mastermeister.service.PermissionAuthService;
-import cherry.mastermeister.service.RecordAccessService;
-import cherry.mastermeister.service.RecordCreationService;
-import cherry.mastermeister.service.RecordUpdateService;
-import cherry.mastermeister.service.RecordDeleteService;
-import cherry.mastermeister.service.RecordFilterConverterService;
+import cherry.mastermeister.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -58,8 +50,8 @@ public class DataAccessController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DataAccessService dataAccessService;
     private final PermissionAuthService permissionAuthService;
-    private final RecordAccessService recordAccessService;
-    private final RecordCreationService recordCreationService;
+    private final RecordReadService recordReadService;
+    private final RecordCreateService recordCreateService;
     private final RecordUpdateService recordUpdateService;
     private final RecordDeleteService recordDeleteService;
     private final RecordFilterConverterService recordFilterConverterService;
@@ -67,16 +59,16 @@ public class DataAccessController {
     public DataAccessController(
             DataAccessService dataAccessService,
             PermissionAuthService permissionAuthService,
-            RecordAccessService recordAccessService,
-            RecordCreationService recordCreationService,
+            RecordReadService recordReadService,
+            RecordCreateService recordCreateService,
             RecordUpdateService recordUpdateService,
             RecordDeleteService recordDeleteService,
             RecordFilterConverterService recordFilterConverterService
     ) {
         this.dataAccessService = dataAccessService;
         this.permissionAuthService = permissionAuthService;
-        this.recordAccessService = recordAccessService;
-        this.recordCreationService = recordCreationService;
+        this.recordReadService = recordReadService;
+        this.recordCreateService = recordCreateService;
         this.recordUpdateService = recordUpdateService;
         this.recordDeleteService = recordDeleteService;
         this.recordFilterConverterService = recordFilterConverterService;
@@ -115,7 +107,7 @@ public class DataAccessController {
 
         logger.info("Getting table info for {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        TableMetadata tableInfo = dataAccessService.getTableInfo(connectionId, schemaName, tableName);
+        TableMetadata tableInfo = dataAccessService.getTableMetadata(connectionId, schemaName, tableName);
         AccessibleTableResult accessibleTable = convertToAccessibleTableDto(tableInfo, connectionId);
 
         return ApiResponse.success(accessibleTable);
@@ -136,7 +128,7 @@ public class DataAccessController {
         logger.info("Getting records for table {}.{} on connection: {}, page: {}, size: {}",
                 schemaName, tableName, connectionId, page, pageSize);
 
-        cherry.mastermeister.model.RecordQueryResult result = recordAccessService.getRecords(
+        cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
                 connectionId, schemaName, tableName, page, pageSize);
 
         RecordQueryResult dto = convertToRecordQueryResultDto(result);
@@ -162,7 +154,7 @@ public class DataAccessController {
 
         RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
 
-        cherry.mastermeister.model.RecordQueryResult result = recordAccessService.getRecords(
+        cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
                 connectionId, schemaName, tableName, filter, page, pageSize);
 
         RecordQueryResult dto = convertToRecordQueryResultDto(result);
@@ -182,7 +174,7 @@ public class DataAccessController {
 
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        RecordCreationResult result = recordCreationService.createRecord(
+        RecordCreationResult result = recordCreateService.createRecord(
                 connectionId, schemaName, tableName, request.data());
 
         RecordCreateResult dto = convertToRecordCreateResult(result);
@@ -223,7 +215,7 @@ public class DataAccessController {
         logger.info("Deleting records from table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         cherry.mastermeister.model.RecordDeleteResult result = recordDeleteService.deleteRecord(
-                connectionId, schemaName, tableName, request.whereConditions(), 
+                connectionId, schemaName, tableName, request.whereConditions(),
                 request.skipReferentialIntegrityCheck());
 
         cherry.mastermeister.controller.dto.RecordDeleteResult dto = convertToRecordDeleteResult(result);

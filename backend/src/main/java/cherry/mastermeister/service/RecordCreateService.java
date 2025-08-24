@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class RecordCreationService {
+public class RecordCreateService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseConnectionService databaseConnectionService;
@@ -49,7 +49,7 @@ public class RecordCreationService {
     private final PermissionUtils permissionUtils;
     private final AuditLogService auditLogService;
 
-    public RecordCreationService(
+    public RecordCreateService(
             DatabaseConnectionService databaseConnectionService,
             SchemaMetadataStorageService schemaMetadataStorageService,
             PermissionUtils permissionUtils,
