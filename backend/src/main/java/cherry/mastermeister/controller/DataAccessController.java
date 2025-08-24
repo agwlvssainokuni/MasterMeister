@@ -20,6 +20,7 @@ import cherry.mastermeister.annotation.RequirePermission;
 import cherry.mastermeister.controller.dto.*;
 import cherry.mastermeister.model.RecordCreationResult;
 import cherry.mastermeister.model.RecordUpdateResult;
+import cherry.mastermeister.model.RecordDeleteResult;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.RecordFilter;
@@ -29,6 +30,7 @@ import cherry.mastermeister.service.PermissionAuthService;
 import cherry.mastermeister.service.RecordAccessService;
 import cherry.mastermeister.service.RecordCreationService;
 import cherry.mastermeister.service.RecordUpdateService;
+import cherry.mastermeister.service.RecordDeleteService;
 import cherry.mastermeister.service.RecordFilterConverterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -59,6 +61,7 @@ public class DataAccessController {
     private final RecordAccessService recordAccessService;
     private final RecordCreationService recordCreationService;
     private final RecordUpdateService recordUpdateService;
+    private final RecordDeleteService recordDeleteService;
     private final RecordFilterConverterService recordFilterConverterService;
 
     public DataAccessController(
@@ -67,6 +70,7 @@ public class DataAccessController {
             RecordAccessService recordAccessService,
             RecordCreationService recordCreationService,
             RecordUpdateService recordUpdateService,
+            RecordDeleteService recordDeleteService,
             RecordFilterConverterService recordFilterConverterService
     ) {
         this.dataAccessService = dataAccessService;
@@ -74,6 +78,7 @@ public class DataAccessController {
         this.recordAccessService = recordAccessService;
         this.recordCreationService = recordCreationService;
         this.recordUpdateService = recordUpdateService;
+        this.recordDeleteService = recordDeleteService;
         this.recordFilterConverterService = recordFilterConverterService;
     }
 
@@ -202,6 +207,40 @@ public class DataAccessController {
 
         cherry.mastermeister.controller.dto.RecordUpdateResult dto = convertToRecordUpdateResult(result);
         return ApiResponse.success(dto);
+    }
+
+    @DeleteMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
+    @Operation(summary = "Delete table records", description = "Delete records from table with referential integrity checks and column-level permission validation")
+    @RequirePermission(value = PermissionType.DELETE, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName")
+    public ApiResponse<cherry.mastermeister.controller.dto.RecordDeleteResult> deleteTableRecords(
+            @PathVariable Long connectionId,
+            @PathVariable String schemaName,
+            @PathVariable String tableName,
+            @Valid @RequestBody RecordDeleteRequest request
+    ) {
+
+        logger.info("Deleting records from table {}.{} on connection: {}", schemaName, tableName, connectionId);
+
+        cherry.mastermeister.model.RecordDeleteResult result = recordDeleteService.deleteRecord(
+                connectionId, schemaName, tableName, request.whereConditions(), 
+                request.skipReferentialIntegrityCheck());
+
+        cherry.mastermeister.controller.dto.RecordDeleteResult dto = convertToRecordDeleteResult(result);
+        return ApiResponse.success(dto);
+    }
+
+    /**
+     * Convert model RecordDeleteResult to DTO
+     */
+    private cherry.mastermeister.controller.dto.RecordDeleteResult convertToRecordDeleteResult(cherry.mastermeister.model.RecordDeleteResult model) {
+        return new cherry.mastermeister.controller.dto.RecordDeleteResult(
+                model.deletedRecordCount(),
+                model.executionTimeMs(),
+                model.query(),
+                model.referentialIntegrityChecked(),
+                model.warnings()
+        );
     }
 
     /**
