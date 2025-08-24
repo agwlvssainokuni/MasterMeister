@@ -18,6 +18,7 @@ import React, {useCallback, useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
 import {ColumnFilterComponent} from './ColumnFilter'
+import {PermissionGuard} from './PermissionGuard'
 import type {
   AccessibleTable,
   ColumnFilter,
@@ -42,7 +43,17 @@ interface DataTableProps {
 }
 
 export const DataTable: React.FC<DataTableProps> = (
-  {connectionId, schemaName, tableName, accessibleTable, onRecordSelect, onRecordEdit, onRecordDelete, onRecordCreate, onDataReload}
+  {
+    connectionId,
+    schemaName,
+    tableName,
+    accessibleTable,
+    onRecordSelect,
+    onRecordEdit,
+    onRecordDelete,
+    onRecordCreate,
+    onDataReload
+  }
 ) => {
   const {t} = useTranslation()
   const [queryData, setQueryData] = useState<RecordQueryData | null>(null)
@@ -247,11 +258,11 @@ export const DataTable: React.FC<DataTableProps> = (
         </div>
 
         <div className="table-actions">
-          {accessibleTable.canWrite && (
+          <PermissionGuard table={accessibleTable} requiredPermission="write">
             <button className="button button-primary" onClick={() => onRecordCreate?.()}>
               {t('dataTable.createRecord')}
             </button>
-          )}
+          </PermissionGuard>
         </div>
       </div>
 
@@ -302,7 +313,13 @@ export const DataTable: React.FC<DataTableProps> = (
                 </div>
               </th>
             ))}
-            <th className="actions-column">{t('common.actions')}</th>
+            <ConditionalPermission table={accessibleTable} requiredPermission="write">
+              {(hasWritePermission) => (
+                hasWritePermission || accessibleTable.canDelete ? (
+                  <th className="actions-column">{t('common.actions')}</th>
+                ) : null
+              )}
+            </ConditionalPermission>
           </tr>
           </thead>
           <tbody>
@@ -323,28 +340,34 @@ export const DataTable: React.FC<DataTableProps> = (
                   {formatCellValue(record[column.columnName], column)}
                 </td>
               ))}
-              <td className="actions-column">
-                <div className="action-buttons">
-                  {accessibleTable.canWrite && (
-                    <button
-                      className="button button-sm button-secondary"
-                      onClick={() => onRecordEdit?.(record)}
-                      title={t('common.edit')}
-                    >
-                      ✏️
-                    </button>
-                  )}
-                  {accessibleTable.canDelete && (
-                    <button
-                      className="button button-sm button-danger"
-                      onClick={() => onRecordDelete?.(record)}
-                      title={t('common.delete')}
-                    >
-                      🗑️
-                    </button>
-                  )}
-                </div>
-              </td>
+              <ConditionalPermission table={accessibleTable} requiredPermission="write">
+                {(hasWritePermission) => (
+                  hasWritePermission || accessibleTable.canDelete ? (
+                    <td className="actions-column">
+                      <div className="action-buttons">
+                        <PermissionGuard table={accessibleTable} requiredPermission="write">
+                          <button
+                            className="button button-sm button-secondary"
+                            onClick={() => onRecordEdit?.(record)}
+                            title={t('common.edit')}
+                          >
+                            ✏️
+                          </button>
+                        </PermissionGuard>
+                        <PermissionGuard table={accessibleTable} requiredPermission="delete">
+                          <button
+                            className="button button-sm button-danger"
+                            onClick={() => onRecordDelete?.(record)}
+                            title={t('common.delete')}
+                          >
+                            🗑️
+                          </button>
+                        </PermissionGuard>
+                      </div>
+                    </td>
+                  ) : null
+                )}
+              </ConditionalPermission>
             </tr>
           ))}
           </tbody>

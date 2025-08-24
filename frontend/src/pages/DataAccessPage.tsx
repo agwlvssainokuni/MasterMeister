@@ -21,6 +21,7 @@ import {TablesList} from '../components/TablesList'
 import {DataTable} from '../components/DataTable'
 import {RecordEditModal} from '../components/RecordEditModal'
 import {RecordDeleteModal} from '../components/RecordDeleteModal'
+import {PermissionGuard} from '../components/PermissionGuard'
 import {dataAccessService} from '../services/dataAccessService'
 import type {AccessibleTable, TableMetadata, TableRecord} from '../types/frontend'
 import '../styles/pages/DataAccessPage.css'
@@ -180,14 +181,16 @@ export const DataAccessPage: React.FC = () => {
       )}
 
       {/* Floating Action Button for Create */}
-      {selectedTable?.canWrite && (
-        <button
-          className="fab create-record-fab"
-          onClick={handleCreateRecord}
-          title={t('dataTable.createRecord')}
-        >
-          ✏️
-        </button>
+      {selectedTable && (
+        <PermissionGuard table={selectedTable} requiredPermission="write">
+          <button
+            className="fab create-record-fab"
+            onClick={handleCreateRecord}
+            title={t('dataTable.createRecord')}
+          >
+            ✏️
+          </button>
+        </PermissionGuard>
       )}
     </div>
   )
