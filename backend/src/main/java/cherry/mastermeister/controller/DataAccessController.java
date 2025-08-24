@@ -19,6 +19,7 @@ package cherry.mastermeister.controller;
 import cherry.mastermeister.annotation.RequirePermission;
 import cherry.mastermeister.controller.dto.*;
 import cherry.mastermeister.model.RecordCreationResult;
+import cherry.mastermeister.model.RecordUpdateResult;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.RecordFilter;
@@ -27,6 +28,7 @@ import cherry.mastermeister.service.DataAccessService;
 import cherry.mastermeister.service.PermissionAuthService;
 import cherry.mastermeister.service.RecordAccessService;
 import cherry.mastermeister.service.RecordCreationService;
+import cherry.mastermeister.service.RecordUpdateService;
 import cherry.mastermeister.service.RecordFilterConverterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -56,6 +58,7 @@ public class DataAccessController {
     private final PermissionAuthService permissionAuthService;
     private final RecordAccessService recordAccessService;
     private final RecordCreationService recordCreationService;
+    private final RecordUpdateService recordUpdateService;
     private final RecordFilterConverterService recordFilterConverterService;
 
     public DataAccessController(
@@ -63,12 +66,14 @@ public class DataAccessController {
             PermissionAuthService permissionAuthService,
             RecordAccessService recordAccessService,
             RecordCreationService recordCreationService,
+            RecordUpdateService recordUpdateService,
             RecordFilterConverterService recordFilterConverterService
     ) {
         this.dataAccessService = dataAccessService;
         this.permissionAuthService = permissionAuthService;
         this.recordAccessService = recordAccessService;
         this.recordCreationService = recordCreationService;
+        this.recordUpdateService = recordUpdateService;
         this.recordFilterConverterService = recordFilterConverterService;
     }
 
@@ -177,6 +182,37 @@ public class DataAccessController {
 
         RecordCreateResult dto = convertToRecordCreateResult(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(dto));
+    }
+
+    @PutMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
+    @Operation(summary = "Update table records", description = "Update records in table with column-level permission validation and transaction management")
+    @RequirePermission(value = PermissionType.WRITE, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName")
+    public ApiResponse<cherry.mastermeister.controller.dto.RecordUpdateResult> updateTableRecords(
+            @PathVariable Long connectionId,
+            @PathVariable String schemaName,
+            @PathVariable String tableName,
+            @Valid @RequestBody RecordUpdateRequest request
+    ) {
+
+        logger.info("Updating records in table {}.{} on connection: {}", schemaName, tableName, connectionId);
+
+        cherry.mastermeister.model.RecordUpdateResult result = recordUpdateService.updateRecord(
+                connectionId, schemaName, tableName, request.data(), request.whereConditions());
+
+        cherry.mastermeister.controller.dto.RecordUpdateResult dto = convertToRecordUpdateResult(result);
+        return ApiResponse.success(dto);
+    }
+
+    /**
+     * Convert model RecordUpdateResult to DTO
+     */
+    private cherry.mastermeister.controller.dto.RecordUpdateResult convertToRecordUpdateResult(cherry.mastermeister.model.RecordUpdateResult model) {
+        return new cherry.mastermeister.controller.dto.RecordUpdateResult(
+                model.updatedRecordCount(),
+                model.executionTimeMs(),
+                model.query()
+        );
     }
 
     /**
