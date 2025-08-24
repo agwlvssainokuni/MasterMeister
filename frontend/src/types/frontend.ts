@@ -175,6 +175,33 @@ export interface RecordDeleteResponse {
 // Database Connection Types (Frontend)
 export type DatabaseType = 'MYSQL' | 'MARIADB' | 'POSTGRESQL' | 'H2'
 
+// Permission Management Types (Frontend)
+export type PermissionType = 'READ' | 'WRITE' | 'DELETE'
+export type PermissionScope = 'TABLE' | 'COLUMN'
+
+export interface PermissionImportOptions {
+  importUsers: boolean
+  importTemplates: boolean
+  clearExistingPermissions: boolean
+  skipDuplicates: boolean
+}
+
+export interface PermissionValidationResult {
+  valid: boolean
+  message: string
+  userCount: number
+  templateCount: number
+  totalPermissions: number
+}
+
+export interface PermissionImportResult {
+  importedUsers: number
+  importedTemplates: number
+  importedPermissions: number
+  skippedDuplicates: number
+  errors: string[]
+}
+
 export interface DatabaseConnectionForm {
   name: string
   dbType: DatabaseType

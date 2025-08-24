@@ -16,6 +16,7 @@
 
 import {useState} from 'react'
 import {useTranslation} from 'react-i18next'
+import {Link} from 'react-router-dom'
 import {AdminLayout} from '../components/layouts/AdminLayout'
 import {PendingUsersList} from '../components/PendingUsersList'
 import '../styles/components/Tabs.css'
@@ -44,7 +45,6 @@ export const AdminDashboard = () => {
               type="button"
               className="tab-button"
               onClick={() => setActiveTab('database')}
-              disabled
             >
               {t('admin.nav.database')}
             </button>
@@ -54,7 +54,6 @@ export const AdminDashboard = () => {
               type="button"
               className="tab-button"
               onClick={() => setActiveTab('permissions')}
-              disabled
             >
               {t('admin.nav.permissions')}
             </button>
@@ -76,9 +75,22 @@ export const AdminDashboard = () => {
             <h2 className="admin-section-title">{t('admin.database.title')}</h2>
             <p className="admin-section-description">{t('admin.database.description')}</p>
           </div>
-          <div className="card">
-            <div className="card-content">
-              <p className="admin-text-muted">{t('admin.database.comingSoon')}</p>
+          <div className="admin-features-grid">
+            <div className="feature-card">
+              <div className="feature-icon">🔗</div>
+              <h3>Database Connections</h3>
+              <p>Manage database connections and configure access to external databases</p>
+              <Link to="/admin/database-connections" className="button button-primary">
+                Manage Connections
+              </Link>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">📋</div>
+              <h3>Schema Management</h3>
+              <p>Read and update database schema metadata for connected databases</p>
+              <Link to="/admin/schema" className="button button-primary">
+                Manage Schema
+              </Link>
             </div>
           </div>
         </div>
@@ -88,9 +100,14 @@ export const AdminDashboard = () => {
             <h2 className="admin-section-title">{t('admin.permissions.title')}</h2>
             <p className="admin-section-description">{t('admin.permissions.description')}</p>
           </div>
-          <div className="card">
-            <div className="card-content">
-              <p className="admin-text-muted">{t('admin.permissions.comingSoon')}</p>
+          <div className="admin-features-grid single-column">
+            <div className="feature-card">
+              <div className="feature-icon">🔐</div>
+              <h3>Permission Management</h3>
+              <p>Export and import user permissions and access control settings via YAML configuration</p>
+              <Link to="/admin/permissions" className="button button-primary">
+                Manage Permissions
+              </Link>
             </div>
           </div>
         </div>

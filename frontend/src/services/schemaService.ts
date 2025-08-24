@@ -19,7 +19,9 @@ import { API_ENDPOINTS } from '../config/config'
 import type {
   ApiResponse,
   SchemaMetadataResult,
-  SchemaUpdateLogResult
+  SchemaUpdateLogResult,
+  TableMetadataResult,
+  ColumnMetadataResult
 } from '../types/api'
 import type {
   SchemaMetadata,
@@ -101,7 +103,7 @@ class SchemaService {
     }
   }
 
-  private convertToFrontendTable = (apiTable: any): TableMetadata => {
+  private convertToFrontendTable = (apiTable: TableMetadataResult): TableMetadata => {
     return {
       schema: apiTable.schema,
       tableName: apiTable.tableName,
@@ -111,7 +113,7 @@ class SchemaService {
     }
   }
 
-  private convertToFrontendColumn = (apiColumn: any): ColumnMetadata => {
+  private convertToFrontendColumn = (apiColumn: ColumnMetadataResult): ColumnMetadata => {
     return {
       columnName: apiColumn.columnName,
       dataType: apiColumn.dataType,

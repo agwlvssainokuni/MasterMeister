@@ -26,6 +26,7 @@ import {DashboardPage} from './pages/DashboardPage'
 import {DataAccessPage} from './pages/DataAccessPage'
 import {DatabaseConnectionsPage} from './pages/DatabaseConnectionsPage'
 import {SchemaManagementPage} from './pages/SchemaManagementPage'
+import {PermissionManagementPage} from './pages/PermissionManagementPage'
 import './App.css'
 
 const App = () => {
@@ -74,6 +75,14 @@ const App = () => {
               element={
                 <AdminRoute>
                   <SchemaManagementPage/>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/permissions"
+              element={
+                <AdminRoute>
+                  <PermissionManagementPage/>
                 </AdminRoute>
               }
             />

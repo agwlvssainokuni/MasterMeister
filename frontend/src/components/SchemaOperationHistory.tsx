@@ -25,7 +25,6 @@ interface SchemaOperationHistoryProps {
 }
 
 export const SchemaOperationHistory: React.FC<SchemaOperationHistoryProps> = ({
-  connection,
   operationHistory,
   onRefresh
 }) => {

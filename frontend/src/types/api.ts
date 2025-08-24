@@ -228,6 +228,37 @@ export interface ConnectionTestResult {
 // Schema Management Types
 export type SchemaUpdateOperation = 'READ_SCHEMA' | 'REFRESH_SCHEMA' | 'IMPORT_SCHEMA' | 'EXPORT_SCHEMA'
 
+// Permission Management Types
+export type PermissionType = 'READ' | 'WRITE' | 'DELETE'
+export type PermissionScope = 'TABLE' | 'COLUMN'
+
+export interface PermissionExportOptions {
+  description?: string
+}
+
+export interface PermissionImportOptions {
+  importUsers?: boolean
+  importTemplates?: boolean
+  clearExistingPermissions?: boolean
+  skipDuplicates?: boolean
+}
+
+export interface PermissionValidationResult {
+  valid: boolean
+  message: string
+  userCount: number
+  templateCount: number
+  totalPermissions: number
+}
+
+export interface PermissionImportResult {
+  importedUsers: number
+  importedTemplates: number
+  importedPermissions: number
+  skippedDuplicates: number
+  errors: string[]
+}
+
 export interface SchemaMetadataResult {
   connectionId: number
   databaseName: string

@@ -402,5 +402,60 @@
       "readError": "スキーマの読み取りに失敗しました",
       "refreshError": "スキーマの更新に失敗しました"
     }
+  },
+  "permissions": {
+    "title": "権限管理",
+    "description": "YAML設定ファイルを使用してユーザー権限とアクセス制御を管理します",
+    "selectConnection": "接続を選択",
+    "selectConnectionDescription": "権限を管理する接続を選択してください",
+    "connectionSelected": "選択済み",
+    "noActiveConnections": "有効な接続がありません",
+    "noActiveConnectionsDescription": "権限を管理するには、まずデータベース接続を作成・有効化してください",
+    "connectionInfo": "{{host}}:{{port}} ({{type}})",
+    "tabs": {
+      "export": "エクスポート",
+      "import": "インポート"
+    },
+    "exportTitle": "権限設定エクスポート",
+    "exportDescription": "現在の権限設定をYAML設定ファイルとしてダウンロードします",
+    "exportDescriptionLabel": "エクスポート説明",
+    "exportDescriptionPlaceholder": "バックアップ用権限エクスポート",
+    "exportDescriptionHint": "エクスポート設定の説明（省略可能）",
+    "importTitle": "権限設定インポート",
+    "importDescription": "YAML設定ファイルをアップロードして権限設定をインポートします",
+    "selectFile": "YAMLファイルを選択",
+    "importOptions": "インポートオプション",
+    "importCompleted": "インポートが正常に完了しました",
+    "userCount": "ユーザー数",
+    "templateCount": "テンプレート数",
+    "totalPermissions": "権限数",
+    "importedUsers": "インポートされたユーザー",
+    "importedTemplates": "インポートされたテンプレート",
+    "importedPermissions": "インポートされた権限",
+    "skippedDuplicates": "スキップされた重複",
+    "importErrors": "インポートエラー",
+    "actions": {
+      "export": "権限エクスポート",
+      "import": "権限インポート",
+      "validate": "ファイル検証"
+    },
+    "exporting": "エクスポート中...",
+    "importing": "インポート中...",
+    "validating": "検証中...",
+    "options": {
+      "importUsers": "ユーザー権限をインポート",
+      "importTemplates": "権限テンプレートをインポート",
+      "clearExistingPermissions": "インポート前に既存権限をクリア",
+      "skipDuplicates": "重複権限をスキップ"
+    },
+    "messages": {
+      "loadConnectionsError": "データベース接続の読み込みに失敗しました",
+      "exportSuccess": "{{connection}}の権限をエクスポートしました",
+      "exportError": "権限のエクスポートに失敗しました",
+      "importSuccess": "{{connection}}の権限をインポートしました: ユーザー{{users}}件、テンプレート{{templates}}件、権限{{permissions}}件",
+      "importError": "権限のインポートに失敗しました",
+      "validateSuccess": "YAMLファイルは有効です",
+      "validateError": "YAML検証エラー: {{message}}"
+    }
   }
 }

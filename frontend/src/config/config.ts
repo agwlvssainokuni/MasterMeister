@@ -60,5 +60,10 @@ export const API_ENDPOINTS = {
     REFRESH: (connectionId: number) => `/admin/schema/${connectionId}/refresh`,
     HISTORY: (connectionId: number) => `/admin/schema/${connectionId}/history`,
     FAILURES: (connectionId: number) => `/admin/schema/${connectionId}/failures`
+  },
+  PERMISSIONS: {
+    EXPORT: (connectionId: number) => `/admin/permissions/${connectionId}/export`,
+    IMPORT: (connectionId: number) => `/admin/permissions/${connectionId}/import`,
+    VALIDATE: (connectionId: number) => `/admin/permissions/${connectionId}/validate`
   }
 }
