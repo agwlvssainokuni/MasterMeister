@@ -1,0 +1,323 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package cherry.mastermeister.service;
+
+import cherry.mastermeister.controller.dto.PermissionExportData;
+import cherry.mastermeister.entity.UserEntity;
+import cherry.mastermeister.enums.PermissionScope;
+import cherry.mastermeister.enums.PermissionType;
+import cherry.mastermeister.model.PermissionTemplate;
+import cherry.mastermeister.model.PermissionTemplateItem;
+import cherry.mastermeister.model.UserPermission;
+import cherry.mastermeister.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@Transactional(readOnly = true)
+public class PermissionYamlService {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final PermissionAuthService permissionAuthService;
+    private final PermissionManagementService permissionManagementService;
+    private final PermissionTemplateService permissionTemplateService;
+    private final UserRepository userRepository;
+    private final ObjectMapper yamlMapper;
+
+    public PermissionYamlService(
+            PermissionAuthService permissionAuthService,
+            PermissionManagementService permissionManagementService,
+            PermissionTemplateService permissionTemplateService,
+            UserRepository userRepository
+    ) {
+        this.permissionAuthService = permissionAuthService;
+        this.permissionManagementService = permissionManagementService;
+        this.permissionTemplateService = permissionTemplateService;
+        this.userRepository = userRepository;
+
+        // Configure YAML mapper
+        this.yamlMapper = new ObjectMapper(new YAMLFactory());
+        this.yamlMapper.registerModule(new JavaTimeModule());
+    }
+
+    /**
+     * Export permissions for a connection to YAML string
+     */
+    public String exportPermissionsAsYaml(Long connectionId, String description) {
+        logger.info("Exporting permissions for connection: {}", connectionId);
+
+        try {
+            PermissionExportData exportData = buildExportData(connectionId, description);
+            return yamlMapper.writeValueAsString(exportData);
+        } catch (Exception e) {
+            logger.error("Failed to export permissions as YAML", e);
+            throw new RuntimeException("YAML export failed", e);
+        }
+    }
+
+    /**
+     * Import permissions from YAML string
+     */
+    @Transactional
+    public PermissionImportResult importPermissionsFromYaml(String yamlContent, Long targetConnectionId,
+                                                            ImportOptions options) {
+        logger.info("Importing permissions to connection: {}", targetConnectionId);
+
+        try {
+            PermissionExportData importData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
+            return processImport(importData, targetConnectionId, options);
+        } catch (Exception e) {
+            logger.error("Failed to import permissions from YAML", e);
+            throw new RuntimeException("YAML import failed", e);
+        }
+    }
+
+    /**
+     * Build export data structure
+     */
+    private PermissionExportData buildExportData(Long connectionId, String description) {
+        // Export info
+        PermissionExportData.ExportInfo exportInfo = new PermissionExportData.ExportInfo(
+                LocalDateTime.now(), getCurrentUserEmail(), description);
+
+        // Connection info (simplified - in real implementation, get from DatabaseConnectionService)
+        PermissionExportData.ConnectionInfo connectionInfo = new PermissionExportData.ConnectionInfo(
+                connectionId, "Connection-" + connectionId, "UNKNOWN", "database");
+
+        // Export user permissions
+        List<PermissionExportData.UserPermissionData> users = exportUserPermissions(connectionId);
+
+        // Export templates
+        List<PermissionExportData.TemplateData> templates = exportTemplates(connectionId);
+
+        return new PermissionExportData(exportInfo, connectionInfo, users, templates);
+    }
+
+    /**
+     * Export user permissions
+     */
+    private List<PermissionExportData.UserPermissionData> exportUserPermissions(Long connectionId) {
+        // Get all users with permissions for this connection
+        List<UserEntity> allUsers = userRepository.findAll();
+
+        return allUsers.stream()
+                .map(user -> {
+                    List<UserPermission> permissions = permissionAuthService.getUserPermissions(user.getId(), connectionId);
+                    if (!permissions.isEmpty()) {
+                        List<PermissionExportData.PermissionData> permissionData = permissions.stream()
+                                .map(this::toPermissionData)
+                                .toList();
+                        return new PermissionExportData.UserPermissionData(user.getEmail(), permissionData);
+                    }
+                    return null;
+                })
+                .filter(userData -> userData != null)
+                .toList();
+    }
+
+    /**
+     * Export permission templates
+     */
+    private List<PermissionExportData.TemplateData> exportTemplates(Long connectionId) {
+        List<PermissionTemplate> templates = permissionTemplateService.getAllTemplatesForConnection(connectionId);
+
+        return templates.stream()
+                .map(template -> {
+                    List<PermissionExportData.PermissionData> items = template.items().stream()
+                            .map(this::toPermissionData)
+                            .toList();
+                    return new PermissionExportData.TemplateData(
+                            template.name(), template.description(), template.isActive(), items);
+                })
+                .toList();
+    }
+
+    /**
+     * Convert model to export data
+     */
+    private PermissionExportData.PermissionData toPermissionData(UserPermission permission) {
+        return new PermissionExportData.PermissionData(
+                permission.scope().name(),
+                permission.permissionType().name(),
+                permission.schemaName(),
+                permission.tableName(),
+                permission.columnName(),
+                permission.granted(),
+                permission.expiresAt(),
+                permission.comment()
+        );
+    }
+
+    /**
+     * Convert template item to export data
+     */
+    private PermissionExportData.PermissionData toPermissionData(PermissionTemplateItem item) {
+        return new PermissionExportData.PermissionData(
+                item.scope().name(),
+                item.permissionType().name(),
+                item.schemaName(),
+                item.tableName(),
+                item.columnName(),
+                item.granted(),
+                null, // Templates don't have expiration
+                item.comment()
+        );
+    }
+
+    /**
+     * Process import operation
+     */
+    private PermissionImportResult processImport(PermissionExportData importData, Long targetConnectionId,
+                                                 ImportOptions options) {
+        List<String> warnings = new ArrayList<>();
+        int importedUsers = 0;
+        int importedTemplates = 0;
+        int importedPermissions = 0;
+
+        // Import user permissions
+        if (options.importUsers()) {
+            for (PermissionExportData.UserPermissionData userData : importData.users()) {
+                UserEntity user = userRepository.findByEmail(userData.userEmail()).orElse(null);
+                if (user == null) {
+                    warnings.add("User not found: " + userData.userEmail());
+                    continue;
+                }
+
+                if (options.clearExistingPermissions()) {
+                    permissionManagementService.revokeAllPermissions(user.getId(), targetConnectionId);
+                }
+
+                for (PermissionExportData.PermissionData permData : userData.permissions()) {
+                    try {
+                        importUserPermission(user.getId(), targetConnectionId, permData);
+                        importedPermissions++;
+                    } catch (Exception e) {
+                        warnings.add("Failed to import permission for user " + userData.userEmail() + ": " + e.getMessage());
+                    }
+                }
+                importedUsers++;
+            }
+        }
+
+        // Import templates
+        if (options.importTemplates()) {
+            for (PermissionExportData.TemplateData templateData : importData.templates()) {
+                try {
+                    importTemplate(targetConnectionId, templateData);
+                    importedTemplates++;
+                } catch (Exception e) {
+                    warnings.add("Failed to import template " + templateData.name() + ": " + e.getMessage());
+                }
+            }
+        }
+
+        return new PermissionImportResult(importedUsers, importedTemplates, importedPermissions, warnings);
+    }
+
+    /**
+     * Import user permission
+     */
+    private void importUserPermission(Long userId, Long connectionId, PermissionExportData.PermissionData permData) {
+        PermissionScope scope = PermissionScope.valueOf(permData.scope());
+        PermissionType permissionType = PermissionType.valueOf(permData.permissionType());
+
+        permissionManagementService.grantPermission(
+                userId, connectionId, scope, permissionType,
+                permData.schemaName(), permData.tableName(), permData.columnName(),
+                permData.expiresAt(), permData.comment()
+        );
+    }
+
+    /**
+     * Import permission template
+     */
+    private void importTemplate(Long connectionId, PermissionExportData.TemplateData templateData) {
+        List<PermissionTemplateItem> items = templateData.items().stream()
+                .map(this::toTemplateItem)
+                .toList();
+
+        permissionTemplateService.createTemplate(
+                templateData.name(), templateData.description(), connectionId, items);
+    }
+
+    /**
+     * Convert export data to template item
+     */
+    private PermissionTemplateItem toTemplateItem(PermissionExportData.PermissionData permData) {
+        return new PermissionTemplateItem(
+                null, // ID will be set by service
+                null, // Template ID will be set by service
+                PermissionScope.valueOf(permData.scope()),
+                PermissionType.valueOf(permData.permissionType()),
+                permData.schemaName(),
+                permData.tableName(),
+                permData.columnName(),
+                permData.granted(),
+                permData.comment()
+        );
+    }
+
+    /**
+     * Get current user email
+     */
+    private String getCurrentUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getName() != null) {
+            return authentication.getName();
+        }
+        return "system";
+    }
+
+    /**
+     * Import options configuration
+     */
+    public record ImportOptions(
+            boolean importUsers,
+            boolean importTemplates,
+            boolean clearExistingPermissions,
+            boolean skipDuplicates
+    ) {
+        public static ImportOptions defaultOptions() {
+            return new ImportOptions(true, true, false, true);
+        }
+    }
+
+    /**
+     * Import result summary
+     */
+    public record PermissionImportResult(
+            int importedUsers,
+            int importedTemplates,
+            int importedPermissions,
+            List<String> warnings
+    ) {
+        public boolean hasWarnings() {
+            return !warnings.isEmpty();
+        }
+    }
+}
