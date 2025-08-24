@@ -88,6 +88,48 @@ public class SchemaMetadataStorageService {
                 .toList();
     }
 
+    /**
+     * Get all tables for a specific connection
+     */
+    @Transactional(readOnly = true)
+    public List<TableMetadata> getTablesForConnection(Long connectionId) {
+        logger.debug("Retrieving tables for connection: {}", connectionId);
+
+        Optional<SchemaMetadataEntity> schemaEntity = schemaMetadataRepository.findByConnectionId(connectionId);
+        if (schemaEntity.isEmpty()) {
+            logger.warn("No schema metadata found for connection: {}", connectionId);
+            return List.of();
+        }
+
+        return schemaEntity.get().getTables().stream()
+                .map(this::toModel)
+                .toList();
+    }
+
+    /**
+     * Get specific table metadata
+     */
+    @Transactional(readOnly = true)
+    public TableMetadata getTableMetadata(Long connectionId, String schemaName, String tableName) {
+        logger.debug("Getting table metadata for {}.{} on connection: {}", schemaName, tableName, connectionId);
+
+        Optional<SchemaMetadataEntity> schemaEntity = schemaMetadataRepository.findByConnectionId(connectionId);
+        if (schemaEntity.isEmpty()) {
+            throw new IllegalArgumentException("No schema metadata found for connection: " + connectionId);
+        }
+
+        return schemaEntity.get().getTables().stream()
+                .filter(table -> {
+                    boolean schemaMatches = (schemaName == null && table.getSchema() == null) ||
+                            (schemaName != null && schemaName.equals(table.getSchema()));
+                    return schemaMatches && tableName.equals(table.getTableName());
+                })
+                .findFirst()
+                .map(this::toModel)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("Table %s.%s not found in connection %d", schemaName, tableName, connectionId)));
+    }
+
     private SchemaMetadataEntity toEntity(SchemaMetadata model) {
         SchemaMetadataEntity entity = new SchemaMetadataEntity();
         entity.setConnectionId(model.connectionId());

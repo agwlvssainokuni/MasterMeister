@@ -34,8 +34,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
@@ -184,6 +186,69 @@ public class PermissionAuthService {
 
         // No permission found
         return PermissionCheckResult.denied("No matching permission found");
+    }
+
+    /**
+     * Get all permission types that current user has for a specific table
+     */
+    public Set<PermissionType> getUserTablePermissions(Long connectionId, String schemaName, String tableName) {
+        Long currentUserId = getCurrentUserId();
+        if (currentUserId == null) {
+            return EnumSet.noneOf(PermissionType.class);
+        }
+
+        return getUserTablePermissions(currentUserId, connectionId, schemaName, tableName);
+    }
+
+    /**
+     * Get all permission types that specified user has for a specific table
+     */
+    public Set<PermissionType> getUserTablePermissions(Long userId, Long connectionId, String schemaName, String tableName) {
+        // Check if user is admin
+        if (isUserAdmin(userId)) {
+            return EnumSet.allOf(PermissionType.class);
+        }
+
+        Set<PermissionType> permissions = EnumSet.noneOf(PermissionType.class);
+
+        // Get user email for the request
+        String userEmail = userRepository.findById(userId)
+                .map(UserEntity::getEmail)
+                .orElse("unknown");
+
+        // Check each permission type
+        for (PermissionType permissionType : PermissionType.values()) {
+            PermissionRequest request = new PermissionRequest(
+                    userId, userEmail, connectionId, permissionType, schemaName, tableName, null);
+
+            PermissionCheckResult result = checkHierarchicalPermissions(request);
+            if (result.granted()) {
+                permissions.add(permissionType);
+            }
+        }
+
+        return permissions;
+    }
+
+    /**
+     * Get current user ID from security context
+     */
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getName() != null) {
+            String userEmail = authentication.getName();
+            return userRepository.findByEmail(userEmail).map(UserEntity::getId).orElse(null);
+        }
+        return null;
+    }
+
+    /**
+     * Check if user is admin
+     */
+    private boolean isUserAdmin(Long userId) {
+        return userRepository.findById(userId)
+                .map(user -> user.getRole() == UserRole.ADMIN)
+                .orElse(false);
     }
 
     /**
