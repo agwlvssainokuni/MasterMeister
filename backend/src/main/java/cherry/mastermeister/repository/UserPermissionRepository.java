@@ -43,6 +43,7 @@ public interface UserPermissionRepository extends JpaRepository<UserPermissionEn
            "AND (:tableName IS NULL OR p.tableName = :tableName) " +
            "AND (:columnName IS NULL OR p.columnName = :columnName) " +
            "AND p.granted = true " +
+           "AND p.grantedAt <= CURRENT_TIMESTAMP " +
            "AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)")
     Optional<UserPermissionEntity> findActivePermission(
             Long userId, Long connectionId, PermissionScope scope, PermissionType permissionType,
@@ -50,6 +51,7 @@ public interface UserPermissionRepository extends JpaRepository<UserPermissionEn
 
     @Query("SELECT p FROM UserPermissionEntity p WHERE p.user.id = :userId AND p.connectionId = :connectionId " +
            "AND p.granted = true " +
+           "AND p.grantedAt <= CURRENT_TIMESTAMP " +
            "AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP) " +
            "ORDER BY p.scope ASC, p.schemaName ASC, p.tableName ASC, p.columnName ASC")
     List<UserPermissionEntity> findActivePermissionsByUser(Long userId, Long connectionId);
@@ -63,6 +65,7 @@ public interface UserPermissionRepository extends JpaRepository<UserPermissionEn
 
     @Query("SELECT COUNT(p) FROM UserPermissionEntity p WHERE p.user.id = :userId AND p.connectionId = :connectionId " +
            "AND p.granted = true " +
+           "AND p.grantedAt <= CURRENT_TIMESTAMP " +
            "AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)")
     long countActivePermissionsByUser(Long userId, Long connectionId);
 

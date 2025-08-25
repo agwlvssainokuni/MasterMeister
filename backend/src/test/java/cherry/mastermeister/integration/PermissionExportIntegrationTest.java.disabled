@@ -1,0 +1,402 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package cherry.mastermeister.integration;
+
+import cherry.mastermeister.entity.DatabaseConnectionEntity;
+import cherry.mastermeister.entity.PermissionTemplateEntity;
+import cherry.mastermeister.entity.PermissionTemplateItemEntity;
+import cherry.mastermeister.entity.UserEntity;
+import cherry.mastermeister.entity.UserPermissionEntity;
+import cherry.mastermeister.enums.DatabaseType;
+import cherry.mastermeister.enums.PermissionScope;
+import cherry.mastermeister.enums.PermissionType;
+import cherry.mastermeister.enums.UserRole;
+import cherry.mastermeister.enums.UserStatus;
+import cherry.mastermeister.controller.dto.PermissionExportData;
+import cherry.mastermeister.repository.DatabaseConnectionRepository;
+import cherry.mastermeister.repository.PermissionTemplateItemRepository;
+import cherry.mastermeister.repository.PermissionTemplateRepository;
+import cherry.mastermeister.repository.UserPermissionRepository;
+import cherry.mastermeister.repository.UserRepository;
+import cherry.mastermeister.service.PermissionYamlService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+public class PermissionExportIntegrationTest {
+
+    @Autowired
+    private PermissionYamlService permissionYamlService;
+
+    @Autowired
+    private UserPermissionRepository userPermissionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private DatabaseConnectionRepository databaseConnectionRepository;
+
+    @Autowired
+    private PermissionTemplateRepository permissionTemplateRepository;
+
+    @Autowired
+    private PermissionTemplateItemRepository permissionTemplateItemRepository;
+
+    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+
+    private UserEntity testUser1;
+    private UserEntity testUser2;
+    private DatabaseConnectionEntity testConnection;
+
+    @BeforeEach
+    void setUp() {
+        // Create test users
+        testUser1 = new UserEntity();
+        testUser1.setEmail("user1@example.com");
+        testUser1.setStatus(UserStatus.APPROVED);
+        testUser1.setRole(UserRole.USER);
+        testUser1.setCreatedAt(LocalDateTime.now());
+        testUser1 = userRepository.save(testUser1);
+
+        testUser2 = new UserEntity();
+        testUser2.setEmail("user2@example.com");
+        testUser2.setStatus(UserStatus.APPROVED);
+        testUser2.setRole(UserRole.USER);
+        testUser2.setCreatedAt(LocalDateTime.now());
+        testUser2 = userRepository.save(testUser2);
+
+        // Create test database connection
+        testConnection = new DatabaseConnectionEntity();
+        testConnection.setName("Test Database");
+        testConnection.setDbType(DatabaseType.H2);
+        testConnection.setHost("mem");
+        testConnection.setDatabaseName("testdb");
+        testConnection.setUsername("sa");
+        testConnection.setPassword("");
+        testConnection.setActive(true);
+        testConnection.setCreatedAt(LocalDateTime.now());
+        testConnection.setUpdatedAt(LocalDateTime.now());
+        testConnection = databaseConnectionRepository.save(testConnection);
+    }
+
+    @Test
+    void testExportBasicPermissions() throws Exception {
+        // Setup test permissions
+        createTestPermission(testUser1, PermissionScope.TABLE, PermissionType.READ, 
+                "PUBLIC", "users", null, true, null, "Basic read access");
+        createTestPermission(testUser1, PermissionScope.COLUMN, PermissionType.WRITE,
+                "PUBLIC", "users", "email", true, null, "Email write access");
+        createTestPermission(testUser2, PermissionScope.SCHEMA, PermissionType.READ,
+                "PUBLIC", null, null, true, null, "Schema read access");
+
+        // Execute export
+        String yamlContent = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Test export");
+
+        // Parse and verify YAML structure
+        PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
+
+        // Verify export info
+        assertNotNull(exportData.exportInfo());
+        assertEquals("1.0", exportData.getExportInfo().getVersion());
+        assertEquals("admin@example.com", exportData.getExportInfo().getExportedBy());
+        assertNotNull(exportData.getExportInfo().getExportedAt());
+
+        // Verify connection info
+        assertNotNull(exportData.getConnectionInfo());
+        assertEquals(testConnection.getId(), exportData.getConnectionInfo().getConnectionId());
+        assertEquals("Test Database", exportData.getConnectionInfo().getConnectionName());
+        assertEquals("H2", exportData.getConnectionInfo().getDatabaseType());
+        assertEquals("testdb", exportData.getConnectionInfo().getDatabaseName());
+
+        // Verify users and permissions
+        assertNotNull(exportData.getUsers());
+        assertEquals(2, exportData.getUsers().size());
+
+        // Check user1 permissions
+        var user1Data = exportData.getUsers().stream()
+                .filter(u -> u.getUserEmail().equals("user1@example.com"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(user1Data);
+        assertEquals(2, user1Data.getPermissions().size());
+
+        // Check TABLE permission
+        var tablePermission = user1Data.getPermissions().stream()
+                .filter(p -> p.getScope() == PermissionScope.TABLE)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(tablePermission);
+        assertEquals(PermissionType.READ, tablePermission.getPermissionType());
+        assertEquals("PUBLIC", tablePermission.getSchemaName());
+        assertEquals("users", tablePermission.getTableName());
+        assertNull(tablePermission.getColumnName());
+        assertTrue(tablePermission.getGranted());
+        assertEquals("Basic read access", tablePermission.getComment());
+
+        // Check COLUMN permission
+        var columnPermission = user1Data.getPermissions().stream()
+                .filter(p -> p.getScope() == PermissionScope.COLUMN)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(columnPermission);
+        assertEquals(PermissionType.WRITE, columnPermission.getPermissionType());
+        assertEquals("PUBLIC", columnPermission.getSchemaName());
+        assertEquals("users", columnPermission.getTableName());
+        assertEquals("email", columnPermission.getColumnName());
+        assertTrue(columnPermission.getGranted());
+
+        // Check user2 permissions
+        var user2Data = exportData.getUsers().stream()
+                .filter(u -> u.getUserEmail().equals("user2@example.com"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(user2Data);
+        assertEquals(1, user2Data.getPermissions().size());
+
+        var schemaPermission = user2Data.getPermissions().get(0);
+        assertEquals(PermissionScope.SCHEMA, schemaPermission.getScope());
+        assertEquals(PermissionType.READ, schemaPermission.getPermissionType());
+        assertEquals("PUBLIC", schemaPermission.getSchemaName());
+        assertNull(schemaPermission.getTableName());
+        assertNull(schemaPermission.getColumnName());
+    }
+
+    @Test
+    void testExportWithExpirationDates() throws Exception {
+        LocalDateTime expireDate = LocalDateTime.of(2025, 12, 31, 23, 59, 59);
+        
+        // Setup permission with expiration
+        createTestPermission(testUser1, PermissionScope.TABLE, PermissionType.READ,
+                "PUBLIC", "temp_data", null, true, expireDate, "Temporary access");
+
+        // Execute export
+        String yamlContent = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Test export");
+
+        // Parse and verify
+        PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
+
+        var userData = exportData.getUsers().get(0);
+        var permission = userData.getPermissions().get(0);
+        
+        assertEquals(expireDate, permission.getExpiresAt());
+        assertEquals("Temporary access", permission.getComment());
+    }
+
+    @Test
+    void testExportWithDeniedPermissions() throws Exception {
+        // Setup denied permission
+        createTestPermission(testUser1, PermissionScope.TABLE, PermissionType.DELETE,
+                "PUBLIC", "logs", null, false, null, "Delete denied on logs");
+
+        // Execute export
+        String yamlContent = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Test export");
+
+        // Parse and verify
+        PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
+
+        var userData = exportData.getUsers().get(0);
+        var permission = userData.getPermissions().get(0);
+        
+        assertFalse(permission.getGranted());
+        assertEquals("Delete denied on logs", permission.getComment());
+    }
+
+    @Test
+    void testExportWithTemplates() throws Exception {
+        // Create permission template
+        PermissionTemplateEntity template = new PermissionTemplateEntity();
+        template.setName("Basic User Template");
+        template.setDescription("Standard read-only access");
+        template.setActive(true);
+        template.setCreatedBy("admin@example.com");
+        template.setCreatedAt(LocalDateTime.now());
+        template = permissionTemplateRepository.save(template);
+
+        // Create template items
+        PermissionTemplateItemEntity templateItem1 = new PermissionTemplateItemEntity();
+        templateItem1.setTemplate(template);
+        templateItem1.setScope(PermissionScope.TABLE);
+        templateItem1.setPermissionType(PermissionType.READ);
+        templateItem1.setSchemaName("PUBLIC");
+        templateItem1.setTableName("users");
+        templateItem1.setGranted(true);
+        templateItem1.setComment("Basic user read access");
+        permissionTemplateItemRepository.save(templateItem1);
+
+        PermissionTemplateItemEntity templateItem2 = new PermissionTemplateItemEntity();
+        templateItem2.setTemplate(template);
+        templateItem2.setScope(PermissionScope.TABLE);
+        templateItem2.setPermissionType(PermissionType.DELETE);
+        templateItem2.setSchemaName("PUBLIC");
+        templateItem2.setTableName("logs");
+        templateItem2.setGranted(false);
+        templateItem2.setComment("Deny log deletion");
+        permissionTemplateItemRepository.save(templateItem2);
+
+        // Execute export
+        String yamlContent = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Test export");
+
+        // Parse and verify
+        PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
+
+        // Verify templates are included
+        assertNotNull(exportData.getTemplates());
+        assertEquals(1, exportData.getTemplates().size());
+
+        var templateData = exportData.getTemplates().get(0);
+        assertEquals("Basic User Template", templateData.getName());
+        assertEquals("Standard read-only access", templateData.getDescription());
+        assertTrue(templateData.getIsActive());
+
+        // Verify template items
+        assertEquals(2, templateData.getItems().size());
+
+        var readItem = templateData.getItems().stream()
+                .filter(item -> item.getPermissionType() == PermissionType.READ)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(readItem);
+        assertEquals(PermissionScope.TABLE, readItem.getScope());
+        assertEquals("users", readItem.getTableName());
+        assertTrue(readItem.getGranted());
+
+        var deleteItem = templateData.getItems().stream()
+                .filter(item -> item.getPermissionType() == PermissionType.DELETE)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(deleteItem);
+        assertEquals(PermissionScope.TABLE, deleteItem.getScope());
+        assertEquals("logs", deleteItem.getTableName());
+        assertFalse(deleteItem.getGranted());
+    }
+
+    @Test
+    void testExportWithNoPermissions() throws Exception {
+        // Execute export with no permissions
+        String yamlContent = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Test export");
+
+        // Parse and verify
+        PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
+
+        // Should still have basic structure
+        assertNotNull(exportData.exportInfo());
+        assertNotNull(exportData.getConnectionInfo());
+        
+        // Users list should be empty or null
+        assertTrue(exportData.getUsers() == null || exportData.getUsers().isEmpty());
+        
+        // Templates list should be empty or null
+        assertTrue(exportData.getTemplates() == null || exportData.getTemplates().isEmpty());
+    }
+
+    @Test
+    void testExportWithInvalidConnectionId() {
+        // Test export with non-existent connection ID
+        assertThrows(IllegalArgumentException.class, () -> {
+            permissionYamlService.exportPermissionsAsYaml(999999L, "Invalid connection test");
+        });
+    }
+
+    @Test
+    void testRoundTripImportExport() throws Exception {
+        // Setup initial permissions
+        createTestPermission(testUser1, PermissionScope.CONNECTION, PermissionType.READ,
+                null, null, null, true, null, "Full connection read");
+        createTestPermission(testUser2, PermissionScope.TABLE, PermissionType.WRITE,
+                "PUBLIC", "products", null, true, LocalDateTime.of(2025, 6, 30, 12, 0), "Temporary write access");
+
+        // Export permissions
+        String originalYaml = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Round-trip test - original");
+
+        // Clear existing permissions
+        userPermissionRepository.deleteAll();
+
+        // Import the exported YAML
+        permissionYamlService.importPermissionsFromYaml(originalYaml, testConnection.getId(), "admin@example.com");
+
+        // Export again
+        String reimportedYaml = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Round-trip test - reimported");
+
+        // Parse both YAMLs
+        PermissionExportData originalData = yamlMapper.readValue(originalYaml, PermissionExportData.class);
+        PermissionExportData reimportedData = yamlMapper.readValue(reimportedYaml, PermissionExportData.class);
+
+        // Compare permissions (ignoring timestamp differences)
+        assertEquals(originalData.getUsers().size(), reimportedData.getUsers().size());
+        
+        for (int i = 0; i < originalData.getUsers().size(); i++) {
+            var originalUser = originalData.getUsers().get(i);
+            var reimportedUser = reimportedData.getUsers().stream()
+                    .filter(u -> u.getUserEmail().equals(originalUser.getUserEmail()))
+                    .findFirst()
+                    .orElse(null);
+            
+            assertNotNull(reimportedUser);
+            assertEquals(originalUser.getPermissions().size(), reimportedUser.getPermissions().size());
+            
+            // Compare each permission
+            for (var originalPerm : originalUser.getPermissions()) {
+                var reimportedPerm = reimportedUser.getPermissions().stream()
+                        .filter(p -> p.getScope() == originalPerm.getScope() &&
+                                    p.getPermissionType() == originalPerm.getPermissionType() &&
+                                    java.util.Objects.equals(p.getSchemaName(), originalPerm.getSchemaName()) &&
+                                    java.util.Objects.equals(p.getTableName(), originalPerm.getTableName()) &&
+                                    java.util.Objects.equals(p.getColumnName(), originalPerm.getColumnName()))
+                        .findFirst()
+                        .orElse(null);
+                
+                assertNotNull(reimportedPerm, "Permission not found after round-trip");
+                assertEquals(originalPerm.getGranted(), reimportedPerm.getGranted());
+                assertEquals(originalPerm.getExpiresAt(), reimportedPerm.getExpiresAt());
+                assertEquals(originalPerm.getComment(), reimportedPerm.getComment());
+            }
+        }
+    }
+
+    private void createTestPermission(UserEntity user, PermissionScope scope, PermissionType permissionType,
+                                    String schemaName, String tableName, String columnName,
+                                    boolean granted, LocalDateTime expiresAt, String comment) {
+        UserPermissionEntity permission = new UserPermissionEntity();
+        permission.setUser(user);
+        permission.setDatabaseConnection(testConnection);
+        permission.setScope(scope);
+        permission.setPermissionType(permissionType);
+        permission.setSchemaName(schemaName);
+        permission.setTableName(tableName);
+        permission.setColumnName(columnName);
+        permission.setGranted(granted);
+        permission.setGrantedBy("admin@example.com");
+        permission.setGrantedAt(LocalDateTime.now());
+        permission.setExpiresAt(expiresAt);
+        permission.setComment(comment);
+        userPermissionRepository.save(permission);
+    }
+}

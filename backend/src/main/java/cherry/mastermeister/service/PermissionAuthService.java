@@ -64,7 +64,7 @@ public class PermissionAuthService {
                 request.schemaName(), request.tableName(), request.columnName());
 
         // Admin users have full access
-        if (isCurrentUserAdmin()) {
+        if (isUserAdmin(request.userId())) {
             logger.debug("Administrator access granted for user: {}", request.userEmail());
             return PermissionCheckResult.adminAccess();
         }

@@ -1,0 +1,427 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package cherry.mastermeister.integration;
+
+import cherry.mastermeister.entity.DatabaseConnectionEntity;
+import cherry.mastermeister.entity.UserEntity;
+import cherry.mastermeister.entity.UserPermissionEntity;
+import cherry.mastermeister.enums.DatabaseType;
+import cherry.mastermeister.enums.PermissionScope;
+import cherry.mastermeister.enums.PermissionType;
+import cherry.mastermeister.enums.UserRole;
+import cherry.mastermeister.enums.UserStatus;
+import cherry.mastermeister.repository.DatabaseConnectionRepository;
+import cherry.mastermeister.repository.UserPermissionRepository;
+import cherry.mastermeister.repository.UserRepository;
+import cherry.mastermeister.service.PermissionYamlService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+public class PermissionImportIntegrationTest {
+
+    @Autowired
+    private PermissionYamlService permissionYamlService;
+
+    @Autowired
+    private UserPermissionRepository userPermissionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private DatabaseConnectionRepository databaseConnectionRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private UserEntity testUser;
+    private DatabaseConnectionEntity testConnection;
+
+    @BeforeEach
+    void setUp() {
+        // Create test user
+        testUser = new UserEntity();
+        testUser.setEmail("testuser@example.com");
+        testUser.setStatus(UserStatus.APPROVED);
+        testUser.setRole(UserRole.USER);
+        testUser.setCreatedAt(LocalDateTime.now());
+        testUser = userRepository.save(testUser);
+
+        // Create test database connection
+        testConnection = new DatabaseConnectionEntity();
+        testConnection.setName("Test Database");
+        testConnection.setDbType(DatabaseType.H2);
+        testConnection.setHost("mem");
+        testConnection.setDatabaseName("testdb");
+        testConnection.setUsername("sa");
+        testConnection.setPassword("");
+        testConnection.setActive(true);
+        testConnection.setCreatedAt(LocalDateTime.now());
+        testConnection.setUpdatedAt(LocalDateTime.now());
+        testConnection = databaseConnectionRepository.save(testConnection);
+    }
+
+    @Test
+    void testImportYamlWithBasicPermissions() {
+        // Prepare YAML content
+        String yamlContent = """
+                export_info:
+                  version: "1.0"
+                  exported_at: "2025-01-15T10:00:00"
+                  exported_by: "admin@example.com"
+                  description: "Basic permission test"
+                connection_info:
+                  connection_id: %d
+                  connection_name: "Test Database"
+                  database_type: "H2"
+                  database_name: "testdb"
+                users:
+                  - user_email: "%s"
+                    permissions:
+                      - scope: "TABLE"
+                        permission_type: "READ"
+                        schema_name: "PUBLIC"
+                        table_name: "users"
+                        granted: true
+                        expires_at: null
+                        comment: "Basic read access to users table"
+                      - scope: "COLUMN"
+                        permission_type: "WRITE"
+                        schema_name: "PUBLIC"
+                        table_name: "users"
+                        column_name: "name"
+                        granted: true
+                        expires_at: null
+                        comment: "Write access to name column"
+                """.formatted(testConnection.getId(), testUser.getEmail());
+
+        // Execute import
+        assertDoesNotThrow(() -> {
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+        });
+
+        // Verify database state
+        List<UserPermissionEntity> permissions = userPermissionRepository.findActivePermissionsByUser(
+                testUser.getId(), testConnection.getId());
+
+        assertEquals(2, permissions.size());
+
+        // Verify TABLE level READ permission
+        UserPermissionEntity tablePermission = permissions.stream()
+                .filter(p -> p.getScope() == PermissionScope.TABLE)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(tablePermission);
+        assertEquals(PermissionType.READ, tablePermission.getPermissionType());
+        assertEquals("PUBLIC", tablePermission.getSchemaName());
+        assertEquals("users", tablePermission.getTableName());
+        assertNull(tablePermission.getColumnName());
+        assertTrue(tablePermission.getGranted());
+        assertEquals("Basic read access to users table", tablePermission.getComment());
+
+        // Verify COLUMN level WRITE permission
+        UserPermissionEntity columnPermission = permissions.stream()
+                .filter(p -> p.getScope() == PermissionScope.COLUMN)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(columnPermission);
+        assertEquals(PermissionType.WRITE, columnPermission.getPermissionType());
+        assertEquals("PUBLIC", columnPermission.getSchemaName());
+        assertEquals("users", columnPermission.getTableName());
+        assertEquals("name", columnPermission.getColumnName());
+        assertTrue(columnPermission.getGranted());
+        assertEquals("Write access to name column", columnPermission.getComment());
+    }
+
+    @Test
+    void testImportYamlWithHierarchicalPermissions() {
+        // Prepare YAML with hierarchical permissions
+        String yamlContent = """
+                export_info:
+                  version: "1.0"
+                  exported_at: "2025-01-15T10:00:00"
+                  exported_by: "admin@example.com"
+                  description: "Hierarchical permission test"
+                connection_info:
+                  connection_id: %d
+                  connection_name: "Test Database"
+                  database_type: "H2"
+                  database_name: "testdb"
+                users:
+                  - user_email: "%s"
+                    permissions:
+                      - scope: "CONNECTION"
+                        permission_type: "READ"
+                        granted: true
+                        expires_at: null
+                        comment: "Full connection read access"
+                      - scope: "SCHEMA"
+                        permission_type: "WRITE"
+                        schema_name: "PUBLIC"
+                        granted: true
+                        expires_at: null
+                        comment: "Schema level write access"
+                      - scope: "TABLE"
+                        permission_type: "DELETE"
+                        schema_name: "PUBLIC"
+                        table_name: "logs"
+                        granted: false
+                        expires_at: null
+                        comment: "Explicitly deny delete on logs"
+                """.formatted(testConnection.getId(), testUser.getEmail());
+
+        // Execute import
+        assertDoesNotThrow(() -> {
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+        });
+
+        // Verify database state
+        List<UserPermissionEntity> permissions = userPermissionRepository.findActivePermissionsByUser(
+                testUser.getId(), testConnection.getId());
+
+        assertEquals(3, permissions.size());
+
+        // Verify CONNECTION level permission
+        UserPermissionEntity connectionPermission = permissions.stream()
+                .filter(p -> p.getScope() == PermissionScope.CONNECTION)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(connectionPermission);
+        assertEquals(PermissionType.READ, connectionPermission.getPermissionType());
+        assertTrue(connectionPermission.getGranted());
+        assertNull(connectionPermission.getSchemaName());
+
+        // Verify SCHEMA level permission
+        UserPermissionEntity schemaPermission = permissions.stream()
+                .filter(p -> p.getScope() == PermissionScope.SCHEMA)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(schemaPermission);
+        assertEquals(PermissionType.WRITE, schemaPermission.getPermissionType());
+        assertEquals("PUBLIC", schemaPermission.getSchemaName());
+        assertTrue(schemaPermission.getGranted());
+
+        // Verify TABLE level permission (denied)
+        UserPermissionEntity tablePermission = permissions.stream()
+                .filter(p -> p.getScope() == PermissionScope.TABLE)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(tablePermission);
+        assertEquals(PermissionType.DELETE, tablePermission.getPermissionType());
+        assertEquals("PUBLIC", tablePermission.getSchemaName());
+        assertEquals("logs", tablePermission.getTableName());
+        assertFalse(tablePermission.getGranted());
+    }
+
+    @Test
+    void testImportYamlWithExpirationDates() {
+        // Prepare YAML with expiration dates
+        String yamlContent = """
+                export_info:
+                  version: "1.0"
+                  exported_at: "2025-01-15T10:00:00"
+                  exported_by: "admin@example.com"
+                  description: "Permission expiration test"
+                connection_info:
+                  connection_id: %d
+                  connection_name: "Test Database"
+                  database_type: "H2"
+                  database_name: "testdb"
+                users:
+                  - user_email: "%s"
+                    permissions:
+                      - scope: "TABLE"
+                        permission_type: "READ"
+                        schema_name: "PUBLIC"
+                        table_name: "temp_data"
+                        granted: true
+                        expires_at: "2025-12-31T23:59:59"
+                        comment: "Temporary access until end of year"
+                """.formatted(testConnection.getId(), testUser.getEmail());
+
+        // Execute import
+        assertDoesNotThrow(() -> {
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+        });
+
+        // Verify database state
+        List<UserPermissionEntity> permissions = userPermissionRepository.findActivePermissionsByUser(
+                testUser.getId(), testConnection.getId());
+
+        assertEquals(1, permissions.size());
+
+        UserPermissionEntity permission = permissions.get(0);
+        assertEquals(LocalDateTime.of(2025, 12, 31, 23, 59, 59), permission.getExpiresAt());
+        assertEquals("Temporary access until end of year", permission.getComment());
+    }
+
+    @Test
+    void testImportYamlWithInvalidUserEmail() {
+        // Prepare YAML with non-existent user
+        String yamlContent = """
+                export_info:
+                  version: "1.0"
+                  exported_at: "2025-01-15T10:00:00"
+                  exported_by: "admin@example.com"
+                  description: "Invalid user test"
+                connection_info:
+                  connection_id: %d
+                  connection_name: "Test Database"
+                  database_type: "H2"
+                  database_name: "testdb"
+                users:
+                  - user_email: "nonexistent@example.com"
+                    permissions:
+                      - scope: "TABLE"
+                        permission_type: "READ"
+                        schema_name: "PUBLIC"
+                        table_name: "users"
+                        granted: true
+                        expires_at: null
+                        comment: "Should fail"
+                """.formatted(testConnection.getId());
+
+        // Verify that import throws exception for non-existent user
+        assertThrows(IllegalArgumentException.class, () -> {
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+        });
+
+        // Verify no permissions were created
+        List<UserPermissionEntity> permissions = userPermissionRepository.findActivePermissionsByUser(
+                testUser.getId(), testConnection.getId());
+        assertEquals(0, permissions.size());
+    }
+
+    @Test
+    void testImportYamlWithInvalidConnectionId() {
+        // Prepare YAML with non-existent connection
+        String yamlContent = """
+                export_info:
+                  version: "1.0"
+                  exported_at: "2025-01-15T10:00:00"
+                  exported_by: "admin@example.com"
+                  description: "Invalid connection test"
+                connection_info:
+                  connection_id: 999999
+                  connection_name: "Non-existent Database"
+                  database_type: "H2"
+                  database_name: "testdb"
+                users:
+                  - user_email: "%s"
+                    permissions:
+                      - scope: "TABLE"
+                        permission_type: "READ"
+                        schema_name: "PUBLIC"
+                        table_name: "users"
+                        granted: true
+                        expires_at: null
+                        comment: "Should fail"
+                """.formatted(testUser.getEmail());
+
+        // Verify that import throws exception for non-existent connection
+        assertThrows(IllegalArgumentException.class, () -> {
+            permissionYamlService.importPermissionsFromYaml(yamlContent, 999999L, testUser.getEmail());
+        });
+    }
+
+    @Test
+    void testImportYamlWithMalformedYaml() {
+        String malformedYaml = """
+                export_info:
+                  version: "1.0"
+                users:
+                  - user_email: "%s"
+                    permissions:
+                      - scope: INVALID_SCOPE
+                        permission_type: "READ"
+                """.formatted(testUser.getEmail());
+
+        // Verify that import throws exception for malformed YAML
+        assertThrows(Exception.class, () -> {
+            permissionYamlService.importPermissionsFromYaml(malformedYaml, testConnection.getId(), testUser.getEmail());
+        });
+    }
+
+    @Test
+    void testImportYamlReplacesExistingPermissions() {
+        // First, create some existing permissions
+        UserPermissionEntity existingPermission = new UserPermissionEntity();
+        existingPermission.setUser(testUser);
+        existingPermission.setDatabaseConnection(testConnection);
+        existingPermission.setScope(PermissionScope.TABLE);
+        existingPermission.setPermissionType(PermissionType.READ);
+        existingPermission.setSchemaName("PUBLIC");
+        existingPermission.setTableName("old_table");
+        existingPermission.setGranted(true);
+        existingPermission.setGrantedBy(testUser.getEmail());
+        existingPermission.setGrantedAt(LocalDateTime.now());
+        userPermissionRepository.save(existingPermission);
+
+        // Prepare YAML content that should replace existing permissions
+        String yamlContent = """
+                export_info:
+                  version: "1.0"
+                  exported_at: "2025-01-15T10:00:00"
+                  exported_by: "admin@example.com"
+                  description: "Replacement test"
+                connection_info:
+                  connection_id: %d
+                  connection_name: "Test Database"
+                  database_type: "H2"
+                  database_name: "testdb"
+                users:
+                  - user_email: "%s"
+                    permissions:
+                      - scope: "TABLE"
+                        permission_type: "WRITE"
+                        schema_name: "PUBLIC"
+                        table_name: "new_table"
+                        granted: true
+                        expires_at: null
+                        comment: "New permission"
+                """.formatted(testConnection.getId(), testUser.getEmail());
+
+        // Execute import
+        assertDoesNotThrow(() -> {
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+        });
+
+        // Verify that only new permissions exist (old ones are replaced)
+        List<UserPermissionEntity> permissions = userPermissionRepository.findActivePermissionsByUser(
+                testUser.getId(), testConnection.getId());
+
+        assertEquals(1, permissions.size());
+
+        UserPermissionEntity permission = permissions.get(0);
+        assertEquals(PermissionType.WRITE, permission.getPermissionType());
+        assertEquals("new_table", permission.getTableName());
+        assertEquals("New permission", permission.getComment());
+    }
+}

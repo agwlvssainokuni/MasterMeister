@@ -23,8 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -40,7 +42,7 @@ public class SqlPermissionFilter {
     );
 
     private static final Pattern COLUMN_PATTERN = Pattern.compile(
-            "(?i)\\b(?:SELECT|SET|WHERE|GROUP\\s+BY|ORDER\\s+BY|HAVING)\\s+.*?\\b(\\w+)(?=\\s*[,=<>]|\\s*$)",
+            "(?i)\\b(\\w+)(?=\\s*[,)]|\\s*FROM|\\s*$|\\s*=|\\s*<|\\s*>)",
             Pattern.CASE_INSENSITIVE
     );
 
@@ -73,6 +75,14 @@ public class SqlPermissionFilter {
             String schemaName = parts.length > 1 ? parts[0] : null;
             String tableName = parts.length > 1 ? parts[1] : parts[0];
 
+            // First check for explicit table-level denials
+            boolean hasExplicitDenial = userPermissions.stream()
+                    .anyMatch(perm -> matchesTablePermissionDenied(perm, requiredPermission, schemaName, tableName));
+            
+            if (hasExplicitDenial) {
+                return SqlValidationResult.denied("Explicit denial for " + requiredPermission + " permission on table: " + table);
+            }
+
             boolean hasTablePermission = userPermissions.stream()
                     .anyMatch(perm -> matchesTablePermission(perm, requiredPermission, schemaName, tableName));
 
@@ -81,9 +91,24 @@ public class SqlPermissionFilter {
             }
         }
 
-        // For SELECT queries, also check column permissions if specific columns are referenced
-        if (requiredPermission == PermissionType.READ && !referencedColumns.isEmpty()) {
+        // Check column permissions for all queries that reference specific columns
+        if (!referencedColumns.isEmpty()) {
             for (String column : referencedColumns) {
+                // Check for explicit column-level denials for each table
+                for (String table : referencedTables) {
+                    String[] parts = table.split("\\.");
+                    String schemaName = parts.length > 1 ? parts[0] : null;
+                    String tableName = parts.length > 1 ? parts[1] : parts[0];
+                    
+                    boolean hasExplicitDenial = userPermissions.stream()
+                            .anyMatch(perm -> matchesColumnPermissionDenied(perm, requiredPermission, schemaName, tableName, column));
+                    
+                    if (hasExplicitDenial) {
+                        return SqlValidationResult.denied("Explicit denial for " + requiredPermission + " permission on column: " + column + " in table: " + table);
+                    }
+                }
+                
+                // Then check for positive column permissions
                 boolean hasColumnPermission = userPermissions.stream()
                         .anyMatch(perm -> matchesColumnPermission(perm, requiredPermission, column));
 
@@ -130,12 +155,59 @@ public class SqlPermissionFilter {
      * Extract column references from SQL query (simplified approach)
      */
     private Set<String> extractColumnsFromSql(String sql) {
-        Set<String> columns = Pattern.compile(COLUMN_PATTERN.pattern(), Pattern.CASE_INSENSITIVE)
-                .matcher(sql)
-                .results()
-                .map(result -> result.group(1))
-                .filter(col -> !isReservedKeyword(col))
-                .collect(Collectors.toSet());
+        Set<String> columns = new HashSet<>();
+        String upperSql = sql.toUpperCase().trim();
+        
+        if (upperSql.startsWith("SELECT")) {
+            // Extract columns from SELECT clause
+            Pattern selectPattern = Pattern.compile("SELECT\\s+(.*?)\\s+FROM", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = selectPattern.matcher(sql);
+            if (matcher.find()) {
+                String selectClause = matcher.group(1);
+                // Handle specific column names, not *
+                if (!selectClause.trim().equals("*")) {
+                    String[] parts = selectClause.split(",");
+                    for (String part : parts) {
+                        String column = part.trim().replaceAll("\\s+AS\\s+\\w+", "").trim();
+                        // Remove table prefixes like u.name -> name
+                        if (column.contains(".")) {
+                            column = column.substring(column.lastIndexOf(".") + 1);
+                        }
+                        if (!isReservedKeyword(column)) {
+                            columns.add(column);
+                        }
+                    }
+                }
+            }
+        } else if (upperSql.startsWith("INSERT")) {
+            // Extract columns from INSERT clause
+            Pattern insertPattern = Pattern.compile("INSERT\\s+INTO\\s+\\w+\\s*\\(([^)]+)\\)", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = insertPattern.matcher(sql);
+            if (matcher.find()) {
+                String columnsClause = matcher.group(1);
+                String[] parts = columnsClause.split(",");
+                for (String part : parts) {
+                    String column = part.trim();
+                    if (!isReservedKeyword(column)) {
+                        columns.add(column);
+                    }
+                }
+            }
+        } else if (upperSql.startsWith("UPDATE")) {
+            // Extract columns from SET clause
+            Pattern updatePattern = Pattern.compile("SET\\s+(.*?)(?:\\s+WHERE|$)", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = updatePattern.matcher(sql);
+            if (matcher.find()) {
+                String setClause = matcher.group(1);
+                String[] parts = setClause.split(",");
+                for (String part : parts) {
+                    String column = part.trim().split("\\s*=")[0].trim();
+                    if (!isReservedKeyword(column)) {
+                        columns.add(column);
+                    }
+                }
+            }
+        }
 
         logger.debug("Extracted columns from SQL: {}", columns);
         return columns;
@@ -186,6 +258,31 @@ public class SqlPermissionFilter {
     }
 
     /**
+     * Check if permission is an explicit denial for a table
+     */
+    private boolean matchesTablePermissionDenied(UserPermission permission, PermissionType requiredType,
+                                               String schemaName, String tableName) {
+        if (permission.granted() || permission.permissionType() != requiredType) {
+            return false;
+        }
+
+        // Check hierarchical permissions
+        switch (permission.scope()) {
+            case CONNECTION:
+                return true; // Connection-level denial blocks all tables
+            case SCHEMA:
+                return schemaName == null || schemaName.equals(permission.schemaName());
+            case TABLE:
+                return (schemaName == null || schemaName.equals(permission.schemaName())) &&
+                        tableName.equals(permission.tableName());
+            case COLUMN:
+                return false; // Column permission doesn't block table access
+        }
+
+        return false;
+    }
+
+    /**
      * Check if permission matches column requirement
      */
     private boolean matchesColumnPermission(UserPermission permission, PermissionType requiredType, String columnName) {
@@ -194,6 +291,21 @@ public class SqlPermissionFilter {
         }
 
         return permission.scope() == cherry.mastermeister.enums.PermissionScope.COLUMN &&
+                columnName.equals(permission.columnName());
+    }
+
+    /**
+     * Check if permission is an explicit denial for a column in a specific table
+     */
+    private boolean matchesColumnPermissionDenied(UserPermission permission, PermissionType requiredType, 
+                                                 String schemaName, String tableName, String columnName) {
+        if (permission.granted() || permission.permissionType() != requiredType) {
+            return false;
+        }
+
+        return permission.scope() == cherry.mastermeister.enums.PermissionScope.COLUMN &&
+                (schemaName == null || schemaName.equals(permission.schemaName())) &&
+                tableName.equals(permission.tableName()) &&
                 columnName.equals(permission.columnName());
     }
 
