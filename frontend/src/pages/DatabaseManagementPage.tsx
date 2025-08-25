@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { AdminLayout } from '../components/layouts/AdminLayout'
-import { DatabaseConnectionList } from '../components/DatabaseConnectionList'
-import { DatabaseConnectionForm } from '../components/DatabaseConnectionForm'
-import { useNotification } from '../contexts/NotificationContext'
-import { databaseConnectionService } from '../services/databaseConnectionService'
-import type { DatabaseConnection, DatabaseConnectionForm as ConnectionForm } from '../types/frontend'
+import React, {useEffect, useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {AdminLayout} from '../components/layouts/AdminLayout'
+import {PageWrapper} from '../components/PageWrapper'
+import {DatabaseConnectionList} from '../components/DatabaseConnectionList'
+import {DatabaseConnectionForm} from '../components/DatabaseConnectionForm'
+import {useNotification} from '../contexts/NotificationContext'
+import {databaseConnectionService} from '../services/databaseConnectionService'
+import type {DatabaseConnection, DatabaseConnectionForm as ConnectionForm} from '../types/frontend'
 
-export const DatabaseConnectionsPage: React.FC = () => {
-  const { t } = useTranslation()
-  const { addNotification } = useNotification()
-  
+export const DatabaseManagementPage: React.FC = () => {
+  const {t} = useTranslation()
+  const {addNotification} = useNotification()
+
   const [connections, setConnections] = useState<DatabaseConnection[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -67,16 +68,16 @@ export const DatabaseConnectionsPage: React.FC = () => {
         await databaseConnectionService.updateConnection(editingConnection.id, formData)
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.updateSuccess', { name: formData.name })
+          message: t('databaseConnections.messages.updateSuccess', {name: formData.name})
         })
       } else {
         await databaseConnectionService.createConnection(formData)
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.createSuccess', { name: formData.name })
+          message: t('databaseConnections.messages.createSuccess', {name: formData.name})
         })
       }
-      
+
       setShowForm(false)
       setEditingConnection(null)
       await loadConnections()
@@ -95,7 +96,7 @@ export const DatabaseConnectionsPage: React.FC = () => {
   }
 
   const handleDeleteConnection = async (connection: DatabaseConnection) => {
-    if (!window.confirm(t('databaseConnections.confirmDelete', { name: connection.name }))) {
+    if (!window.confirm(t('databaseConnections.confirmDelete', {name: connection.name}))) {
       return
     }
 
@@ -103,7 +104,7 @@ export const DatabaseConnectionsPage: React.FC = () => {
       await databaseConnectionService.deleteConnection(connection.id)
       addNotification({
         type: 'success',
-        message: t('databaseConnections.messages.deleteSuccess', { name: connection.name })
+        message: t('databaseConnections.messages.deleteSuccess', {name: connection.name})
       })
       await loadConnections()
     } catch (err) {
@@ -118,13 +119,13 @@ export const DatabaseConnectionsPage: React.FC = () => {
   const handleTestConnection = async (connection: DatabaseConnection) => {
     try {
       const result = await databaseConnectionService.testConnection(connection.id)
-      
+
       if (result.connected) {
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.testSuccess', { 
+          message: t('databaseConnections.messages.testSuccess', {
             name: connection.name,
-            responseTime: result.responseTimeMs 
+            responseTime: result.responseTimeMs
           })
         })
       } else {
@@ -136,7 +137,7 @@ export const DatabaseConnectionsPage: React.FC = () => {
           })
         })
       }
-      
+
       await loadConnections()
     } catch (err) {
       console.error('Error testing database connection:', err)
@@ -153,16 +154,16 @@ export const DatabaseConnectionsPage: React.FC = () => {
         await databaseConnectionService.deactivateConnection(connection.id)
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.deactivateSuccess', { name: connection.name })
+          message: t('databaseConnections.messages.deactivateSuccess', {name: connection.name})
         })
       } else {
         await databaseConnectionService.activateConnection(connection.id)
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.activateSuccess', { name: connection.name })
+          message: t('databaseConnections.messages.activateSuccess', {name: connection.name})
         })
       }
-      
+
       await loadConnections()
     } catch (err) {
       console.error('Error toggling connection status:', err)
@@ -176,10 +177,12 @@ export const DatabaseConnectionsPage: React.FC = () => {
   if (loading) {
     return (
       <AdminLayout title={t('databaseConnections.title')}>
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>{t('common.loading')}</p>
-        </div>
+        <PageWrapper className="database-management-page">
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>{t('common.loading')}</p>
+          </div>
+        </PageWrapper>
       </AdminLayout>
     )
   }
@@ -187,24 +190,28 @@ export const DatabaseConnectionsPage: React.FC = () => {
   if (error) {
     return (
       <AdminLayout title={t('databaseConnections.title')}>
-        <div className="error-state">
-          <p className="error-message">{error}</p>
-          <button onClick={loadConnections} className="button button-primary">
-            {t('common.retry')}
-          </button>
-        </div>
+        <PageWrapper className="database-management-page">
+          <div className="error-state">
+            <p className="error-message">{error}</p>
+            <button onClick={loadConnections} className="button button-primary">
+              {t('common.retry')}
+            </button>
+          </div>
+        </PageWrapper>
       </AdminLayout>
     )
   }
 
   return (
     <AdminLayout title={t('databaseConnections.title')}>
-      <div className="page-section">
+      <PageWrapper
+        className="database-connections-page"
+        description={t('databaseConnections.description')}
+      >
         <div className="section-header">
-          <p className="section-description">{t('databaseConnections.description')}</p>
           <div className="section-actions">
-            <button 
-              className="button button-primary" 
+            <button
+              className="button button-primary"
               onClick={handleCreateConnection}
             >
               {t('databaseConnections.createConnection')}
@@ -227,7 +234,7 @@ export const DatabaseConnectionsPage: React.FC = () => {
             onToggleActive={handleToggleActive}
           />
         )}
-      </div>
+      </PageWrapper>
     </AdminLayout>
   )
 }

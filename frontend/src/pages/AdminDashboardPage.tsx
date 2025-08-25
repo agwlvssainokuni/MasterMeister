@@ -15,67 +15,51 @@
  */
 
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import { AdminLayout } from '../components/layouts/AdminLayout'
+import {useTranslation} from 'react-i18next'
+import {AdminLayout} from '../components/layouts/AdminLayout'
+import {FeatureCard} from '../components/FeatureCard'
+import {PageWrapper} from '../components/PageWrapper'
 
 export const AdminDashboardPage: React.FC = () => {
-  const { t } = useTranslation()
+  const {t} = useTranslation()
 
   return (
     <AdminLayout title={t('admin.dashboard.title')}>
-      <div className="admin-dashboard">
+      <PageWrapper
+        className="admin-dashboard"
+        description={t('admin.dashboard.description')}
+      >
         <div className="dashboard-welcome">
           <h2>{t('admin.dashboard.welcome')}</h2>
-          <p>{t('admin.dashboard.description')}</p>
         </div>
 
         <div className="admin-features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">👥</div>
-            <h3>{t('admin.features.userManagement.title')}</h3>
-            <p>{t('admin.features.userManagement.description')}</p>
-            <div className="feature-actions">
-              <Link to="/admin/users" className="button button-primary">
-                {t('admin.features.userManagement.action')}
-              </Link>
-            </div>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">🔗</div>
-            <h3>{t('admin.features.databaseConnections.title')}</h3>
-            <p>{t('admin.features.databaseConnections.description')}</p>
-            <div className="feature-actions">
-              <Link to="/admin/database-connections" className="button button-primary">
-                {t('admin.features.databaseConnections.action')}
-              </Link>
-            </div>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">📋</div>
-            <h3>{t('admin.features.schemaManagement.title')}</h3>
-            <p>{t('admin.features.schemaManagement.description')}</p>
-            <div className="feature-actions">
-              <Link to="/admin/schema" className="button button-primary">
-                {t('admin.features.schemaManagement.action')}
-              </Link>
-            </div>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">🔐</div>
-            <h3>{t('admin.features.permissions.title')}</h3>
-            <p>{t('admin.features.permissions.description')}</p>
-            <div className="feature-actions">
-              <Link to="/admin/permissions" className="button button-primary">
-                {t('admin.features.permissions.action')}
-              </Link>
-            </div>
-          </div>
+          <FeatureCard
+            title={t('admin.features.userManagement.title')}
+            description={t('admin.features.userManagement.description')}
+            actionText={t('admin.features.userManagement.action')}
+            actionPath="/admin/users"
+          />
+          <FeatureCard
+            title={t('admin.features.databaseConnections.title')}
+            description={t('admin.features.databaseConnections.description')}
+            actionText={t('admin.features.databaseConnections.action')}
+            actionPath="/admin/databases"
+          />
+          <FeatureCard
+            title={t('admin.features.schemaManagement.title')}
+            description={t('admin.features.schemaManagement.description')}
+            actionText={t('admin.features.schemaManagement.action')}
+            actionPath="/admin/schema"
+          />
+          <FeatureCard
+            title={t('admin.features.permissions.title')}
+            description={t('admin.features.permissions.description')}
+            actionText={t('admin.features.permissions.action')}
+            actionPath="/admin/permissions"
+          />
         </div>
-      </div>
+      </PageWrapper>
     </AdminLayout>
   )
 }

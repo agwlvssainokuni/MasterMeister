@@ -19,6 +19,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../contexts/AuthContext'
 import { LogoutButton } from '../LogoutButton'
+import { PageHeader } from '../PageHeader'
+import { mainNavigationItems, adminSubNavigationItems } from '../../config/navigation'
 import '../../styles/layouts/AdminLayout.css'
 
 interface AdminLayoutProps {
@@ -31,46 +33,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
   const { user } = useAuth()
   const location = useLocation()
 
-  const navigationItems = [
-    {
-      path: '/dashboard',
-      label: t('navigation.dashboard'),
-      icon: '🏠'
-    },
-    {
-      path: '/data',
-      label: t('navigation.dataAccess'),
-      icon: '📊'
-    },
-    {
-      path: '/admin',
-      label: t('navigation.admin'),
-      icon: '⚙️'
-    }
-  ]
-
-  const adminSubItems = [
-    {
-      path: '/admin/users',
-      label: t('navigation.userManagement'),
-      icon: '👥'
-    },
-    {
-      path: '/admin/database-connections',
-      label: t('navigation.databaseConnections'),
-      icon: '🔗'
-    },
-    {
-      path: '/admin/schema',
-      label: t('admin.nav.schema'),
-      icon: '📋'
-    },
-    {
-      path: '/admin/permissions',
-      label: t('navigation.permissions'),
-      icon: '🔐'
-    }
-  ]
 
   const isActivePath = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/')
@@ -90,14 +52,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
           </div>
           
           <nav className="main-navigation">
-            {navigationItems.map(item => (
+            {mainNavigationItems.map(item => (
               <Link
                 key={item.path}
                 to={item.path}
                 className={`nav-link ${isActivePath(item.path) ? 'active' : ''}`}
               >
-                <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
+                <span className="nav-label">{t(item.labelKey)}</span>
               </Link>
             ))}
           </nav>
@@ -115,14 +76,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
       {isAdminSection && (
         <nav className="admin-subnav">
           <div className="subnav-content">
-            {adminSubItems.map(item => (
+            {adminSubNavigationItems.map(item => (
               <Link
                 key={item.path}
                 to={item.path}
                 className={`subnav-link ${isActivePath(item.path) ? 'active' : ''}`}
               >
-                <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
+                <span className="nav-label">{t(item.labelKey)}</span>
               </Link>
             ))}
           </div>
@@ -131,11 +91,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
 
       <main className="layout-main admin-main">
         <div className="main-content">
-          {title && (
-            <div className="page-header">
-              <h1 className="page-title">{title}</h1>
-            </div>
-          )}
+          <PageHeader title={title} />
           {children}
         </div>
       </main>

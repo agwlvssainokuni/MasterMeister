@@ -25,7 +25,7 @@ import {AdminDashboardPage} from './pages/AdminDashboardPage'
 import {UserManagementPage} from './pages/UserManagementPage'
 import {DashboardPage} from './pages/DashboardPage'
 import {DataAccessPage} from './pages/DataAccessPage'
-import {DatabaseConnectionsPage} from './pages/DatabaseConnectionsPage'
+import {DatabaseManagementPage} from './pages/DatabaseManagementPage'
 import {SchemaManagementPage} from './pages/SchemaManagementPage'
 import {PermissionManagementPage} from './pages/PermissionManagementPage'
 import './App.css'
@@ -72,10 +72,10 @@ const App = () => {
               }
             />
             <Route
-              path="/admin/database-connections"
+              path="/admin/databases"
               element={
                 <AdminRoute>
-                  <DatabaseConnectionsPage/>
+                  <DatabaseManagementPage/>
                 </AdminRoute>
               }
             />

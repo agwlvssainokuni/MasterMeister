@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { AdminLayout } from '../components/layouts/AdminLayout'
-import { SchemaConnectionSelector } from '../components/SchemaConnectionSelector'
-import { SchemaMetadataView } from '../components/SchemaMetadataView'
-import { SchemaOperationHistory } from '../components/SchemaOperationHistory'
-import { useNotification } from '../contexts/NotificationContext'
-import { databaseConnectionService } from '../services/databaseConnectionService'
-import { schemaService } from '../services/schemaService'
-import type { DatabaseConnection, SchemaMetadata, SchemaUpdateLog } from '../types/frontend'
+import React, {useEffect, useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {AdminLayout} from '../components/layouts/AdminLayout'
+import {PageWrapper} from '../components/PageWrapper'
+import {SchemaConnectionSelector} from '../components/SchemaConnectionSelector'
+import {SchemaMetadataView} from '../components/SchemaMetadataView'
+import {SchemaOperationHistory} from '../components/SchemaOperationHistory'
+import {useNotification} from '../contexts/NotificationContext'
+import {databaseConnectionService} from '../services/databaseConnectionService'
+import {schemaService} from '../services/schemaService'
+import type {DatabaseConnection, SchemaMetadata, SchemaUpdateLog} from '../types/frontend'
 
 export const SchemaManagementPage: React.FC = () => {
-  const { t } = useTranslation()
-  const { addNotification } = useNotification()
-  
+  const {t} = useTranslation()
+  const {addNotification} = useNotification()
+
   const [connections, setConnections] = useState<DatabaseConnection[]>([])
   const [selectedConnection, setSelectedConnection] = useState<DatabaseConnection | null>(null)
   const [schema, setSchema] = useState<SchemaMetadata | null>(null)
   const [operationHistory, setOperationHistory] = useState<SchemaUpdateLog[]>([])
-  
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'schema' | 'history'>('schema')
@@ -62,7 +63,7 @@ export const SchemaManagementPage: React.FC = () => {
     setSchema(null)
     setOperationHistory([])
     setError(null)
-    
+
     await Promise.all([
       loadCachedSchema(connection.id),
       loadOperationHistory(connection.id)
@@ -94,10 +95,10 @@ export const SchemaManagementPage: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const schemaData = await schemaService.readSchema(selectedConnection.id)
       setSchema(schemaData)
-      
+
       addNotification({
         type: 'success',
         message: t('schema.messages.readSuccess', {
@@ -105,7 +106,7 @@ export const SchemaManagementPage: React.FC = () => {
           tablesCount: schemaData.tables.length
         })
       })
-      
+
       await loadOperationHistory(selectedConnection.id)
     } catch (err) {
       console.error('Error reading schema:', err)
@@ -125,10 +126,10 @@ export const SchemaManagementPage: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const schemaData = await schemaService.refreshSchema(selectedConnection.id)
       setSchema(schemaData)
-      
+
       addNotification({
         type: 'success',
         message: t('schema.messages.refreshSuccess', {
@@ -136,7 +137,7 @@ export const SchemaManagementPage: React.FC = () => {
           tablesCount: schemaData.tables.length
         })
       })
-      
+
       await loadOperationHistory(selectedConnection.id)
     } catch (err) {
       console.error('Error refreshing schema:', err)
@@ -153,10 +154,12 @@ export const SchemaManagementPage: React.FC = () => {
   if (loading && connections.length === 0) {
     return (
       <AdminLayout title={t('schema.title')}>
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>{t('common.loading')}</p>
-        </div>
+        <PageWrapper className="schema-management-page">
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>{t('common.loading')}</p>
+          </div>
+        </PageWrapper>
       </AdminLayout>
     )
   }
@@ -164,23 +167,24 @@ export const SchemaManagementPage: React.FC = () => {
   if (error && connections.length === 0) {
     return (
       <AdminLayout title={t('schema.title')}>
-        <div className="error-state">
-          <p className="error-message">{error}</p>
-          <button onClick={loadConnections} className="button button-primary">
-            {t('common.retry')}
-          </button>
-        </div>
+        <PageWrapper className="schema-management-page">
+          <div className="error-state">
+            <p className="error-message">{error}</p>
+            <button onClick={loadConnections} className="button button-primary">
+              {t('common.retry')}
+            </button>
+          </div>
+        </PageWrapper>
       </AdminLayout>
     )
   }
 
   return (
     <AdminLayout title={t('schema.title')}>
-      <div className="page-section">
-        <div className="section-header">
-          <p className="section-description">{t('schema.description')}</p>
-        </div>
-
+      <PageWrapper
+        className="schema-management-page"
+        description={t('schema.description')}
+      >
         <SchemaConnectionSelector
           connections={connections}
           selectedConnection={selectedConnection}
@@ -223,7 +227,7 @@ export const SchemaManagementPage: React.FC = () => {
                   onRefreshSchema={handleRefreshSchema}
                 />
               )}
-              
+
               {activeTab === 'history' && (
                 <SchemaOperationHistory
                   connection={selectedConnection}
@@ -234,7 +238,7 @@ export const SchemaManagementPage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+      </PageWrapper>
     </AdminLayout>
   )
 }

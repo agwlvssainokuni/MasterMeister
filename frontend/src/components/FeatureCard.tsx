@@ -15,22 +15,34 @@
  */
 
 import React from 'react'
-import {useTranslation} from 'react-i18next'
-import {AdminLayout} from '../components/layouts/AdminLayout'
-import {PageWrapper} from '../components/PageWrapper'
-import {PendingUsersList} from '../components/PendingUsersList'
+import {Link} from 'react-router-dom'
 
-export const UserManagementPage: React.FC = () => {
-  const {t} = useTranslation()
+interface FeatureCardProps {
+  title: string
+  description: string
+  actionText: string
+  actionPath: string
+  className?: string
+}
 
+export const FeatureCard: React.FC<FeatureCardProps> = (
+  {
+    title,
+    description,
+    actionText,
+    actionPath,
+    className = ''
+  }
+) => {
   return (
-    <AdminLayout title={t('admin.users.title')}>
-      <PageWrapper
-        className="user-management-page"
-        description={t('admin.users.description')}
-      >
-        <PendingUsersList/>
-      </PageWrapper>
-    </AdminLayout>
+    <div className={`feature-card ${className}`}>
+      <h3>{title}</h3>
+      <p>{description}</p>
+      <div className="feature-actions">
+        <Link to={actionPath} className="button button-primary">
+          {actionText}
+        </Link>
+      </div>
+    </div>
   )
 }

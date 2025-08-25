@@ -15,22 +15,29 @@
  */
 
 import React from 'react'
-import {useTranslation} from 'react-i18next'
-import {AdminLayout} from '../components/layouts/AdminLayout'
-import {PageWrapper} from '../components/PageWrapper'
-import {PendingUsersList} from '../components/PendingUsersList'
+import {PageHeader} from './PageHeader'
 
-export const UserManagementPage: React.FC = () => {
-  const {t} = useTranslation()
+interface PageWrapperProps {
+  title?: string
+  description?: string
+  className?: string
+  children: React.ReactNode
+}
 
+export const PageWrapper: React.FC<PageWrapperProps> = (
+  {
+    title,
+    description,
+    className = '',
+    children
+  }
+) => {
   return (
-    <AdminLayout title={t('admin.users.title')}>
-      <PageWrapper
-        className="user-management-page"
-        description={t('admin.users.description')}
-      >
-        <PendingUsersList/>
-      </PageWrapper>
-    </AdminLayout>
+    <div className={`page-wrapper ${className}`}>
+      <PageHeader title={title} description={description}/>
+      <div className="page-content">
+        {children}
+      </div>
+    </div>
   )
 }

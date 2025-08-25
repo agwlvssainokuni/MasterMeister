@@ -17,6 +17,7 @@
 import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {AdminLayout} from '../components/layouts/AdminLayout'
+import {PageWrapper} from '../components/PageWrapper'
 import {PermissionConnectionSelector} from '../components/PermissionConnectionSelector'
 import {PermissionFileManager} from '../components/PermissionFileManager'
 import {useNotification} from '../contexts/NotificationContext'
@@ -172,11 +173,10 @@ export const PermissionManagementPage: React.FC = () => {
 
   return (
     <AdminLayout title={t('permissions.title')}>
-      <div className="permission-management-page">
-        <div className="page-description">
-          <p>{t('permissions.description')}</p>
-        </div>
-
+      <PageWrapper
+        className="permission-management-page"
+        description={t('permissions.description')}
+      >
         {connectionsLoading ? (
           <div className="loading-state">
             <div className="spinner"></div>
@@ -202,7 +202,7 @@ export const PermissionManagementPage: React.FC = () => {
             )}
           </>
         )}
-      </div>
+      </PageWrapper>
     </AdminLayout>
   )
 }
