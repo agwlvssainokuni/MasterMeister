@@ -15,12 +15,12 @@
  */
 
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useAuth } from '../../contexts/AuthContext'
-import { LogoutButton } from '../LogoutButton'
-import { PageHeader } from '../PageHeader'
-import { mainNavigationItems, adminSubNavigationItems } from '../../config/navigation'
+import {Link, useLocation} from 'react-router-dom'
+import {useTranslation} from 'react-i18next'
+import {useAuth} from '../../contexts/AuthContext'
+import {LogoutButton} from '../LogoutButton'
+import {PageHeader} from '../PageHeader'
+import {adminSubNavigationItems, mainNavigationItems} from '../../config/navigation'
 import '../../styles/layouts/AdminLayout.css'
 
 interface AdminLayoutProps {
@@ -28,9 +28,9 @@ interface AdminLayoutProps {
   title?: string
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
-  const { t } = useTranslation()
-  const { user } = useAuth()
+export const AdminLayout: React.FC<AdminLayoutProps> = ({children, title}) => {
+  const {t} = useTranslation()
+  const {user} = useAuth()
   const location = useLocation()
 
 
@@ -38,11 +38,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
     return location.pathname === path || location.pathname.startsWith(path + '/')
   }
 
-  const isAdminSection = location.pathname.startsWith('/admin')
-
   return (
     <div className="admin-layout">
-      <header className="layout-header admin-header">
+      <header className="admin-header">
         <div className="header-content">
           <div className="header-left">
             <Link to="/dashboard" className="logo">
@@ -50,7 +48,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
               <span className="admin-badge">ADMIN</span>
             </Link>
           </div>
-          
+
           <nav className="main-navigation">
             {mainNavigationItems.map(item => (
               <Link
@@ -68,35 +66,33 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
               <span className="user-email">{user?.email}</span>
               <span className="user-role admin-role">{user?.role}</span>
             </div>
-            <LogoutButton />
+            <LogoutButton/>
           </div>
         </div>
       </header>
 
-      {isAdminSection && (
-        <nav className="admin-subnav">
-          <div className="subnav-content">
-            {adminSubNavigationItems.map(item => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`subnav-link ${isActivePath(item.path) ? 'active' : ''}`}
-              >
-                <span className="nav-label">{t(item.labelKey)}</span>
-              </Link>
-            ))}
-          </div>
-        </nav>
-      )}
+      <nav className="admin-subnav">
+        <div className="subnav-content">
+          {adminSubNavigationItems.map(item => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`subnav-link ${isActivePath(item.path) ? 'active' : ''}`}
+            >
+              <span className="nav-label">{t(item.labelKey)}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
 
-      <main className="layout-main admin-main">
+      <main className="admin-main">
         <div className="main-content">
-          <PageHeader title={title} />
+          <PageHeader title={title}/>
           {children}
         </div>
       </main>
 
-      <footer className="layout-footer">
+      <footer className="admin-footer">
         <div className="footer-content">
           <p>{t('app.copyright')}</p>
         </div>

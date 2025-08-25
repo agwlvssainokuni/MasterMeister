@@ -31,6 +31,10 @@
 
 /* レイアウトスタイル */
 @import './styles/layouts/AuthLayout.css';
+@import './styles/layouts/AdminLayout.css';
+@import './styles/layouts/UserLayout.css';
+
+@import './App.css';
 
 /* グローバルリセット */
 * {

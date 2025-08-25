@@ -28,7 +28,6 @@ import {DataAccessPage} from './pages/DataAccessPage'
 import {DatabaseManagementPage} from './pages/DatabaseManagementPage'
 import {SchemaManagementPage} from './pages/SchemaManagementPage'
 import {PermissionManagementPage} from './pages/PermissionManagementPage'
-import './App.css'
 
 const App = () => {
   return (

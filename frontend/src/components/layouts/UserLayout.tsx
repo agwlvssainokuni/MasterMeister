@@ -19,6 +19,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../contexts/AuthContext'
 import { LogoutButton } from '../LogoutButton'
+import { PageHeader } from '../PageHeader'
+import { mainNavigationItems } from '../../config/navigation'
 import '../../styles/layouts/UserLayout.css'
 
 interface UserLayoutProps {
@@ -31,18 +33,8 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children, title }) => {
   const { user } = useAuth()
   const location = useLocation()
 
-  const navigationItems = [
-    {
-      path: '/dashboard',
-      label: t('navigation.dashboard'),
-      icon: '🏠'
-    },
-    {
-      path: '/data',
-      label: t('navigation.dataAccess'),
-      icon: '📊'
-    }
-  ]
+  // Filter main navigation items for user (exclude admin)
+  const userNavigationItems = mainNavigationItems.filter(item => !item.path.startsWith('/admin'))
 
   const isActivePath = (path: string) => {
     return location.pathname === path
@@ -50,7 +42,7 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children, title }) => {
 
   return (
     <div className="user-layout">
-      <header className="layout-header">
+      <header className="user-header">
         <div className="header-content">
           <div className="header-left">
             <Link to="/dashboard" className="logo">
@@ -59,14 +51,13 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children, title }) => {
           </div>
           
           <nav className="main-navigation">
-            {navigationItems.map(item => (
+            {userNavigationItems.map(item => (
               <Link
                 key={item.path}
                 to={item.path}
                 className={`nav-link ${isActivePath(item.path) ? 'active' : ''}`}
               >
-                <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
+                <span className="nav-label">{t(item.labelKey)}</span>
               </Link>
             ))}
           </nav>
@@ -81,18 +72,14 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children, title }) => {
         </div>
       </header>
 
-      <main className="layout-main">
+      <main className="user-main">
         <div className="main-content">
-          {title && (
-            <div className="page-header">
-              <h1 className="page-title">{title}</h1>
-            </div>
-          )}
+          <PageHeader title={title} />
           {children}
         </div>
       </main>
 
-      <footer className="layout-footer">
+      <footer className="user-footer">
         <div className="footer-content">
           <p>{t('app.copyright')}</p>
         </div>

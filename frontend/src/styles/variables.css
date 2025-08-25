@@ -36,18 +36,19 @@
   --color-border: #e0e0e0;
   --color-border-dark: #404040;
 
+  --color-danger: #b91c1c;
   --color-error: #dc3545;
   --color-success: #28a745;
   --color-warning: #ffc107;
   --color-info: #17a2b8;
 
   /* スペーシング (rem) */
-  --spacing-xs: 0.25rem;   /* 4px */
-  --spacing-sm: 0.5rem;    /* 8px */
-  --spacing-md: 0.75rem;   /* 12px */
-  --spacing-lg: 1rem;      /* 16px */
-  --spacing-xl: 1.25rem;   /* 20px */
-  --spacing-xxl: 1.5rem;   /* 24px */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 0.75rem; /* 12px */
+  --spacing-lg: 1rem; /* 16px */
+  --spacing-xl: 1.25rem; /* 20px */
+  --spacing-xxl: 1.5rem; /* 24px */
 
   /* フォント (rem) */
   --font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
