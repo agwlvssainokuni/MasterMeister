@@ -60,6 +60,14 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children, title }) => {
                 <span className="nav-label">{t(item.labelKey)}</span>
               </Link>
             ))}
+            {user?.role === 'ADMIN' && (
+              <Link
+                to="/admin"
+                className={`nav-link ${isActivePath('/admin') || location.pathname.startsWith('/admin/') ? 'active' : ''}`}
+              >
+                <span className="nav-label">{t('navigation.admin')}</span>
+              </Link>
+            )}
           </nav>
 
           <div className="header-right">

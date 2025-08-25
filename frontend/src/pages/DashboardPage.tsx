@@ -15,10 +15,11 @@
  */
 
 import React from 'react'
-import {Link} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
 import {useAuth} from '../contexts/AuthContext'
 import {UserLayout} from '../components/layouts/UserLayout'
+import {PageWrapper} from '../components/PageWrapper'
+import {FeatureCard} from '../components/FeatureCard'
 
 export const DashboardPage: React.FC = () => {
   const {t} = useTranslation()
@@ -26,29 +27,29 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <UserLayout title={t('dashboard.title')}>
-      <p className="dashboard-welcome">{t('dashboard.welcome')}</p>
-
-      <div className="dashboard-cards">
-        <div className="dashboard-card">
-          <div className="card-icon">📊</div>
-          <h3>{t('dashboard.dataAccess.title')}</h3>
-          <p>{t('dashboard.dataAccess.description')}</p>
-          <Link to="/data" className="button button-primary">
-            {t('dashboard.dataAccess.button')}
-          </Link>
+      <PageWrapper className="user-dashboard">
+        <div className="dashboard-welcome">
+          <p>{t('dashboard.welcome')}</p>
         </div>
 
-        {user?.role === 'ADMIN' && (
-          <div className="dashboard-card">
-            <div className="card-icon">⚙️</div>
-            <h3>{t('dashboard.adminPanel.title')}</h3>
-            <p>{t('dashboard.adminPanel.description')}</p>
-            <Link to="/admin" className="button button-secondary">
-              {t('dashboard.adminPanel.button')}
-            </Link>
-          </div>
-        )}
-      </div>
+        <div className="card-grid card-grid-2">
+          <FeatureCard
+            title={t('dashboard.dataAccess.title')}
+            description={t('dashboard.dataAccess.description')}
+            actionText={t('dashboard.dataAccess.button')}
+            actionPath="/data"
+          />
+
+          {user?.role === 'ADMIN' && (
+            <FeatureCard
+              title={t('dashboard.adminPanel.title')}
+              description={t('dashboard.adminPanel.description')}
+              actionText={t('dashboard.adminPanel.button')}
+              actionPath="/admin"
+            />
+          )}
+        </div>
+      </PageWrapper>
     </UserLayout>
   )
 }

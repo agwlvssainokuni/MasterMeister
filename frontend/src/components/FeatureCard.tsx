@@ -35,13 +35,17 @@ export const FeatureCard: React.FC<FeatureCardProps> = (
   }
 ) => {
   return (
-    <div className={`feature-card ${className}`}>
-      <h3>{title}</h3>
-      <p>{description}</p>
-      <div className="feature-actions">
-        <Link to={actionPath} className="button button-primary">
-          {actionText}
-        </Link>
+    <div className={`card card-clickable ${className}`}>
+      <div className="card-header">
+        <h3 className="card-title">{title}</h3>
+        <p className="card-subtitle">{description}</p>
+      </div>
+      <div className="card-footer">
+        <div className="card-footer-actions">
+          <Link to={actionPath} className="button button-primary">
+            {actionText}
+          </Link>
+        </div>
       </div>
     </div>
   )

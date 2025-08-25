@@ -33,7 +33,7 @@ export const AdminDashboardPage: React.FC = () => {
           <h2>{t('admin.dashboard.welcome')}</h2>
         </div>
 
-        <div className="admin-features-grid">
+        <div className="card-grid card-grid-4">
           <FeatureCard
             title={t('admin.features.userManagement.title')}
             description={t('admin.features.userManagement.description')}
