@@ -16,23 +16,12 @@
 
 package cherry.mastermeister.integration;
 
-import cherry.mastermeister.entity.DatabaseConnectionEntity;
-import cherry.mastermeister.entity.PermissionTemplateEntity;
-import cherry.mastermeister.entity.PermissionTemplateItemEntity;
-import cherry.mastermeister.entity.UserEntity;
-import cherry.mastermeister.entity.UserPermissionEntity;
-import cherry.mastermeister.enums.DatabaseType;
-import cherry.mastermeister.enums.PermissionScope;
-import cherry.mastermeister.enums.PermissionType;
-import cherry.mastermeister.enums.UserRole;
-import cherry.mastermeister.enums.UserStatus;
 import cherry.mastermeister.controller.dto.PermissionExportData;
-import cherry.mastermeister.repository.DatabaseConnectionRepository;
-import cherry.mastermeister.repository.PermissionTemplateItemRepository;
-import cherry.mastermeister.repository.PermissionTemplateRepository;
-import cherry.mastermeister.repository.UserPermissionRepository;
-import cherry.mastermeister.repository.UserRepository;
+import cherry.mastermeister.entity.*;
+import cherry.mastermeister.enums.*;
+import cherry.mastermeister.repository.*;
 import cherry.mastermeister.service.PermissionYamlService;
+import cherry.mastermeister.service.PermissionYamlService.ImportOptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +32,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -81,6 +69,7 @@ public class PermissionExportIntegrationTest {
         // Create test users
         testUser1 = new UserEntity();
         testUser1.setEmail("user1@example.com");
+        testUser1.setPassword("password123"); // Required field
         testUser1.setStatus(UserStatus.APPROVED);
         testUser1.setRole(UserRole.USER);
         testUser1.setCreatedAt(LocalDateTime.now());
@@ -88,6 +77,7 @@ public class PermissionExportIntegrationTest {
 
         testUser2 = new UserEntity();
         testUser2.setEmail("user2@example.com");
+        testUser2.setPassword("password123"); // Required field
         testUser2.setStatus(UserStatus.APPROVED);
         testUser2.setRole(UserRole.USER);
         testUser2.setCreatedAt(LocalDateTime.now());
@@ -98,6 +88,7 @@ public class PermissionExportIntegrationTest {
         testConnection.setName("Test Database");
         testConnection.setDbType(DatabaseType.H2);
         testConnection.setHost("mem");
+        testConnection.setPort(9092); // Required field
         testConnection.setDatabaseName("testdb");
         testConnection.setUsername("sa");
         testConnection.setPassword("");
@@ -110,7 +101,7 @@ public class PermissionExportIntegrationTest {
     @Test
     void testExportBasicPermissions() throws Exception {
         // Setup test permissions
-        createTestPermission(testUser1, PermissionScope.TABLE, PermissionType.READ, 
+        createTestPermission(testUser1, PermissionScope.TABLE, PermissionType.READ,
                 "PUBLIC", "users", null, true, null, "Basic read access");
         createTestPermission(testUser1, PermissionScope.COLUMN, PermissionType.WRITE,
                 "PUBLIC", "users", "email", true, null, "Email write access");
@@ -125,74 +116,74 @@ public class PermissionExportIntegrationTest {
 
         // Verify export info
         assertNotNull(exportData.exportInfo());
-        assertEquals("1.0", exportData.getExportInfo().getVersion());
-        assertEquals("admin@example.com", exportData.getExportInfo().getExportedBy());
-        assertNotNull(exportData.getExportInfo().getExportedAt());
+        assertEquals("1.0", exportData.exportInfo().version());
+        assertEquals("admin@example.com", exportData.exportInfo().exportedBy());
+        assertNotNull(exportData.exportInfo().exportedAt());
 
         // Verify connection info
-        assertNotNull(exportData.getConnectionInfo());
-        assertEquals(testConnection.getId(), exportData.getConnectionInfo().getConnectionId());
-        assertEquals("Test Database", exportData.getConnectionInfo().getConnectionName());
-        assertEquals("H2", exportData.getConnectionInfo().getDatabaseType());
-        assertEquals("testdb", exportData.getConnectionInfo().getDatabaseName());
+        assertNotNull(exportData.connectionInfo());
+        assertEquals(testConnection.getId(), exportData.connectionInfo().connectionId());
+        assertEquals("Test Database", exportData.connectionInfo().connectionName());
+        assertEquals("H2", exportData.connectionInfo().databaseType());
+        assertEquals("testdb", exportData.connectionInfo().databaseName());
 
         // Verify users and permissions
-        assertNotNull(exportData.getUsers());
-        assertEquals(2, exportData.getUsers().size());
+        assertNotNull(exportData.users());
+        assertEquals(2, exportData.users().size());
 
         // Check user1 permissions
-        var user1Data = exportData.getUsers().stream()
-                .filter(u -> u.getUserEmail().equals("user1@example.com"))
+        var user1Data = exportData.users().stream()
+                .filter(u -> u.userEmail().equals("user1@example.com"))
                 .findFirst()
                 .orElse(null);
         assertNotNull(user1Data);
-        assertEquals(2, user1Data.getPermissions().size());
+        assertEquals(2, user1Data.permissions().size());
 
         // Check TABLE permission
-        var tablePermission = user1Data.getPermissions().stream()
-                .filter(p -> p.getScope() == PermissionScope.TABLE)
+        var tablePermission = user1Data.permissions().stream()
+                .filter(p -> "TABLE".equals(p.scope()))
                 .findFirst()
                 .orElse(null);
         assertNotNull(tablePermission);
-        assertEquals(PermissionType.READ, tablePermission.getPermissionType());
-        assertEquals("PUBLIC", tablePermission.getSchemaName());
-        assertEquals("users", tablePermission.getTableName());
-        assertNull(tablePermission.getColumnName());
-        assertTrue(tablePermission.getGranted());
-        assertEquals("Basic read access", tablePermission.getComment());
+        assertEquals("READ", tablePermission.permissionType());
+        assertEquals("PUBLIC", tablePermission.schemaName());
+        assertEquals("users", tablePermission.tableName());
+        assertNull(tablePermission.columnName());
+        assertTrue(tablePermission.granted());
+        assertEquals("Basic read access", tablePermission.comment());
 
         // Check COLUMN permission
-        var columnPermission = user1Data.getPermissions().stream()
-                .filter(p -> p.getScope() == PermissionScope.COLUMN)
+        var columnPermission = user1Data.permissions().stream()
+                .filter(p -> "COLUMN".equals(p.scope()))
                 .findFirst()
                 .orElse(null);
         assertNotNull(columnPermission);
-        assertEquals(PermissionType.WRITE, columnPermission.getPermissionType());
-        assertEquals("PUBLIC", columnPermission.getSchemaName());
-        assertEquals("users", columnPermission.getTableName());
-        assertEquals("email", columnPermission.getColumnName());
-        assertTrue(columnPermission.getGranted());
+        assertEquals("WRITE", columnPermission.permissionType());
+        assertEquals("PUBLIC", columnPermission.schemaName());
+        assertEquals("users", columnPermission.tableName());
+        assertEquals("email", columnPermission.columnName());
+        assertTrue(columnPermission.granted());
 
         // Check user2 permissions
-        var user2Data = exportData.getUsers().stream()
-                .filter(u -> u.getUserEmail().equals("user2@example.com"))
+        var user2Data = exportData.users().stream()
+                .filter(u -> u.userEmail().equals("user2@example.com"))
                 .findFirst()
                 .orElse(null);
         assertNotNull(user2Data);
-        assertEquals(1, user2Data.getPermissions().size());
+        assertEquals(1, user2Data.permissions().size());
 
-        var schemaPermission = user2Data.getPermissions().get(0);
-        assertEquals(PermissionScope.SCHEMA, schemaPermission.getScope());
-        assertEquals(PermissionType.READ, schemaPermission.getPermissionType());
-        assertEquals("PUBLIC", schemaPermission.getSchemaName());
-        assertNull(schemaPermission.getTableName());
-        assertNull(schemaPermission.getColumnName());
+        var schemaPermission = user2Data.permissions().get(0);
+        assertEquals(PermissionScope.SCHEMA, schemaPermission.scope());
+        assertEquals(PermissionType.READ, schemaPermission.permissionType());
+        assertEquals("PUBLIC", schemaPermission.schemaName());
+        assertNull(schemaPermission.tableName());
+        assertNull(schemaPermission.columnName());
     }
 
     @Test
     void testExportWithExpirationDates() throws Exception {
         LocalDateTime expireDate = LocalDateTime.of(2025, 12, 31, 23, 59, 59);
-        
+
         // Setup permission with expiration
         createTestPermission(testUser1, PermissionScope.TABLE, PermissionType.READ,
                 "PUBLIC", "temp_data", null, true, expireDate, "Temporary access");
@@ -203,11 +194,11 @@ public class PermissionExportIntegrationTest {
         // Parse and verify
         PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
 
-        var userData = exportData.getUsers().get(0);
-        var permission = userData.getPermissions().get(0);
-        
-        assertEquals(expireDate, permission.getExpiresAt());
-        assertEquals("Temporary access", permission.getComment());
+        var userData = exportData.users().get(0);
+        var permission = userData.permissions().get(0);
+
+        assertEquals(expireDate, permission.expiresAt());
+        assertEquals("Temporary access", permission.comment());
     }
 
     @Test
@@ -222,11 +213,11 @@ public class PermissionExportIntegrationTest {
         // Parse and verify
         PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
 
-        var userData = exportData.getUsers().get(0);
-        var permission = userData.getPermissions().get(0);
-        
-        assertFalse(permission.getGranted());
-        assertEquals("Delete denied on logs", permission.getComment());
+        var userData = exportData.users().get(0);
+        var permission = userData.permissions().get(0);
+
+        assertFalse(permission.granted());
+        assertEquals("Delete denied on logs", permission.comment());
     }
 
     @Test
@@ -235,7 +226,7 @@ public class PermissionExportIntegrationTest {
         PermissionTemplateEntity template = new PermissionTemplateEntity();
         template.setName("Basic User Template");
         template.setDescription("Standard read-only access");
-        template.setActive(true);
+        template.setIsActive(true);
         template.setCreatedBy("admin@example.com");
         template.setCreatedAt(LocalDateTime.now());
         template = permissionTemplateRepository.save(template);
@@ -268,34 +259,34 @@ public class PermissionExportIntegrationTest {
         PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
 
         // Verify templates are included
-        assertNotNull(exportData.getTemplates());
-        assertEquals(1, exportData.getTemplates().size());
+        assertNotNull(exportData.templates());
+        assertEquals(1, exportData.templates().size());
 
-        var templateData = exportData.getTemplates().get(0);
-        assertEquals("Basic User Template", templateData.getName());
-        assertEquals("Standard read-only access", templateData.getDescription());
-        assertTrue(templateData.getIsActive());
+        var templateData = exportData.templates().get(0);
+        assertEquals("Basic User Template", templateData.name());
+        assertEquals("Standard read-only access", templateData.description());
+        assertTrue(templateData.isActive());
 
         // Verify template items
-        assertEquals(2, templateData.getItems().size());
+        assertEquals(2, templateData.items().size());
 
-        var readItem = templateData.getItems().stream()
-                .filter(item -> item.getPermissionType() == PermissionType.READ)
+        var readItem = templateData.items().stream()
+                .filter(item -> "READ".equals(item.permissionType()))
                 .findFirst()
                 .orElse(null);
         assertNotNull(readItem);
-        assertEquals(PermissionScope.TABLE, readItem.getScope());
-        assertEquals("users", readItem.getTableName());
-        assertTrue(readItem.getGranted());
+        assertEquals("TABLE", readItem.scope());
+        assertEquals("users", readItem.tableName());
+        assertTrue(readItem.granted());
 
-        var deleteItem = templateData.getItems().stream()
-                .filter(item -> item.getPermissionType() == PermissionType.DELETE)
+        var deleteItem = templateData.items().stream()
+                .filter(item -> "DELETE".equals(item.permissionType()))
                 .findFirst()
                 .orElse(null);
         assertNotNull(deleteItem);
-        assertEquals(PermissionScope.TABLE, deleteItem.getScope());
-        assertEquals("logs", deleteItem.getTableName());
-        assertFalse(deleteItem.getGranted());
+        assertEquals("TABLE", deleteItem.scope());
+        assertEquals("logs", deleteItem.tableName());
+        assertFalse(deleteItem.granted());
     }
 
     @Test
@@ -308,13 +299,13 @@ public class PermissionExportIntegrationTest {
 
         // Should still have basic structure
         assertNotNull(exportData.exportInfo());
-        assertNotNull(exportData.getConnectionInfo());
-        
+        assertNotNull(exportData.connectionInfo());
+
         // Users list should be empty or null
-        assertTrue(exportData.getUsers() == null || exportData.getUsers().isEmpty());
-        
+        assertTrue(exportData.users() == null || exportData.users().isEmpty());
+
         // Templates list should be empty or null
-        assertTrue(exportData.getTemplates() == null || exportData.getTemplates().isEmpty());
+        assertTrue(exportData.templates() == null || exportData.templates().isEmpty());
     }
 
     @Test
@@ -340,7 +331,8 @@ public class PermissionExportIntegrationTest {
         userPermissionRepository.deleteAll();
 
         // Import the exported YAML
-        permissionYamlService.importPermissionsFromYaml(originalYaml, testConnection.getId(), "admin@example.com");
+        ImportOptions options = new ImportOptions(true, false, false, false);
+        permissionYamlService.importPermissionsFromYaml(originalYaml, testConnection.getId(), options);
 
         // Export again
         String reimportedYaml = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Round-trip test - reimported");
@@ -350,43 +342,43 @@ public class PermissionExportIntegrationTest {
         PermissionExportData reimportedData = yamlMapper.readValue(reimportedYaml, PermissionExportData.class);
 
         // Compare permissions (ignoring timestamp differences)
-        assertEquals(originalData.getUsers().size(), reimportedData.getUsers().size());
-        
-        for (int i = 0; i < originalData.getUsers().size(); i++) {
-            var originalUser = originalData.getUsers().get(i);
-            var reimportedUser = reimportedData.getUsers().stream()
-                    .filter(u -> u.getUserEmail().equals(originalUser.getUserEmail()))
+        assertEquals(originalData.users().size(), reimportedData.users().size());
+
+        for (int i = 0; i < originalData.users().size(); i++) {
+            var originalUser = originalData.users().get(i);
+            var reimportedUser = reimportedData.users().stream()
+                    .filter(u -> u.userEmail().equals(originalUser.userEmail()))
                     .findFirst()
                     .orElse(null);
-            
+
             assertNotNull(reimportedUser);
-            assertEquals(originalUser.getPermissions().size(), reimportedUser.getPermissions().size());
-            
+            assertEquals(originalUser.permissions().size(), reimportedUser.permissions().size());
+
             // Compare each permission
-            for (var originalPerm : originalUser.getPermissions()) {
-                var reimportedPerm = reimportedUser.getPermissions().stream()
-                        .filter(p -> p.getScope() == originalPerm.getScope() &&
-                                    p.getPermissionType() == originalPerm.getPermissionType() &&
-                                    java.util.Objects.equals(p.getSchemaName(), originalPerm.getSchemaName()) &&
-                                    java.util.Objects.equals(p.getTableName(), originalPerm.getTableName()) &&
-                                    java.util.Objects.equals(p.getColumnName(), originalPerm.getColumnName()))
+            for (var originalPerm : originalUser.permissions()) {
+                var reimportedPerm = reimportedUser.permissions().stream()
+                        .filter(p -> p.scope() == originalPerm.scope() &&
+                                p.permissionType() == originalPerm.permissionType() &&
+                                java.util.Objects.equals(p.schemaName(), originalPerm.schemaName()) &&
+                                java.util.Objects.equals(p.tableName(), originalPerm.tableName()) &&
+                                java.util.Objects.equals(p.columnName(), originalPerm.columnName()))
                         .findFirst()
                         .orElse(null);
-                
+
                 assertNotNull(reimportedPerm, "Permission not found after round-trip");
-                assertEquals(originalPerm.getGranted(), reimportedPerm.getGranted());
-                assertEquals(originalPerm.getExpiresAt(), reimportedPerm.getExpiresAt());
-                assertEquals(originalPerm.getComment(), reimportedPerm.getComment());
+                assertEquals(originalPerm.granted(), reimportedPerm.granted());
+                assertEquals(originalPerm.expiresAt(), reimportedPerm.expiresAt());
+                assertEquals(originalPerm.comment(), reimportedPerm.comment());
             }
         }
     }
 
     private void createTestPermission(UserEntity user, PermissionScope scope, PermissionType permissionType,
-                                    String schemaName, String tableName, String columnName,
-                                    boolean granted, LocalDateTime expiresAt, String comment) {
+                                      String schemaName, String tableName, String columnName,
+                                      boolean granted, LocalDateTime expiresAt, String comment) {
         UserPermissionEntity permission = new UserPermissionEntity();
         permission.setUser(user);
-        permission.setDatabaseConnection(testConnection);
+        permission.setConnectionId(testConnection.getId());
         permission.setScope(scope);
         permission.setPermissionType(permissionType);
         permission.setSchemaName(schemaName);

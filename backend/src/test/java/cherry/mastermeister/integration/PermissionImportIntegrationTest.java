@@ -19,15 +19,12 @@ package cherry.mastermeister.integration;
 import cherry.mastermeister.entity.DatabaseConnectionEntity;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.entity.UserPermissionEntity;
-import cherry.mastermeister.enums.DatabaseType;
-import cherry.mastermeister.enums.PermissionScope;
-import cherry.mastermeister.enums.PermissionType;
-import cherry.mastermeister.enums.UserRole;
-import cherry.mastermeister.enums.UserStatus;
+import cherry.mastermeister.enums.*;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import cherry.mastermeister.repository.UserPermissionRepository;
 import cherry.mastermeister.repository.UserRepository;
 import cherry.mastermeister.service.PermissionYamlService;
+import cherry.mastermeister.service.PermissionYamlService.ImportOptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,6 +66,7 @@ public class PermissionImportIntegrationTest {
         // Create test user
         testUser = new UserEntity();
         testUser.setEmail("testuser@example.com");
+        testUser.setPassword("password123"); // Required field
         testUser.setStatus(UserStatus.APPROVED);
         testUser.setRole(UserRole.USER);
         testUser.setCreatedAt(LocalDateTime.now());
@@ -79,6 +77,7 @@ public class PermissionImportIntegrationTest {
         testConnection.setName("Test Database");
         testConnection.setDbType(DatabaseType.H2);
         testConnection.setHost("mem");
+        testConnection.setPort(9092); // Required field
         testConnection.setDatabaseName("testdb");
         testConnection.setUsername("sa");
         testConnection.setPassword("");
@@ -123,8 +122,9 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
         // Execute import
+        ImportOptions options = new ImportOptions(true, false, false, false);
         assertDoesNotThrow(() -> {
-            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
 
         // Verify database state
@@ -198,8 +198,9 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
         // Execute import
+        ImportOptions options = new ImportOptions(true, false, false, false);
         assertDoesNotThrow(() -> {
-            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
 
         // Verify database state
@@ -267,8 +268,9 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
         // Execute import
+        ImportOptions options = new ImportOptions(true, false, false, false);
         assertDoesNotThrow(() -> {
-            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
 
         // Verify database state
@@ -309,8 +311,9 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId());
 
         // Verify that import throws exception for non-existent user
+        ImportOptions options = new ImportOptions(true, false, false, false);
         assertThrows(IllegalArgumentException.class, () -> {
-            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
 
         // Verify no permissions were created
@@ -346,8 +349,9 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testUser.getEmail());
 
         // Verify that import throws exception for non-existent connection
+        ImportOptions options = new ImportOptions(true, false, false, false);
         assertThrows(IllegalArgumentException.class, () -> {
-            permissionYamlService.importPermissionsFromYaml(yamlContent, 999999L, testUser.getEmail());
+            permissionYamlService.importPermissionsFromYaml(yamlContent, 999999L, options);
         });
     }
 
@@ -364,8 +368,9 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testUser.getEmail());
 
         // Verify that import throws exception for malformed YAML
+        ImportOptions options = new ImportOptions(true, false, false, false);
         assertThrows(Exception.class, () -> {
-            permissionYamlService.importPermissionsFromYaml(malformedYaml, testConnection.getId(), testUser.getEmail());
+            permissionYamlService.importPermissionsFromYaml(malformedYaml, testConnection.getId(), options);
         });
     }
 
@@ -374,7 +379,7 @@ public class PermissionImportIntegrationTest {
         // First, create some existing permissions
         UserPermissionEntity existingPermission = new UserPermissionEntity();
         existingPermission.setUser(testUser);
-        existingPermission.setDatabaseConnection(testConnection);
+        existingPermission.setConnectionId(testConnection.getId());
         existingPermission.setScope(PermissionScope.TABLE);
         existingPermission.setPermissionType(PermissionType.READ);
         existingPermission.setSchemaName("PUBLIC");
@@ -409,8 +414,9 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
         // Execute import
+        ImportOptions options = new ImportOptions(true, false, false, false);
         assertDoesNotThrow(() -> {
-            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), testUser.getEmail());
+            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
 
         // Verify that only new permissions exist (old ones are replaced)
