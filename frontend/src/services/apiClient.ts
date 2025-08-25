@@ -56,8 +56,8 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Handle 401 (unauthorized) - try token refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Handle 401 (unauthorized) and 403 (forbidden/expired token) - try token refresh
+    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
       originalRequest._retry = true
 
       const refreshToken = localStorage.getItem('refreshToken')
@@ -90,12 +90,6 @@ apiClient.interceptors.response.use(
         // No refresh token - redirect to login
         onAuthFailure?.()
       }
-    }
-
-    // Handle 403 (forbidden) - access denied
-    if (error.response?.status === 403) {
-      // For 403, we don't try refresh - user lacks permissions
-      console.warn('Access denied (403): Insufficient permissions')
     }
 
     return Promise.reject(error)

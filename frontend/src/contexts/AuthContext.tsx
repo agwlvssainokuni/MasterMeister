@@ -40,7 +40,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
   )
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const { showError } = useNotification()
+  const {showError} = useNotification()
 
   useEffect(() => {
     // Initialize auth state on mount

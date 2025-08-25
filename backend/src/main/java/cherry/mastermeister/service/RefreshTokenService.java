@@ -20,6 +20,7 @@ import cherry.mastermeister.entity.RefreshTokenEntity;
 import cherry.mastermeister.model.TokenPair;
 import cherry.mastermeister.repository.RefreshTokenRepository;
 import cherry.mastermeister.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -35,10 +36,14 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
+    private final int maxUsageCount;
 
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, JwtUtil jwtUtil) {
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository,
+                               JwtUtil jwtUtil,
+                               @Value("${mm.security.jwt.refresh-token.max-usage-count:10}") int maxUsageCount) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtUtil = jwtUtil;
+        this.maxUsageCount = maxUsageCount;
     }
 
     public String createRefreshToken(UserDetails userDetails) {
@@ -64,7 +69,7 @@ public class RefreshTokenService {
             return false;
         }
 
-        Optional<RefreshTokenEntity> refreshTokenOpt = refreshTokenRepository.findByTokenIdAndActiveTrue(tokenId);
+        Optional<RefreshTokenEntity> refreshTokenOpt = refreshTokenRepository.findByTokenId(tokenId);
         if (refreshTokenOpt.isEmpty()) {
             return false;
         }
@@ -73,6 +78,11 @@ public class RefreshTokenService {
 
         // トークンの有効期限とユーザー名をチェック
         if (refreshToken.isExpired() || !refreshToken.getUsername().equals(userDetails.getUsername())) {
+            return false;
+        }
+
+        // 使用回数制限をチェック
+        if (refreshToken.hasExceededUsageLimit(maxUsageCount)) {
             return false;
         }
 
@@ -86,11 +96,11 @@ public class RefreshTokenService {
         }
 
         String oldTokenId = jwtUtil.extractTokenId(refreshTokenString);
-        RefreshTokenEntity oldRefreshToken = refreshTokenRepository.findByTokenIdAndActiveTrue(oldTokenId)
+        RefreshTokenEntity oldRefreshToken = refreshTokenRepository.findByTokenId(oldTokenId)
                 .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
 
-        // 古いリフレッシュトークンを無効化 (Token Rotation)
-        oldRefreshToken.deactivate();
+        // 古いリフレッシュトークンの使用回数をインクリメント（使用回数制限対応）
+        oldRefreshToken.markAsUsed();
         refreshTokenRepository.save(oldRefreshToken);
 
         // 新しいトークンペアを生成
@@ -101,15 +111,15 @@ public class RefreshTokenService {
     }
 
     public void revokeRefreshToken(String tokenId) {
-        refreshTokenRepository.deactivateByTokenId(tokenId);
+        refreshTokenRepository.deleteByTokenId(tokenId);
     }
 
     public void revokeAllUserRefreshTokens(String username) {
-        refreshTokenRepository.deactivateAllByUsername(username);
+        refreshTokenRepository.deleteAllByUsername(username);
     }
 
-    public long countActiveTokensForUser(String username) {
-        return refreshTokenRepository.countActiveTokensByUsername(username);
+    public long countTokensForUser(String username) {
+        return refreshTokenRepository.countTokensByUsername(username);
     }
 
     @Scheduled(fixedRate = 3600000) // 1時間ごと

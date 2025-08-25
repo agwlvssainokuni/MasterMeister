@@ -29,22 +29,22 @@ import java.util.Optional;
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity, Long> {
 
-    Optional<RefreshTokenEntity> findByTokenIdAndActiveTrue(String tokenId);
+    Optional<RefreshTokenEntity> findByTokenId(String tokenId);
 
-    List<RefreshTokenEntity> findByUsernameAndActiveTrue(String username);
-
-    @Modifying
-    @Query("UPDATE RefreshTokenEntity rt SET rt.active = false WHERE rt.username = :username AND rt.active = true")
-    int deactivateAllByUsername(String username);
+    List<RefreshTokenEntity> findByUsername(String username);
 
     @Modifying
-    @Query("UPDATE RefreshTokenEntity rt SET rt.active = false WHERE rt.tokenId = :tokenId AND rt.active = true")
-    int deactivateByTokenId(String tokenId);
+    @Query("DELETE FROM RefreshTokenEntity rt WHERE rt.username = :username")
+    int deleteAllByUsername(String username);
+
+    @Modifying
+    @Query("DELETE FROM RefreshTokenEntity rt WHERE rt.tokenId = :tokenId")
+    int deleteByTokenId(String tokenId);
 
     @Modifying
     @Query("DELETE FROM RefreshTokenEntity rt WHERE rt.expiresAt < :cutoffTime")
     int deleteExpiredTokens(LocalDateTime cutoffTime);
 
-    @Query("SELECT COUNT(rt) FROM RefreshTokenEntity rt WHERE rt.username = :username AND rt.active = true")
-    long countActiveTokensByUsername(String username);
+    @Query("SELECT COUNT(rt) FROM RefreshTokenEntity rt WHERE rt.username = :username")
+    long countTokensByUsername(String username);
 }

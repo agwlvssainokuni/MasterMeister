@@ -33,8 +33,8 @@ import './App.css'
 const App = () => {
   return (
     <Router>
-      <AuthProvider>
-        <NotificationProvider>
+      <NotificationProvider>
+        <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage/>}/>
             <Route path="/register-email" element={<RegisterEmailPage/>}/>
@@ -97,8 +97,8 @@ const App = () => {
             />
             <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
           </Routes>
-        </NotificationProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </NotificationProvider>
     </Router>
   )
 }

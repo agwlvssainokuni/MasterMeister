@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "refresh_tokens", indexes = {
         @Index(name = "idx_token_id", columnList = "token_id"),
-        @Index(name = "idx_username_active", columnList = "username, active"),
+        @Index(name = "idx_username", columnList = "username"),
         @Index(name = "idx_expires_at", columnList = "expires_at")
 })
 public class RefreshTokenEntity {
@@ -42,14 +42,14 @@ public class RefreshTokenEntity {
     @Column(nullable = false, length = 50)
     private String username;
 
-    @Column(nullable = false)
-    private boolean active = true;
-
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
     @Column(name = "last_used_at")
     private LocalDateTime lastUsedAt;
+
+    @Column(name = "usage_count", nullable = false)
+    private int usageCount = 0;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -81,14 +81,6 @@ public class RefreshTokenEntity {
         this.username = username;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public LocalDateTime getExpiresAt() {
         return expiresAt;
     }
@@ -103,6 +95,14 @@ public class RefreshTokenEntity {
 
     public void setLastUsedAt(LocalDateTime lastUsedAt) {
         this.lastUsedAt = lastUsedAt;
+    }
+
+    public int getUsageCount() {
+        return usageCount;
+    }
+
+    public void setUsageCount(int usageCount) {
+        this.usageCount = usageCount;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -136,11 +136,13 @@ public class RefreshTokenEntity {
 
     public void markAsUsed() {
         lastUsedAt = LocalDateTime.now();
+        usageCount++;
     }
 
-    public void deactivate() {
-        active = false;
+    public boolean hasExceededUsageLimit(int maxUsageCount) {
+        return usageCount >= maxUsageCount;
     }
+
 
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
@@ -169,9 +171,9 @@ public class RefreshTokenEntity {
                 .append("id", id)
                 .append("tokenId", tokenId)
                 .append("username", username)
-                .append("active", active)
                 .append("expiresAt", expiresAt)
                 .append("lastUsedAt", lastUsedAt)
+                .append("usageCount", usageCount)
                 .append("createdAt", createdAt)
                 .append("updatedAt", updatedAt)
                 .toString();
