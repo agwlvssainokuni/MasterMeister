@@ -15,8 +15,8 @@
  */
 
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import type { DatabaseConnection } from '../types/frontend'
+import {useTranslation} from 'react-i18next'
+import type {DatabaseConnection} from '../types/frontend'
 
 interface PermissionConnectionSelectorProps {
   connections: DatabaseConnection[]
@@ -25,11 +25,11 @@ interface PermissionConnectionSelectorProps {
 }
 
 export const PermissionConnectionSelector: React.FC<PermissionConnectionSelectorProps> = ({
-  connections,
-  selectedConnection,
-  onConnectionSelect
-}) => {
-  const { t } = useTranslation()
+                                                                                            connections,
+                                                                                            selectedConnection,
+                                                                                            onConnectionSelect
+                                                                                          }) => {
+  const {t} = useTranslation()
 
   if (connections.length === 0) {
     return (

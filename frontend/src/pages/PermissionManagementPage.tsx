@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { AdminLayout } from '../components/layouts/AdminLayout'
-import { PermissionConnectionSelector } from '../components/PermissionConnectionSelector'
-import { PermissionFileManager } from '../components/PermissionFileManager'
-import { useNotification } from '../contexts/NotificationContext'
-import { databaseConnectionService } from '../services/databaseConnectionService'
-import { permissionService } from '../services/permissionService'
-import type { 
-  DatabaseConnection, 
-  PermissionImportOptions, 
-  PermissionImportResult, 
-  PermissionValidationResult,
+import React, {useEffect, useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {AdminLayout} from '../components/layouts/AdminLayout'
+import {PermissionConnectionSelector} from '../components/PermissionConnectionSelector'
+import {PermissionFileManager} from '../components/PermissionFileManager'
+import {useNotification} from '../contexts/NotificationContext'
+import {databaseConnectionService} from '../services/databaseConnectionService'
+import {permissionService} from '../services/permissionService'
+import type {
   BulkPermissionOptions,
-  BulkPermissionResult
+  BulkPermissionResult,
+  DatabaseConnection,
+  PermissionImportOptions,
+  PermissionImportResult,
+  PermissionValidationResult
 } from '../types/frontend'
 
 export const PermissionManagementPage: React.FC = () => {
-  const { t } = useTranslation()
-  const { showSuccess, showError } = useNotification()
-  
+  const {t} = useTranslation()
+  const {showSuccess, showError} = useNotification()
+
   const [connections, setConnections] = useState<DatabaseConnection[]>([])
   const [selectedConnection, setSelectedConnection] = useState<DatabaseConnection | null>(null)
   const [loading, setLoading] = useState(false)
@@ -62,7 +62,7 @@ export const PermissionManagementPage: React.FC = () => {
     try {
       setLoading(true)
       const blob = await permissionService.exportPermissions(connectionId, description)
-      
+
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -71,11 +71,11 @@ export const PermissionManagementPage: React.FC = () => {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-      
+
       const connection = connections.find(c => c.id === connectionId)
       showSuccess(
-        t('permissions.messages.exportSuccess', { 
-          connection: connection?.name || `ID ${connectionId}` 
+        t('permissions.messages.exportSuccess', {
+          connection: connection?.name || `ID ${connectionId}`
         })
       )
     } catch (error) {
@@ -94,7 +94,7 @@ export const PermissionManagementPage: React.FC = () => {
     try {
       setLoading(true)
       const result = await permissionService.importPermissions(connectionId, file, options)
-      
+
       const connection = connections.find(c => c.id === connectionId)
       showSuccess(
         t('permissions.messages.importSuccess', {
@@ -104,7 +104,7 @@ export const PermissionManagementPage: React.FC = () => {
           permissions: result.importedPermissions
         })
       )
-      
+
       return result
     } catch (error) {
       console.error('Import failed:', error)
@@ -122,15 +122,15 @@ export const PermissionManagementPage: React.FC = () => {
     try {
       setLoading(true)
       const result = await permissionService.validatePermissionYaml(connectionId, file)
-      
+
       if (result.valid) {
         showSuccess(t('permissions.messages.validateSuccess'))
       } else {
         showError(
-          t('permissions.messages.validateError', { message: result.message })
+          t('permissions.messages.validateError', {message: result.message})
         )
       }
-      
+
       return result
     } catch (error) {
       console.error('Validation failed:', error)
@@ -148,7 +148,7 @@ export const PermissionManagementPage: React.FC = () => {
     try {
       setLoading(true)
       const result = await permissionService.bulkGrantPermissions(connectionId, options)
-      
+
       const connection = connections.find(c => c.id === connectionId)
       showSuccess(
         t('permissions.messages.bulkGrantSuccess', {
@@ -159,7 +159,7 @@ export const PermissionManagementPage: React.FC = () => {
           tables: result.processedTables
         })
       )
-      
+
       return result
     } catch (error) {
       console.error('Bulk grant failed:', error)

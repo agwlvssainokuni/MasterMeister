@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import React, { useState, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
-import { BulkPermissionSetup } from './BulkPermissionSetup'
-import { BulkPermissionConfirmDialog } from './BulkPermissionConfirmDialog'
-import type { 
-  DatabaseConnection, 
-  PermissionImportOptions, 
-  PermissionImportResult, 
-  PermissionValidationResult,
+import React, {useRef, useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {BulkPermissionSetup} from './BulkPermissionSetup'
+import {BulkPermissionConfirmDialog} from './BulkPermissionConfirmDialog'
+import type {
   BulkPermissionOptions,
   BulkPermissionResult,
-  BulkPermissionType
+  BulkPermissionType,
+  DatabaseConnection,
+  PermissionImportOptions,
+  PermissionImportResult,
+  PermissionValidationResult
 } from '../types/frontend'
 
 interface PermissionFileManagerProps {
@@ -37,17 +37,19 @@ interface PermissionFileManagerProps {
   onBulkGrant?: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
 }
 
-export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
-  connection,
-  loading,
-  onExport,
-  onImport,
-  onValidate,
-  onBulkGrant
-}) => {
-  const { t } = useTranslation()
+export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
+  {
+    connection,
+    loading,
+    onExport,
+    onImport,
+    onValidate,
+    onBulkGrant,
+  }
+) => {
+  const {t} = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   const [activeTab, setActiveTab] = useState<'quickSetup' | 'export' | 'import'>('quickSetup')
   const [exportDescription, setExportDescription] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -81,7 +83,7 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
 
   const handleValidate = async () => {
     if (!selectedFile) return
-    
+
     try {
       const result = await onValidate(connection.id, selectedFile)
       setValidationResult(result)
@@ -92,7 +94,7 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
 
   const handleImport = async () => {
     if (!selectedFile) return
-    
+
     try {
       const result = await onImport(connection.id, selectedFile, importOptions)
       setImportResult(result)
@@ -115,7 +117,7 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
     options: BulkPermissionOptions,
     onConfirm: () => void
   ) => {
-    setConfirmOptions({ type, options, onConfirm })
+    setConfirmOptions({type, options, onConfirm})
     setShowConfirmDialog(true)
   }
 
@@ -293,7 +295,7 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = ({
             {validationResult?.valid && (
               <div className="import-options">
                 <h5>{t('permissions.importOptions')}</h5>
-                
+
                 <div className="options-grid">
                   <label className="checkbox-option">
                     <input

@@ -15,8 +15,8 @@
  */
 
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import type { BulkPermissionOptions, BulkPermissionType } from '../types/frontend'
+import {useTranslation} from 'react-i18next'
+import type {BulkPermissionOptions, BulkPermissionType} from '../types/frontend'
 
 interface BulkPermissionConfirmDialogProps {
   isOpen: boolean
@@ -27,26 +27,30 @@ interface BulkPermissionConfirmDialogProps {
   onCancel: () => void
 }
 
-export const BulkPermissionConfirmDialog: React.FC<BulkPermissionConfirmDialogProps> = ({
-  isOpen,
-  permissionType,
-  options,
-  connectionName,
-  onConfirm,
-  onCancel
-}) => {
-  const { t } = useTranslation()
+export const BulkPermissionConfirmDialog: React.FC<BulkPermissionConfirmDialogProps> = (
+  {
+    isOpen,
+    permissionType,
+    options,
+    connectionName,
+    onConfirm,
+    onCancel,
+  }
+) => {
+  const {t} = useTranslation()
 
-  if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
   const isWritePermission = permissionType === 'write' || permissionType === 'delete'
   const userCount = options.userEmails.length || 'all active'
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content bulk-permission-confirm-dialog">
+    <div className={`modal-overlay ${isOpen ? 'open' : ''}`}>
+      <div className="modal modal-content bulk-permission-confirm-dialog">
         <div className="modal-header">
-          <h3>
+          <h3 className="modal-title">
             {isWritePermission && <span className="warning-icon">⚠️</span>}
             {t('permissions.confirmDialog.title')}
           </h3>
@@ -58,31 +62,31 @@ export const BulkPermissionConfirmDialog: React.FC<BulkPermissionConfirmDialogPr
               <span className="detail-label">{t('permissions.confirmDialog.connection')}:</span>
               <span className="detail-value">{connectionName}</span>
             </div>
-            
+
             <div className="detail-row">
               <span className="detail-label">{t('permissions.confirmDialog.permissionType')}:</span>
               <span className={`detail-value permission-type-${permissionType}`}>
                 {t(`permissions.types.${permissionType}` as const)}
               </span>
             </div>
-            
+
             <div className="detail-row">
               <span className="detail-label">{t('permissions.confirmDialog.scope')}:</span>
               <span className="detail-value">
                 {t(`permissions.scopes.${options.scope}`)}
               </span>
             </div>
-            
+
             <div className="detail-row">
               <span className="detail-label">{t('permissions.confirmDialog.users')}:</span>
               <span className="detail-value">
-                {typeof userCount === 'number' ? 
-                  t('permissions.confirmDialog.userCount', { count: userCount }) :
+                {typeof userCount === 'number' ?
+                  t('permissions.confirmDialog.userCount', {count: userCount}) :
                   t('permissions.confirmDialog.allActiveUsers')
                 }
               </span>
             </div>
-            
+
             {options.includeSystemTables && (
               <div className="detail-row">
                 <span className="detail-label">{t('permissions.confirmDialog.systemTables')}:</span>
@@ -111,9 +115,9 @@ export const BulkPermissionConfirmDialog: React.FC<BulkPermissionConfirmDialogPr
           <div className="confirmation-message">
             <p>
               <strong>
-                {t('permissions.confirmDialog.confirmMessage', { 
+                {t('permissions.confirmDialog.confirmMessage', {
                   type: t(`permissions.types.${permissionType}` as const),
-                  connection: connectionName 
+                  connection: connectionName
                 })}
               </strong>
             </p>

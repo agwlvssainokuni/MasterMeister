@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import type { 
-  DatabaseConnection, 
-  BulkPermissionOptions, 
+import React, {useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import type {
+  BulkPermissionOptions,
   BulkPermissionResult,
+  BulkPermissionScope,
   BulkPermissionType,
-  BulkPermissionScope
+  DatabaseConnection
 } from '../types/frontend'
 
 interface BulkPermissionSetupProps {
@@ -29,20 +29,22 @@ interface BulkPermissionSetupProps {
   loading: boolean
   onBulkGrant: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
   onShowConfirmDialog: (
-    type: BulkPermissionType, 
-    options: BulkPermissionOptions, 
+    type: BulkPermissionType,
+    options: BulkPermissionOptions,
     onConfirm: () => void
   ) => void
 }
 
-export const BulkPermissionSetup: React.FC<BulkPermissionSetupProps> = ({
-  connection,
-  loading,
-  onBulkGrant,
-  onShowConfirmDialog
-}) => {
-  const { t } = useTranslation()
-  
+export const BulkPermissionSetup: React.FC<BulkPermissionSetupProps> = (
+  {
+    connection,
+    loading,
+    onBulkGrant,
+    onShowConfirmDialog,
+  }
+) => {
+  const {t} = useTranslation()
+
   const [selectedType, setSelectedType] = useState<BulkPermissionType>('read' as const)
   const [selectedScope, setSelectedScope] = useState<BulkPermissionScope>('ALL_TABLES')
   const [userEmails, setUserEmails] = useState('')
@@ -71,7 +73,7 @@ export const BulkPermissionSetup: React.FC<BulkPermissionSetupProps> = ({
 
   const handleCustomSetup = () => {
     const emails = userEmails.split(',').map(email => email.trim()).filter(email => email.length > 0)
-    
+
     if (emails.length === 0) {
       return
     }
@@ -101,7 +103,7 @@ export const BulkPermissionSetup: React.FC<BulkPermissionSetupProps> = ({
         <p className="section-description">
           {t('permissions.quickSetupDescription')}
         </p>
-        
+
         <div className="quick-setup-grid">
           <button
             className="quick-setup-card"
