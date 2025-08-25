@@ -19,7 +19,8 @@ import {createContext, useContext, useEffect, useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import type {AuthState, LoginCredentials} from '../types/frontend'
 import {authService} from '../services/authService'
-import {setAuthFailureHandler} from '../services/apiClient'
+import {setAuthFailureHandler, setTokenRefreshHandler} from '../services/apiClient'
+import {useNotification} from './NotificationContext'
 
 interface AuthContextValue extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>
@@ -39,6 +40,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
   )
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const { showError } = useNotification()
 
   useEffect(() => {
     // Initialize auth state on mount
@@ -53,9 +55,21 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
         accessToken: null,
         refreshToken: null
       })
+      showError('Session expired. Please log in again.')
       navigate('/login', {replace: true})
     })
-  }, [navigate])
+
+    // Setup token refresh handler for API client
+    setTokenRefreshHandler(() => {
+      // Get updated auth state after successful token refresh
+      const updatedState = authService.getCurrentAuthState()
+      if (updatedState.isAuthenticated) {
+        setAuthState(updatedState)
+        // Optionally show success message (commented out to avoid noise)
+        // showInfo('Session refreshed successfully.')
+      }
+    })
+  }, [navigate, showError])
 
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true)

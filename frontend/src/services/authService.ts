@@ -21,6 +21,7 @@ import type {
   LoginRequest,
   LoginResult,
   LogoutRequest,
+  RefreshTokenRequest,
   RegisterEmailRequest,
   RegisterEmailResult as ApiRegisterEmailResult,
   RegisterUserRequest,
@@ -92,6 +93,52 @@ class AuthService {
     // Clear local storage
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+  }
+
+  async refreshAccessToken(): Promise<AuthState> {
+    const refreshToken = localStorage.getItem('refreshToken')
+    if (!refreshToken) {
+      throw new Error('No refresh token available')
+    }
+
+    const refreshRequest: RefreshTokenRequest = {
+      refreshToken
+    }
+
+    try {
+      const response = await apiClient.post<ApiResponse<LoginResult>>(
+        API_ENDPOINTS.AUTH.REFRESH,
+        refreshRequest
+      )
+
+      if (!response.data.ok || !response.data.data) {
+        throw new Error(response.data.error?.[0] || 'Token refresh failed')
+      }
+
+      const loginResult = response.data.data
+
+      // Update stored tokens
+      localStorage.setItem('accessToken', loginResult.accessToken)
+      localStorage.setItem('refreshToken', loginResult.refreshToken)
+
+      // Convert to frontend types
+      const user: User = {
+        email: loginResult.email,
+        role: loginResult.role as 'USER' | 'ADMIN'
+      }
+
+      return {
+        isAuthenticated: true,
+        user,
+        accessToken: loginResult.accessToken,
+        refreshToken: loginResult.refreshToken
+      }
+    } catch (error) {
+      // Clear invalid tokens
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      throw error
+    }
   }
 
   async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {

@@ -39,11 +39,16 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// Navigation callback for handling auth failures
+// Callbacks for handling auth events
 let onAuthFailure: (() => void) | null = null
+let onTokenRefresh: ((accessToken: string, refreshToken: string) => void) | null = null
 
 export const setAuthFailureHandler = (handler: () => void) => {
   onAuthFailure = handler
+}
+
+export const setTokenRefreshHandler = (handler: (accessToken: string, refreshToken: string) => void) => {
+  onTokenRefresh = handler
 }
 
 apiClient.interceptors.response.use(
@@ -68,6 +73,9 @@ apiClient.interceptors.response.use(
           if (data) {
             localStorage.setItem('accessToken', data.accessToken)
             localStorage.setItem('refreshToken', data.refreshToken)
+
+            // Notify AuthContext of successful token refresh
+            onTokenRefresh?.(data.accessToken, data.refreshToken)
 
             originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
             return apiClient(originalRequest)
