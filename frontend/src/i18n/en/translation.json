@@ -201,7 +201,8 @@
     "saving": "Saving...",
     "previous": "Previous",
     "next": "Next",
-    "actions": "Actions"
+    "actions": "Actions",
+    "clear": "Clear"
   },
   "dataAccess": {
     "title": "Data Access",

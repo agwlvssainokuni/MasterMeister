@@ -201,7 +201,8 @@
     "saving": "保存中...",
     "previous": "前へ",
     "next": "次へ",
-    "actions": "操作"
+    "actions": "操作",
+    "clear": "クリア"
   },
   "dataAccess": {
     "title": "データアクセス",

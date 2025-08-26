@@ -37,6 +37,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +57,9 @@ public class PermissionYamlService {
     private final UserRepository userRepository;
     private final UserPermissionRepository userPermissionRepository;
     private final ObjectMapper yamlMapper;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public PermissionYamlService(
             PermissionManagementService permissionManagementService,
@@ -241,6 +247,14 @@ public class PermissionYamlService {
         int updatedPermissions = 0;
         int skippedDuplicates = 0;
 
+        // Clear existing permissions before import (if requested)
+        if (options.clearExistingPermissions()) {
+            logger.info("Clearing all existing permissions for connection: {}", targetConnectionId);
+            int deletedCount = userPermissionRepository.deleteByConnectionId(targetConnectionId);
+            entityManager.flush(); // Force immediate execution of the delete query
+            logger.info("Deleted {} permissions for connection: {}", deletedCount, targetConnectionId);
+        }
+
         // Import user permissions
         if (options.importUsers()) {
             for (PermissionExportData.UserPermissionData userData : importData.users()) {
@@ -248,10 +262,6 @@ public class PermissionYamlService {
                 if (user == null) {
                     warnings.add("User not found: " + userData.userEmail());
                     continue;
-                }
-
-                if (options.clearExistingPermissions()) {
-                    permissionManagementService.revokeAllPermissions(user.getId(), targetConnectionId);
                 }
 
                 for (PermissionExportData.PermissionData permData : userData.permissions()) {

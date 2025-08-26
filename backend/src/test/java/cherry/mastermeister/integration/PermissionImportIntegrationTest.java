@@ -23,6 +23,7 @@ import cherry.mastermeister.enums.*;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import cherry.mastermeister.repository.UserPermissionRepository;
 import cherry.mastermeister.repository.UserRepository;
+import cherry.mastermeister.service.PermissionManagementService;
 import cherry.mastermeister.service.PermissionYamlService;
 import cherry.mastermeister.service.PermissionYamlService.ImportOptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,6 +58,9 @@ public class PermissionImportIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private PermissionManagementService permissionManagementService;
 
     private UserEntity testUser;
     private DatabaseConnectionEntity testConnection;
@@ -448,4 +452,5 @@ public class PermissionImportIntegrationTest {
         assertEquals("new_table", permission.getTableName());
         assertEquals("New permission", permission.getComment());
     }
+
 }
