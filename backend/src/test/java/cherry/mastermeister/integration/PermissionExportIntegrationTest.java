@@ -366,7 +366,7 @@ public class PermissionExportIntegrationTest {
         userPermissionRepository.deleteAll();
 
         // Import the exported YAML
-        ImportOptions options = new ImportOptions(true, false, false, false);
+        ImportOptions options = new ImportOptions(true, false, false, DuplicateHandling.ERROR);
         permissionYamlService.importPermissionsFromYaml(originalYaml, testConnection.getId(), options);
 
         // Export again

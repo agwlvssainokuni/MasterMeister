@@ -122,7 +122,7 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
         // Execute import
-        ImportOptions options = new ImportOptions(true, false, false, false);
+        ImportOptions options = new ImportOptions(true, false, false, DuplicateHandling.ERROR);
         assertDoesNotThrow(() -> {
             permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
@@ -198,7 +198,7 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
         // Execute import
-        ImportOptions options = new ImportOptions(true, false, false, false);
+        ImportOptions options = new ImportOptions(true, false, false, DuplicateHandling.ERROR);
         assertDoesNotThrow(() -> {
             permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
@@ -268,7 +268,7 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
         // Execute import
-        ImportOptions options = new ImportOptions(true, false, false, false);
+        ImportOptions options = new ImportOptions(true, false, false, DuplicateHandling.ERROR);
         assertDoesNotThrow(() -> {
             permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
@@ -311,7 +311,7 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId());
 
         // Verify that import handles non-existent user gracefully with warnings
-        ImportOptions options = new ImportOptions(true, false, false, false);
+        ImportOptions options = new ImportOptions(true, false, false, DuplicateHandling.ERROR);
         assertDoesNotThrow(() -> {
             PermissionYamlService.PermissionImportResult result =
                     permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
@@ -358,7 +358,7 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testUser.getEmail());
 
         // Verify that import throws exception for non-existent connection
-        ImportOptions options = new ImportOptions(true, false, false, false);
+        ImportOptions options = new ImportOptions(true, false, false, DuplicateHandling.ERROR);
         assertThrows(IllegalArgumentException.class, () -> {
             permissionYamlService.importPermissionsFromYaml(yamlContent, 999999L, options);
         });
@@ -377,7 +377,7 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testUser.getEmail());
 
         // Verify that import handles malformed YAML gracefully with warnings
-        ImportOptions options = new ImportOptions(true, false, false, false);
+        ImportOptions options = new ImportOptions(true, false, false, DuplicateHandling.ERROR);
         assertDoesNotThrow(() -> {
             PermissionYamlService.PermissionImportResult result =
                     permissionYamlService.importPermissionsFromYaml(malformedYaml, testConnection.getId(), options);
@@ -432,7 +432,7 @@ public class PermissionImportIntegrationTest {
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
         // Execute import with clearExistingPermissions = true to replace existing permissions
-        ImportOptions options = new ImportOptions(true, false, true, false);
+        ImportOptions options = new ImportOptions(true, false, true, DuplicateHandling.ERROR);
         assertDoesNotThrow(() -> {
             permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });

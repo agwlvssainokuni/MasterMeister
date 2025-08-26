@@ -19,6 +19,7 @@ package cherry.mastermeister.service;
 import cherry.mastermeister.controller.dto.PermissionExportData;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.entity.UserPermissionEntity;
+import cherry.mastermeister.enums.DuplicateHandling;
 import cherry.mastermeister.enums.PermissionScope;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.DatabaseConnection;
@@ -237,6 +238,7 @@ public class PermissionYamlService {
         int importedUsers = 0;
         int importedTemplates = 0;
         int importedPermissions = 0;
+        int updatedPermissions = 0;
         int skippedDuplicates = 0;
 
         // Import user permissions
@@ -257,6 +259,8 @@ public class PermissionYamlService {
                         ImportPermissionResult result = importUserPermission(user.getId(), targetConnectionId, permData, options);
                         if (result.wasSkipped()) {
                             skippedDuplicates++;
+                        } else if (result.wasUpdated()) {
+                            updatedPermissions++;
                         } else {
                             importedPermissions++;
                         }
@@ -280,7 +284,7 @@ public class PermissionYamlService {
             }
         }
 
-        return new PermissionImportResult(importedUsers, importedTemplates, importedPermissions, skippedDuplicates, warnings, errors);
+        return new PermissionImportResult(importedUsers, importedTemplates, importedPermissions, updatedPermissions, skippedDuplicates, warnings, errors);
     }
 
     /**
@@ -295,16 +299,33 @@ public class PermissionYamlService {
         PermissionScope scope = PermissionScope.valueOf(permData.scope());
         PermissionType permissionType = PermissionType.valueOf(permData.permissionType());
 
-        // Check for existing permission if skipDuplicates is enabled
-        if (options.skipDuplicates()) {
-            Optional<UserPermissionEntity> existing = userPermissionRepository
-                    .findByUserIdAndConnectionIdAndScopeAndPermissionTypeAndSchemaNameAndTableNameAndColumnName(
-                            userId, connectionId, scope, permissionType,
-                            permData.schemaName(), permData.tableName(), permData.columnName()
-                    );
-
-            if (existing.isPresent()) {
-                return ImportPermissionResult.skipped("Permission already exists");
+        // Check for existing permission for duplicate handling
+        Optional<UserPermissionEntity> existing = userPermissionRepository
+                .findByUserIdAndConnectionIdAndScopeAndPermissionTypeAndSchemaNameAndTableNameAndColumnName(
+                        userId, connectionId, scope, permissionType,
+                        permData.schemaName(), permData.tableName(), permData.columnName()
+                );
+        
+        if (existing.isPresent()) {
+            switch (options.duplicateHandling()) {
+                case SKIP -> {
+                    return ImportPermissionResult.skipped("Permission already exists");
+                }
+                case OVERWRITE -> {
+                    // Update existing permission
+                    UserPermissionEntity existingEntity = existing.get();
+                    existingEntity.setGranted(permData.granted());
+                    existingEntity.setExpiresAt(permData.expiresAt());
+                    existingEntity.setComment(permData.comment());
+                    existingEntity.setGrantedBy(getCurrentUserEmail());
+                    existingEntity.setGrantedAt(LocalDateTime.now());
+                    userPermissionRepository.save(existingEntity);
+                    return ImportPermissionResult.updated("Permission updated successfully");
+                }
+                case ERROR -> {
+                    throw new IllegalArgumentException("Duplicate permission found: " + 
+                        permData.scope() + ":" + permData.permissionType() + " for user " + userId);
+                }
             }
         }
 
@@ -369,10 +390,22 @@ public class PermissionYamlService {
             boolean importUsers,
             boolean importTemplates,
             boolean clearExistingPermissions,
-            boolean skipDuplicates
+            DuplicateHandling duplicateHandling
     ) {
         public static ImportOptions defaultOptions() {
-            return new ImportOptions(true, true, false, true);
+            return new ImportOptions(true, true, false, DuplicateHandling.OVERWRITE);
+        }
+        
+        public static ImportOptions errorOnDuplicateOptions() {
+            return new ImportOptions(true, true, false, DuplicateHandling.ERROR);
+        }
+        
+        public static ImportOptions skipOnDuplicateOptions() {
+            return new ImportOptions(true, true, false, DuplicateHandling.SKIP);
+        }
+        
+        public static ImportOptions overwriteOnDuplicateOptions() {
+            return new ImportOptions(true, true, false, DuplicateHandling.OVERWRITE);
         }
     }
 
@@ -380,19 +413,37 @@ public class PermissionYamlService {
      * Individual permission import result
      */
     private record ImportPermissionResult(
-            boolean skipped,
+            ResultType type,
             String message
     ) {
+        public enum ResultType {
+            IMPORTED,
+            SKIPPED, 
+            UPDATED
+        }
+        
         public boolean wasSkipped() {
-            return skipped;
+            return type == ResultType.SKIPPED;
         }
-
+        
+        public boolean wasUpdated() {
+            return type == ResultType.UPDATED;
+        }
+        
+        public boolean wasImported() {
+            return type == ResultType.IMPORTED;
+        }
+        
         public static ImportPermissionResult skipped(String message) {
-            return new ImportPermissionResult(true, message);
+            return new ImportPermissionResult(ResultType.SKIPPED, message);
         }
-
+        
         public static ImportPermissionResult imported(String message) {
-            return new ImportPermissionResult(false, message);
+            return new ImportPermissionResult(ResultType.IMPORTED, message);
+        }
+        
+        public static ImportPermissionResult updated(String message) {
+            return new ImportPermissionResult(ResultType.UPDATED, message);
         }
     }
 
@@ -403,6 +454,7 @@ public class PermissionYamlService {
             int importedUsers,
             int importedTemplates,
             int importedPermissions,
+            int updatedPermissions,
             int skippedDuplicates,
             List<String> warnings,
             List<String> errors

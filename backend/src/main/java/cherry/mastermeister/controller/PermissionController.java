@@ -19,6 +19,7 @@ package cherry.mastermeister.controller;
 import cherry.mastermeister.controller.dto.ApiResponse;
 import cherry.mastermeister.controller.dto.BulkPermissionRequest;
 import cherry.mastermeister.controller.dto.BulkPermissionResult;
+import cherry.mastermeister.enums.DuplicateHandling;
 import cherry.mastermeister.service.PermissionBulkService;
 import cherry.mastermeister.service.PermissionYamlService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -117,7 +118,7 @@ public class PermissionController {
             @RequestParam(defaultValue = "true") boolean importUsers,
             @RequestParam(defaultValue = "true") boolean importTemplates,
             @RequestParam(defaultValue = "false") boolean clearExistingPermissions,
-            @RequestParam(defaultValue = "true") boolean skipDuplicates
+            @RequestParam(defaultValue = "OVERWRITE") DuplicateHandling duplicateHandling
     ) {
 
         logger.info("Importing permissions for connection ID: {} from file: {}", connectionId, file.getOriginalFilename());
@@ -129,7 +130,7 @@ public class PermissionController {
         try {
             String yamlContent = new String(file.getBytes(), StandardCharsets.UTF_8);
             PermissionYamlService.ImportOptions options = new PermissionYamlService.ImportOptions(
-                    importUsers, importTemplates, clearExistingPermissions, skipDuplicates);
+                    importUsers, importTemplates, clearExistingPermissions, duplicateHandling);
 
             PermissionYamlService.PermissionImportResult result = permissionYamlService
                     .importPermissionsFromYaml(yamlContent, connectionId, options);

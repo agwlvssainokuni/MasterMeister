@@ -183,7 +183,7 @@ export interface PermissionImportOptions {
   importUsers: boolean
   importTemplates: boolean
   clearExistingPermissions: boolean
-  skipDuplicates: boolean
+  duplicateHandling: 'error' | 'skip' | 'overwrite'
 }
 
 export interface PermissionValidationResult {
@@ -198,9 +198,10 @@ export interface PermissionImportResult {
   importedUsers: number
   importedTemplates: number
   importedPermissions: number
+  updatedPermissions: number
   skippedDuplicates: number
-  errors: string[]
   warnings: string[]
+  errors: string[]
 }
 
 // Bulk Permission Types (Frontend)

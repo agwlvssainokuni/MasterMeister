@@ -59,7 +59,7 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
     importUsers: true,
     importTemplates: true,
     clearExistingPermissions: false,
-    skipDuplicates: true
+    duplicateHandling: 'overwrite'
   })
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [confirmOptions, setConfirmOptions] = useState<{
@@ -105,9 +105,10 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
         importedUsers: 0,
         importedTemplates: 0,
         importedPermissions: 0,
+        updatedPermissions: 0,
         skippedDuplicates: 0,
-        errors: [error instanceof Error ? error.message : 'Unknown import error occurred'],
-        warnings: []
+        warnings: [],
+        errors: [error instanceof Error ? error.message : 'Unknown import error occurred']
       })
     }
   }
@@ -348,19 +349,50 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
                     </span>
                   </label>
 
-                  <label className="checkbox-option">
-                    <input
-                      type="checkbox"
-                      checked={importOptions.skipDuplicates}
-                      onChange={(e) => setImportOptions(prev => ({
-                        ...prev,
-                        skipDuplicates: e.target.checked
-                      }))}
-                    />
-                    <span className="checkbox-label">
-                      {t('permissions.options.skipDuplicates')}
-                    </span>
-                  </label>
+                  <div className="radio-group">
+                    <label className="radio-group-title">{t('permissions.options.duplicateHandling')}</label>
+                    <div className="radio-options">
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="duplicateHandling"
+                          value="error"
+                          checked={importOptions.duplicateHandling === 'error'}
+                          onChange={(e) => setImportOptions(prev => ({
+                            ...prev,
+                            duplicateHandling: e.target.value as 'error' | 'skip' | 'overwrite'
+                          }))}
+                        />
+                        <span>{t('permissions.options.duplicateHandlingError')}</span>
+                      </label>
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="duplicateHandling"
+                          value="skip"
+                          checked={importOptions.duplicateHandling === 'skip'}
+                          onChange={(e) => setImportOptions(prev => ({
+                            ...prev,
+                            duplicateHandling: e.target.value as 'error' | 'skip' | 'overwrite'
+                          }))}
+                        />
+                        <span>{t('permissions.options.duplicateHandlingSkip')}</span>
+                      </label>
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="duplicateHandling"
+                          value="overwrite"
+                          checked={importOptions.duplicateHandling === 'overwrite'}
+                          onChange={(e) => setImportOptions(prev => ({
+                            ...prev,
+                            duplicateHandling: e.target.value as 'error' | 'skip' | 'overwrite'
+                          }))}
+                        />
+                        <span>{t('permissions.options.duplicateHandlingOverwrite')}</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="import-actions">
@@ -376,7 +408,7 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
             )}
 
             {importResult && (
-              <div className={`import-result ${importResult.errors.length > 0 && importResult.importedPermissions === 0 ? 'error' : 'success'}`}>
+              <div className={`import-result ${importResult.errors.length > 0 && importResult.importedPermissions === 0 && importResult.updatedPermissions === 0 ? 'error' : 'success'}`}>
                 <div className="result-header">
                   <span className="result-icon">
                     {importResult.errors.length > 0 && importResult.importedPermissions === 0 ? '❌' : '✅'}
@@ -389,7 +421,7 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
                   </span>
                 </div>
                 
-                {importResult.importedPermissions > 0 && (
+                {(importResult.importedPermissions > 0 || importResult.updatedPermissions > 0) && (
                   <div className="result-stats">
                     <div className="stat-item">
                       <span className="stat-value">{importResult.importedUsers}</span>
@@ -402,6 +434,10 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
                     <div className="stat-item">
                       <span className="stat-value">{importResult.importedPermissions}</span>
                       <span className="stat-label">{t('permissions.importedPermissions')}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-value">{importResult.updatedPermissions}</span>
+                      <span className="stat-label">{t('permissions.updatedPermissions')}</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-value">{importResult.skippedDuplicates}</span>

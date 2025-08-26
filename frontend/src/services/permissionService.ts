@@ -54,7 +54,7 @@ export class PermissionService {
     formData.append('importUsers', options.importUsers.toString())
     formData.append('importTemplates', options.importTemplates.toString())
     formData.append('clearExistingPermissions', options.clearExistingPermissions.toString())
-    formData.append('skipDuplicates', options.skipDuplicates.toString())
+    formData.append('duplicateHandling', options.duplicateHandling.toUpperCase())
 
     const response = await apiClient.post<ApiResponse<ApiPermissionImportResult>>(
       API_ENDPOINTS.PERMISSIONS.IMPORT(connectionId),
@@ -102,6 +102,7 @@ export class PermissionService {
       importedUsers: apiResult.importedUsers,
       importedTemplates: apiResult.importedTemplates,
       importedPermissions: apiResult.importedPermissions,
+      updatedPermissions: apiResult.updatedPermissions,
       skippedDuplicates: apiResult.skippedDuplicates,
       warnings: apiResult.warnings || [],
       errors: apiResult.errors || []
