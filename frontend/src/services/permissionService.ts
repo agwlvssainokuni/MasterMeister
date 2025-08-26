@@ -103,7 +103,8 @@ export class PermissionService {
       importedTemplates: apiResult.importedTemplates,
       importedPermissions: apiResult.importedPermissions,
       skippedDuplicates: apiResult.skippedDuplicates,
-      errors: apiResult.errors
+      warnings: apiResult.warnings || [],
+      errors: apiResult.errors || []
     }
   }
 

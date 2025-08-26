@@ -382,10 +382,10 @@ public class PermissionImportIntegrationTest {
             PermissionYamlService.PermissionImportResult result =
                     permissionYamlService.importPermissionsFromYaml(malformedYaml, testConnection.getId(), options);
 
-            // Should have warnings for invalid scope
-            assertFalse(result.warnings().isEmpty());
-            assertTrue(result.warnings().stream()
-                    .anyMatch(warning -> warning.contains("INVALID_SCOPE") || warning.contains("Failed to import permission")));
+            // Should have errors for invalid scope (moved from warnings to errors)
+            assertFalse(result.errors().isEmpty());
+            assertTrue(result.errors().stream()
+                    .anyMatch(error -> error.contains("INVALID_SCOPE") || error.contains("Failed to import permission")));
 
             // No permissions should be imported due to error
             assertEquals(0, result.importedPermissions());

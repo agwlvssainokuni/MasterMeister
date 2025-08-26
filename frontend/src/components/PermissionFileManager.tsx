@@ -98,8 +98,17 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
     try {
       const result = await onImport(connection.id, selectedFile, importOptions)
       setImportResult(result)
-    } catch {
-      setImportResult(null)
+    } catch (error) {
+      // エラーが発生した場合、詳細な情報を保持してUIに表示
+      console.error('Import operation failed:', error)
+      setImportResult({
+        importedUsers: 0,
+        importedTemplates: 0,
+        importedPermissions: 0,
+        skippedDuplicates: 0,
+        errors: [error instanceof Error ? error.message : 'Unknown import error occurred'],
+        warnings: []
+      })
     }
   }
 
@@ -367,37 +376,57 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
             )}
 
             {importResult && (
-              <div className="import-result success">
+              <div className={`import-result ${importResult.errors.length > 0 && importResult.importedPermissions === 0 ? 'error' : 'success'}`}>
                 <div className="result-header">
-                  <span className="result-icon">✅</span>
+                  <span className="result-icon">
+                    {importResult.errors.length > 0 && importResult.importedPermissions === 0 ? '❌' : '✅'}
+                  </span>
                   <span className="result-message">
-                    {t('permissions.importCompleted')}
+                    {importResult.errors.length > 0 && importResult.importedPermissions === 0 
+                      ? t('permissions.importFailed')
+                      : t('permissions.importCompleted')
+                    }
                   </span>
                 </div>
-                <div className="result-stats">
-                  <div className="stat-item">
-                    <span className="stat-value">{importResult.importedUsers}</span>
-                    <span className="stat-label">{t('permissions.importedUsers')}</span>
+                
+                {importResult.importedPermissions > 0 && (
+                  <div className="result-stats">
+                    <div className="stat-item">
+                      <span className="stat-value">{importResult.importedUsers}</span>
+                      <span className="stat-label">{t('permissions.importedUsers')}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-value">{importResult.importedTemplates}</span>
+                      <span className="stat-label">{t('permissions.importedTemplates')}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-value">{importResult.importedPermissions}</span>
+                      <span className="stat-label">{t('permissions.importedPermissions')}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-value">{importResult.skippedDuplicates}</span>
+                      <span className="stat-label">{t('permissions.skippedDuplicates')}</span>
+                    </div>
                   </div>
-                  <div className="stat-item">
-                    <span className="stat-value">{importResult.importedTemplates}</span>
-                    <span className="stat-label">{t('permissions.importedTemplates')}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-value">{importResult.importedPermissions}</span>
-                    <span className="stat-label">{t('permissions.importedPermissions')}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-value">{importResult.skippedDuplicates}</span>
-                    <span className="stat-label">{t('permissions.skippedDuplicates')}</span>
-                  </div>
-                </div>
+                )}
+                
                 {importResult.errors.length > 0 && (
                   <div className="import-errors">
                     <h6>{t('permissions.importErrors')}</h6>
                     <ul>
                       {importResult.errors.map((error, index) => (
                         <li key={index}>{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {importResult.warnings && importResult.warnings.length > 0 && (
+                  <div className="import-warnings">
+                    <h6>{t('permissions.importWarnings')}</h6>
+                    <ul>
+                      {importResult.warnings.map((warning, index) => (
+                        <li key={index}>{warning}</li>
                       ))}
                     </ul>
                   </div>

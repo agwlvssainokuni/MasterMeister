@@ -256,6 +256,7 @@ export interface PermissionImportResult {
   importedTemplates: number
   importedPermissions: number
   skippedDuplicates: number
+  warnings: string[]
   errors: string[]
 }
 

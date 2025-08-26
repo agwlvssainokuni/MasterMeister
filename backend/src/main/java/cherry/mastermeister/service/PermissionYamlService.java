@@ -18,15 +18,14 @@ package cherry.mastermeister.service;
 
 import cherry.mastermeister.controller.dto.PermissionExportData;
 import cherry.mastermeister.entity.UserEntity;
+import cherry.mastermeister.entity.UserPermissionEntity;
 import cherry.mastermeister.enums.PermissionScope;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.PermissionTemplate;
 import cherry.mastermeister.model.PermissionTemplateItem;
-import cherry.mastermeister.model.UserPermission;
-import cherry.mastermeister.repository.UserRepository;
 import cherry.mastermeister.repository.UserPermissionRepository;
-import cherry.mastermeister.entity.UserPermissionEntity;
+import cherry.mastermeister.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -40,13 +39,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
 public class PermissionYamlService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final PermissionAuthService permissionAuthService;
     private final PermissionManagementService permissionManagementService;
     private final PermissionTemplateService permissionTemplateService;
     private final DatabaseConnectionService databaseConnectionService;
@@ -55,14 +55,12 @@ public class PermissionYamlService {
     private final ObjectMapper yamlMapper;
 
     public PermissionYamlService(
-            PermissionAuthService permissionAuthService,
             PermissionManagementService permissionManagementService,
             PermissionTemplateService permissionTemplateService,
             DatabaseConnectionService databaseConnectionService,
             UserRepository userRepository,
             UserPermissionRepository userPermissionRepository
     ) {
-        this.permissionAuthService = permissionAuthService;
         this.permissionManagementService = permissionManagementService;
         this.permissionTemplateService = permissionTemplateService;
         this.databaseConnectionService = databaseConnectionService;
@@ -77,7 +75,10 @@ public class PermissionYamlService {
     /**
      * Export permissions for a connection to YAML string
      */
-    public String exportPermissionsAsYaml(Long connectionId, String description) {
+    public String exportPermissionsAsYaml(
+            Long connectionId,
+            String description
+    ) {
         logger.info("Exporting permissions for connection: {}", connectionId);
 
         try {
@@ -93,8 +94,11 @@ public class PermissionYamlService {
      * Import permissions from YAML string
      */
     @Transactional
-    public PermissionImportResult importPermissionsFromYaml(String yamlContent, Long targetConnectionId,
-                                                            ImportOptions options) {
+    public PermissionImportResult importPermissionsFromYaml(
+            String yamlContent,
+            Long targetConnectionId,
+            ImportOptions options
+    ) {
         logger.info("Importing permissions to connection: {}", targetConnectionId);
 
         // Validate connection exists
@@ -116,7 +120,10 @@ public class PermissionYamlService {
     /**
      * Build export data structure
      */
-    private PermissionExportData buildExportData(Long connectionId, String description) {
+    private PermissionExportData buildExportData(
+            Long connectionId,
+            String description
+    ) {
         // Export info
         PermissionExportData.ExportInfo exportInfo = new PermissionExportData.ExportInfo(
                 LocalDateTime.now(), getCurrentUserEmail(), description);
@@ -138,7 +145,9 @@ public class PermissionYamlService {
     /**
      * Export user permissions
      */
-    private List<PermissionExportData.UserPermissionData> exportUserPermissions(Long connectionId) {
+    private List<PermissionExportData.UserPermissionData> exportUserPermissions(
+            Long connectionId
+    ) {
         // Get all users with permissions for this connection
         List<UserEntity> allUsers = userRepository.findAll();
 
@@ -156,14 +165,16 @@ public class PermissionYamlService {
                     }
                     return null;
                 })
-                .filter(userData -> userData != null)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
     /**
      * Export permission templates
      */
-    private List<PermissionExportData.TemplateData> exportTemplates(Long connectionId) {
+    private List<PermissionExportData.TemplateData> exportTemplates(
+            Long connectionId
+    ) {
         List<PermissionTemplate> templates = permissionTemplateService.getAllTemplatesForConnection(connectionId);
 
         return templates.stream()
@@ -178,25 +189,11 @@ public class PermissionYamlService {
     }
 
     /**
-     * Convert model to export data
-     */
-    private PermissionExportData.PermissionData toPermissionData(UserPermission permission) {
-        return new PermissionExportData.PermissionData(
-                permission.scope().name(),
-                permission.permissionType().name(),
-                permission.schemaName(),
-                permission.tableName(),
-                permission.columnName(),
-                permission.granted(),
-                permission.expiresAt(),
-                permission.comment()
-        );
-    }
-
-    /**
      * Convert entity to export data
      */
-    private PermissionExportData.PermissionData toPermissionDataFromEntity(UserPermissionEntity entity) {
+    private PermissionExportData.PermissionData toPermissionDataFromEntity(
+            UserPermissionEntity entity
+    ) {
         return new PermissionExportData.PermissionData(
                 entity.getScope().name(),
                 entity.getPermissionType().name(),
@@ -212,7 +209,9 @@ public class PermissionYamlService {
     /**
      * Convert template item to export data
      */
-    private PermissionExportData.PermissionData toPermissionData(PermissionTemplateItem item) {
+    private PermissionExportData.PermissionData toPermissionData(
+            PermissionTemplateItem item
+    ) {
         return new PermissionExportData.PermissionData(
                 item.scope().name(),
                 item.permissionType().name(),
@@ -228,12 +227,17 @@ public class PermissionYamlService {
     /**
      * Process import operation
      */
-    private PermissionImportResult processImport(PermissionExportData importData, Long targetConnectionId,
-                                                 ImportOptions options) {
+    private PermissionImportResult processImport(
+            PermissionExportData importData,
+            Long targetConnectionId,
+            ImportOptions options
+    ) {
         List<String> warnings = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
         int importedUsers = 0;
         int importedTemplates = 0;
         int importedPermissions = 0;
+        int skippedDuplicates = 0;
 
         // Import user permissions
         if (options.importUsers()) {
@@ -250,10 +254,14 @@ public class PermissionYamlService {
 
                 for (PermissionExportData.PermissionData permData : userData.permissions()) {
                     try {
-                        importUserPermission(user.getId(), targetConnectionId, permData);
-                        importedPermissions++;
+                        ImportPermissionResult result = importUserPermission(user.getId(), targetConnectionId, permData, options);
+                        if (result.wasSkipped()) {
+                            skippedDuplicates++;
+                        } else {
+                            importedPermissions++;
+                        }
                     } catch (Exception e) {
-                        warnings.add("Failed to import permission for user " + userData.userEmail() + ": " + e.getMessage());
+                        errors.add("Failed to import permission for user " + userData.userEmail() + ": " + e.getMessage());
                     }
                 }
                 importedUsers++;
@@ -267,32 +275,55 @@ public class PermissionYamlService {
                     importTemplate(targetConnectionId, templateData);
                     importedTemplates++;
                 } catch (Exception e) {
-                    warnings.add("Failed to import template " + templateData.name() + ": " + e.getMessage());
+                    errors.add("Failed to import template " + templateData.name() + ": " + e.getMessage());
                 }
             }
         }
 
-        return new PermissionImportResult(importedUsers, importedTemplates, importedPermissions, warnings);
+        return new PermissionImportResult(importedUsers, importedTemplates, importedPermissions, skippedDuplicates, warnings, errors);
     }
 
     /**
-     * Import user permission
+     * Import user permission with duplicate checking
      */
-    private void importUserPermission(Long userId, Long connectionId, PermissionExportData.PermissionData permData) {
+    private ImportPermissionResult importUserPermission(
+            Long userId,
+            Long connectionId,
+            PermissionExportData.PermissionData permData,
+            ImportOptions options
+    ) {
         PermissionScope scope = PermissionScope.valueOf(permData.scope());
         PermissionType permissionType = PermissionType.valueOf(permData.permissionType());
+
+        // Check for existing permission if skipDuplicates is enabled
+        if (options.skipDuplicates()) {
+            Optional<UserPermissionEntity> existing = userPermissionRepository
+                    .findByUserIdAndConnectionIdAndScopeAndPermissionTypeAndSchemaNameAndTableNameAndColumnName(
+                            userId, connectionId, scope, permissionType,
+                            permData.schemaName(), permData.tableName(), permData.columnName()
+                    );
+
+            if (existing.isPresent()) {
+                return ImportPermissionResult.skipped("Permission already exists");
+            }
+        }
 
         permissionManagementService.createPermission(
                 userId, connectionId, scope, permissionType,
                 permData.schemaName(), permData.tableName(), permData.columnName(),
                 permData.granted(), permData.expiresAt(), permData.comment()
         );
+
+        return ImportPermissionResult.imported("Permission created successfully");
     }
 
     /**
      * Import permission template
      */
-    private void importTemplate(Long connectionId, PermissionExportData.TemplateData templateData) {
+    private void importTemplate(
+            Long connectionId,
+            PermissionExportData.TemplateData templateData
+    ) {
         List<PermissionTemplateItem> items = templateData.items().stream()
                 .map(this::toTemplateItem)
                 .toList();
@@ -304,7 +335,9 @@ public class PermissionYamlService {
     /**
      * Convert export data to template item
      */
-    private PermissionTemplateItem toTemplateItem(PermissionExportData.PermissionData permData) {
+    private PermissionTemplateItem toTemplateItem(
+            PermissionExportData.PermissionData permData
+    ) {
         return new PermissionTemplateItem(
                 null, // ID will be set by service
                 null, // Template ID will be set by service
@@ -344,16 +377,46 @@ public class PermissionYamlService {
     }
 
     /**
+     * Individual permission import result
+     */
+    private record ImportPermissionResult(
+            boolean skipped,
+            String message
+    ) {
+        public boolean wasSkipped() {
+            return skipped;
+        }
+
+        public static ImportPermissionResult skipped(String message) {
+            return new ImportPermissionResult(true, message);
+        }
+
+        public static ImportPermissionResult imported(String message) {
+            return new ImportPermissionResult(false, message);
+        }
+    }
+
+    /**
      * Import result summary
      */
     public record PermissionImportResult(
             int importedUsers,
             int importedTemplates,
             int importedPermissions,
-            List<String> warnings
+            int skippedDuplicates,
+            List<String> warnings,
+            List<String> errors
     ) {
         public boolean hasWarnings() {
             return !warnings.isEmpty();
+        }
+
+        public boolean hasErrors() {
+            return !errors.isEmpty();
+        }
+
+        public boolean isSuccessful() {
+            return errors.isEmpty();
         }
     }
 }

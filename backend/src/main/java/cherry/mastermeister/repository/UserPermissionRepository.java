@@ -83,4 +83,8 @@ public interface UserPermissionRepository extends JpaRepository<UserPermissionEn
     @Modifying
     @Query("UPDATE UserPermissionEntity p SET p.granted = false WHERE p.expiresAt IS NOT NULL AND p.expiresAt <= :now AND p.granted = true")
     int expireOutdatedPermissions(LocalDateTime now);
+
+    Optional<UserPermissionEntity> findByUserIdAndConnectionIdAndScopeAndPermissionTypeAndSchemaNameAndTableNameAndColumnName(
+            Long userId, Long connectionId, PermissionScope scope, PermissionType permissionType,
+            String schemaName, String tableName, String columnName);
 }

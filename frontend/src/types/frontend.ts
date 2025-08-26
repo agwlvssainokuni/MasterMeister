@@ -200,6 +200,7 @@ export interface PermissionImportResult {
   importedPermissions: number
   skippedDuplicates: number
   errors: string[]
+  warnings: string[]
 }
 
 // Bulk Permission Types (Frontend)
