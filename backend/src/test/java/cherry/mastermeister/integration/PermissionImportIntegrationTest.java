@@ -203,8 +203,8 @@ public class PermissionImportIntegrationTest {
             permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });
 
-        // Verify database state
-        List<UserPermissionEntity> permissions = userPermissionRepository.findActivePermissionsByUser(
+        // Verify database state - get all permissions (both granted and denied)
+        List<UserPermissionEntity> permissions = userPermissionRepository.findByUserIdAndConnectionIdOrderByScopeAscSchemaNameAscTableNameAscColumnNameAsc(
                 testUser.getId(), testConnection.getId());
 
         assertEquals(3, permissions.size());
@@ -310,14 +310,23 @@ public class PermissionImportIntegrationTest {
                         comment: "Should fail"
                 """.formatted(testConnection.getId());
 
-        // Verify that import throws exception for non-existent user
+        // Verify that import handles non-existent user gracefully with warnings
         ImportOptions options = new ImportOptions(true, false, false, false);
-        assertThrows(IllegalArgumentException.class, () -> {
-            permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
+        assertDoesNotThrow(() -> {
+            PermissionYamlService.PermissionImportResult result =
+                    permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
+
+            // Should have warnings for non-existent user
+            assertFalse(result.warnings().isEmpty());
+            assertTrue(result.warnings().stream()
+                    .anyMatch(warning -> warning.contains("User not found: nonexistent@example.com")));
+
+            // No permissions should be imported due to missing user
+            assertEquals(0, result.importedPermissions());
         });
 
-        // Verify no permissions were created
-        List<UserPermissionEntity> permissions = userPermissionRepository.findActivePermissionsByUser(
+        // Verify no permissions were created for the existing test user
+        List<UserPermissionEntity> permissions = userPermissionRepository.findByUserIdAndConnectionIdOrderByScopeAscSchemaNameAscTableNameAscColumnNameAsc(
                 testUser.getId(), testConnection.getId());
         assertEquals(0, permissions.size());
     }
@@ -367,10 +376,19 @@ public class PermissionImportIntegrationTest {
                         permission_type: "READ"
                 """.formatted(testUser.getEmail());
 
-        // Verify that import throws exception for malformed YAML
+        // Verify that import handles malformed YAML gracefully with warnings
         ImportOptions options = new ImportOptions(true, false, false, false);
-        assertThrows(Exception.class, () -> {
-            permissionYamlService.importPermissionsFromYaml(malformedYaml, testConnection.getId(), options);
+        assertDoesNotThrow(() -> {
+            PermissionYamlService.PermissionImportResult result =
+                    permissionYamlService.importPermissionsFromYaml(malformedYaml, testConnection.getId(), options);
+
+            // Should have warnings for invalid scope
+            assertFalse(result.warnings().isEmpty());
+            assertTrue(result.warnings().stream()
+                    .anyMatch(warning -> warning.contains("INVALID_SCOPE") || warning.contains("Failed to import permission")));
+
+            // No permissions should be imported due to error
+            assertEquals(0, result.importedPermissions());
         });
     }
 
@@ -413,8 +431,8 @@ public class PermissionImportIntegrationTest {
                         comment: "New permission"
                 """.formatted(testConnection.getId(), testUser.getEmail());
 
-        // Execute import
-        ImportOptions options = new ImportOptions(true, false, false, false);
+        // Execute import with clearExistingPermissions = true to replace existing permissions
+        ImportOptions options = new ImportOptions(true, false, true, false);
         assertDoesNotThrow(() -> {
             permissionYamlService.importPermissionsFromYaml(yamlContent, testConnection.getId(), options);
         });

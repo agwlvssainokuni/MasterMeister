@@ -32,6 +32,9 @@ public interface PermissionTemplateRepository extends JpaRepository<PermissionTe
 
     List<PermissionTemplateEntity> findByConnectionIdOrderByCreatedAtDesc(Long connectionId);
 
+    @Query("SELECT t FROM PermissionTemplateEntity t LEFT JOIN FETCH t.items WHERE t.connectionId = :connectionId ORDER BY t.createdAt DESC")
+    List<PermissionTemplateEntity> findByConnectionIdWithItemsOrderByCreatedAtDesc(Long connectionId);
+
     Optional<PermissionTemplateEntity> findByNameAndConnectionId(String name, Long connectionId);
 
     @Query("SELECT t FROM PermissionTemplateEntity t WHERE t.createdBy = :createdBy AND t.isActive = true ORDER BY t.createdAt DESC")

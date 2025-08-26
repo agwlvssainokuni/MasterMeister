@@ -20,10 +20,13 @@ import cherry.mastermeister.controller.dto.PermissionExportData;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.enums.PermissionScope;
 import cherry.mastermeister.enums.PermissionType;
+import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.PermissionTemplate;
 import cherry.mastermeister.model.PermissionTemplateItem;
 import cherry.mastermeister.model.UserPermission;
 import cherry.mastermeister.repository.UserRepository;
+import cherry.mastermeister.repository.UserPermissionRepository;
+import cherry.mastermeister.entity.UserPermissionEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -46,19 +49,25 @@ public class PermissionYamlService {
     private final PermissionAuthService permissionAuthService;
     private final PermissionManagementService permissionManagementService;
     private final PermissionTemplateService permissionTemplateService;
+    private final DatabaseConnectionService databaseConnectionService;
     private final UserRepository userRepository;
+    private final UserPermissionRepository userPermissionRepository;
     private final ObjectMapper yamlMapper;
 
     public PermissionYamlService(
             PermissionAuthService permissionAuthService,
             PermissionManagementService permissionManagementService,
             PermissionTemplateService permissionTemplateService,
-            UserRepository userRepository
+            DatabaseConnectionService databaseConnectionService,
+            UserRepository userRepository,
+            UserPermissionRepository userPermissionRepository
     ) {
         this.permissionAuthService = permissionAuthService;
         this.permissionManagementService = permissionManagementService;
         this.permissionTemplateService = permissionTemplateService;
+        this.databaseConnectionService = databaseConnectionService;
         this.userRepository = userRepository;
+        this.userPermissionRepository = userPermissionRepository;
 
         // Configure YAML mapper
         this.yamlMapper = new ObjectMapper(new YAMLFactory());
@@ -88,6 +97,13 @@ public class PermissionYamlService {
                                                             ImportOptions options) {
         logger.info("Importing permissions to connection: {}", targetConnectionId);
 
+        // Validate connection exists
+        try {
+            databaseConnectionService.getConnection(targetConnectionId);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid connection ID: " + targetConnectionId, e);
+        }
+
         try {
             PermissionExportData importData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
             return processImport(importData, targetConnectionId, options);
@@ -105,9 +121,10 @@ public class PermissionYamlService {
         PermissionExportData.ExportInfo exportInfo = new PermissionExportData.ExportInfo(
                 LocalDateTime.now(), getCurrentUserEmail(), description);
 
-        // Connection info (simplified - in real implementation, get from DatabaseConnectionService)
+        // Connection info
+        DatabaseConnection connection = databaseConnectionService.getConnection(connectionId);
         PermissionExportData.ConnectionInfo connectionInfo = new PermissionExportData.ConnectionInfo(
-                connectionId, "Connection-" + connectionId, "UNKNOWN", "database");
+                connectionId, connection.name(), connection.dbType().name(), connection.databaseName());
 
         // Export user permissions
         List<PermissionExportData.UserPermissionData> users = exportUserPermissions(connectionId);
@@ -127,10 +144,13 @@ public class PermissionYamlService {
 
         return allUsers.stream()
                 .map(user -> {
-                    List<UserPermission> permissions = permissionAuthService.getUserPermissions(user.getId(), connectionId);
-                    if (!permissions.isEmpty()) {
-                        List<PermissionExportData.PermissionData> permissionData = permissions.stream()
-                                .map(this::toPermissionData)
+                    // Get ALL permissions (both granted and denied) for export
+                    List<UserPermissionEntity> permissionEntities = userPermissionRepository
+                            .findByUserIdAndConnectionIdOrderByScopeAscSchemaNameAscTableNameAscColumnNameAsc(
+                                    user.getId(), connectionId);
+                    if (!permissionEntities.isEmpty()) {
+                        List<PermissionExportData.PermissionData> permissionData = permissionEntities.stream()
+                                .map(this::toPermissionDataFromEntity)
                                 .toList();
                         return new PermissionExportData.UserPermissionData(user.getEmail(), permissionData);
                     }
@@ -170,6 +190,22 @@ public class PermissionYamlService {
                 permission.granted(),
                 permission.expiresAt(),
                 permission.comment()
+        );
+    }
+
+    /**
+     * Convert entity to export data
+     */
+    private PermissionExportData.PermissionData toPermissionDataFromEntity(UserPermissionEntity entity) {
+        return new PermissionExportData.PermissionData(
+                entity.getScope().name(),
+                entity.getPermissionType().name(),
+                entity.getSchemaName(),
+                entity.getTableName(),
+                entity.getColumnName(),
+                entity.getGranted(),
+                entity.getExpiresAt(),
+                entity.getComment()
         );
     }
 
@@ -246,10 +282,10 @@ public class PermissionYamlService {
         PermissionScope scope = PermissionScope.valueOf(permData.scope());
         PermissionType permissionType = PermissionType.valueOf(permData.permissionType());
 
-        permissionManagementService.grantPermission(
+        permissionManagementService.createPermission(
                 userId, connectionId, scope, permissionType,
                 permData.schemaName(), permData.tableName(), permData.columnName(),
-                permData.expiresAt(), permData.comment()
+                permData.granted(), permData.expiresAt(), permData.comment()
         );
     }
 

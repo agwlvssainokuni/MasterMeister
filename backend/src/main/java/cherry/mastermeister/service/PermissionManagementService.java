@@ -103,6 +103,37 @@ public class PermissionManagementService {
     }
 
     /**
+     * Create permission with granted/denied status
+     */
+    public UserPermission createPermission(Long userId, Long connectionId, PermissionScope scope,
+                                         PermissionType permissionType, String schemaName, String tableName,
+                                         String columnName, boolean granted, LocalDateTime expiresAt, String comment) {
+        logger.info("{} {} permission on {} scope for user: {}, connection: {}",
+                granted ? "Granting" : "Denying", permissionType, scope, userId, connectionId);
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        UserPermissionEntity entity = new UserPermissionEntity();
+        entity.setUser(user);
+        entity.setConnectionId(connectionId);
+        entity.setScope(scope);
+        entity.setPermissionType(permissionType);
+        entity.setSchemaName(schemaName);
+        entity.setTableName(tableName);
+        entity.setColumnName(columnName);
+        entity.setGranted(granted);
+        entity.setGrantedBy(getCurrentUserEmail());
+        entity.setExpiresAt(expiresAt);
+        entity.setComment(comment);
+
+        UserPermissionEntity saved = userPermissionRepository.save(entity);
+        
+        logger.info("Permission {} successfully with ID: {}", granted ? "granted" : "denied", saved.getId());
+        return toModel(saved);
+    }
+
+    /**
      * Revoke all permissions for user and connection
      */
     public int revokeAllPermissions(Long userId, Long connectionId) {

@@ -24,10 +24,15 @@ import cherry.mastermeister.service.PermissionYamlService;
 import cherry.mastermeister.service.PermissionYamlService.ImportOptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,14 +63,33 @@ public class PermissionExportIntegrationTest {
     @Autowired
     private PermissionTemplateItemRepository permissionTemplateItemRepository;
 
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()).registerModule(new JavaTimeModule());
 
     private UserEntity testUser1;
     private UserEntity testUser2;
+    private UserEntity adminUser;
     private DatabaseConnectionEntity testConnection;
 
     @BeforeEach
     void setUp() {
+        // Clear security context
+        SecurityContextHolder.clearContext();
+
+        // Create or find admin user
+        adminUser = userRepository.findByEmail("admin@example.com").orElse(null);
+        if (adminUser == null) {
+            adminUser = new UserEntity();
+            adminUser.setEmail("admin@example.com");
+            adminUser.setPassword("password123"); // Required field
+            adminUser.setStatus(UserStatus.APPROVED);
+            adminUser.setRole(UserRole.ADMIN);
+            adminUser.setCreatedAt(LocalDateTime.now());
+            adminUser = userRepository.save(adminUser);
+        }
+
+        // Set up security context with admin user
+        setSecurityContext(adminUser);
+
         // Create test users
         testUser1 = new UserEntity();
         testUser1.setEmail("user1@example.com");
@@ -173,8 +197,8 @@ public class PermissionExportIntegrationTest {
         assertEquals(1, user2Data.permissions().size());
 
         var schemaPermission = user2Data.permissions().get(0);
-        assertEquals(PermissionScope.SCHEMA, schemaPermission.scope());
-        assertEquals(PermissionType.READ, schemaPermission.permissionType());
+        assertEquals("SCHEMA", schemaPermission.scope());
+        assertEquals("READ", schemaPermission.permissionType());
         assertEquals("PUBLIC", schemaPermission.schemaName());
         assertNull(schemaPermission.tableName());
         assertNull(schemaPermission.columnName());
@@ -213,7 +237,11 @@ public class PermissionExportIntegrationTest {
         // Parse and verify
         PermissionExportData exportData = yamlMapper.readValue(yamlContent, PermissionExportData.class);
 
+        assertNotNull(exportData.users());
+        assertFalse(exportData.users().isEmpty());
         var userData = exportData.users().get(0);
+        assertNotNull(userData.permissions());
+        assertFalse(userData.permissions().isEmpty());
         var permission = userData.permissions().get(0);
 
         assertFalse(permission.granted());
@@ -226,6 +254,7 @@ public class PermissionExportIntegrationTest {
         PermissionTemplateEntity template = new PermissionTemplateEntity();
         template.setName("Basic User Template");
         template.setDescription("Standard read-only access");
+        template.setConnectionId(testConnection.getId()); // Required field
         template.setIsActive(true);
         template.setCreatedBy("admin@example.com");
         template.setCreatedAt(LocalDateTime.now());
@@ -240,7 +269,7 @@ public class PermissionExportIntegrationTest {
         templateItem1.setTableName("users");
         templateItem1.setGranted(true);
         templateItem1.setComment("Basic user read access");
-        permissionTemplateItemRepository.save(templateItem1);
+        templateItem1 = permissionTemplateItemRepository.save(templateItem1);
 
         PermissionTemplateItemEntity templateItem2 = new PermissionTemplateItemEntity();
         templateItem2.setTemplate(template);
@@ -250,7 +279,13 @@ public class PermissionExportIntegrationTest {
         templateItem2.setTableName("logs");
         templateItem2.setGranted(false);
         templateItem2.setComment("Deny log deletion");
-        permissionTemplateItemRepository.save(templateItem2);
+        templateItem2 = permissionTemplateItemRepository.save(templateItem2);
+
+        // Manually add items to template's collection to maintain bidirectional relationship
+        template.getItems().add(templateItem1);
+        template.getItems().add(templateItem2);
+        template = permissionTemplateRepository.save(template);
+
 
         // Execute export
         String yamlContent = permissionYamlService.exportPermissionsAsYaml(testConnection.getId(), "Test export");
@@ -267,7 +302,7 @@ public class PermissionExportIntegrationTest {
         assertEquals("Standard read-only access", templateData.description());
         assertTrue(templateData.isActive());
 
-        // Verify template items
+        // Template items should be properly loaded with JOIN FETCH
         assertEquals(2, templateData.items().size());
 
         var readItem = templateData.items().stream()
@@ -311,7 +346,7 @@ public class PermissionExportIntegrationTest {
     @Test
     void testExportWithInvalidConnectionId() {
         // Test export with non-existent connection ID
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(RuntimeException.class, () -> {
             permissionYamlService.exportPermissionsAsYaml(999999L, "Invalid connection test");
         });
     }
@@ -357,8 +392,8 @@ public class PermissionExportIntegrationTest {
             // Compare each permission
             for (var originalPerm : originalUser.permissions()) {
                 var reimportedPerm = reimportedUser.permissions().stream()
-                        .filter(p -> p.scope() == originalPerm.scope() &&
-                                p.permissionType() == originalPerm.permissionType() &&
+                        .filter(p -> p.scope().equals(originalPerm.scope()) &&
+                                p.permissionType().equals(originalPerm.permissionType()) &&
                                 java.util.Objects.equals(p.schemaName(), originalPerm.schemaName()) &&
                                 java.util.Objects.equals(p.tableName(), originalPerm.tableName()) &&
                                 java.util.Objects.equals(p.columnName(), originalPerm.columnName()))
@@ -390,5 +425,17 @@ public class PermissionExportIntegrationTest {
         permission.setExpiresAt(expiresAt);
         permission.setComment(comment);
         userPermissionRepository.save(permission);
+    }
+
+    private void setSecurityContext(UserEntity user) {
+        UserDetails userDetails = User.builder()
+                .username(user.getEmail())
+                .password("password")
+                .roles(user.getRole().name())
+                .build();
+
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 }

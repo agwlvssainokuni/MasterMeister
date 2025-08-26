@@ -22,6 +22,7 @@ import cherry.mastermeister.model.PermissionTemplate;
 import cherry.mastermeister.model.PermissionTemplateItem;
 import cherry.mastermeister.repository.PermissionTemplateItemRepository;
 import cherry.mastermeister.repository.PermissionTemplateRepository;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -148,7 +150,7 @@ public class PermissionTemplateService {
     public List<PermissionTemplate> getAllTemplatesForConnection(Long connectionId) {
         logger.debug("Retrieving all templates for connection: {}", connectionId);
 
-        return templateRepository.findByConnectionIdOrderByCreatedAtDesc(connectionId)
+        return templateRepository.findByConnectionIdWithItemsOrderByCreatedAtDesc(connectionId)
                 .stream()
                 .map(this::toModel)
                 .toList();
@@ -206,7 +208,15 @@ public class PermissionTemplateService {
      * Convert entity to model
      */
     private PermissionTemplate toModel(PermissionTemplateEntity entity) {
-        List<PermissionTemplateItem> items = entity.getItems().stream()
+        // Force Hibernate to initialize the collection
+        Hibernate.initialize(entity.getItems());
+        
+        List<PermissionTemplateItemEntity> itemEntities = entity.getItems();
+        if (itemEntities == null) {
+            itemEntities = new ArrayList<>();
+        }
+        
+        List<PermissionTemplateItem> items = itemEntities.stream()
                 .map(this::toItemModel)
                 .toList();
 
