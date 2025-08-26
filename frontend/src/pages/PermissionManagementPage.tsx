@@ -19,7 +19,7 @@ import {useTranslation} from 'react-i18next'
 import {AdminLayout} from '../components/layouts/AdminLayout'
 import {PageWrapper} from '../components/PageWrapper'
 import {PermissionConnectionSelector} from '../components/PermissionConnectionSelector'
-import {PermissionFileManager} from '../components/PermissionFileManager'
+import {PermissionManager} from '../components/PermissionManager'
 import {useNotification} from '../contexts/NotificationContext'
 import {databaseConnectionService} from '../services/databaseConnectionService'
 import {permissionService} from '../services/permissionService'
@@ -191,7 +191,7 @@ export const PermissionManagementPage: React.FC = () => {
             />
 
             {selectedConnection && (
-              <PermissionFileManager
+              <PermissionManager
                 connection={selectedConnection}
                 loading={loading}
                 onExport={handleExportPermissions}

@@ -457,8 +457,11 @@
     "importedUsers": "インポートされたユーザー",
     "importedTemplates": "インポートされたテンプレート",
     "importedPermissions": "インポートされた権限",
+    "updatedPermissions": "更新された権限",
     "skippedDuplicates": "スキップされた重複",
     "importErrors": "インポートエラー",
+    "importFailed": "インポートに失敗しました",
+    "importWarnings": "インポート警告",
     "actions": {
       "export": "権限エクスポート",
       "import": "権限インポート",
@@ -471,7 +474,11 @@
       "importUsers": "ユーザー権限をインポート",
       "importTemplates": "権限テンプレートをインポート",
       "clearExistingPermissions": "インポート前に既存権限をクリア",
-      "skipDuplicates": "重複権限をスキップ"
+      "skipDuplicates": "重複権限をスキップ",
+      "duplicateHandling": "重複権限の処理方法",
+      "duplicateHandlingError": "エラーとして処理",
+      "duplicateHandlingSkip": "スキップ（既存を保持）",
+      "duplicateHandlingOverwrite": "上書き（既存を更新）"
     },
     "quickSetupTitle": "クイック権限設定",
     "quickSetupDescription": "一般的な権限設定をワンクリックで設定",

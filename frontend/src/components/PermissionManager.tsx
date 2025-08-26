@@ -28,7 +28,7 @@ import type {
   PermissionValidationResult
 } from '../types/frontend'
 
-interface PermissionFileManagerProps {
+interface PermissionManagerProps {
   connection: DatabaseConnection
   loading: boolean
   onExport: (connectionId: number, description?: string) => Promise<void>
@@ -37,7 +37,7 @@ interface PermissionFileManagerProps {
   onBulkGrant?: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
 }
 
-export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
+export const PermissionManager: React.FC<PermissionManagerProps> = (
   {
     connection,
     loading,
@@ -144,7 +144,7 @@ export const PermissionFileManager: React.FC<PermissionFileManagerProps> = (
   }
 
   return (
-    <div className="permission-file-manager">
+    <div className="permission-manager">
       <div className="manager-header">
         <h3>{connection.name}</h3>
         <p className="connection-info">

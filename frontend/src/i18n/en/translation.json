@@ -457,8 +457,11 @@
     "importedUsers": "Imported Users",
     "importedTemplates": "Imported Templates",
     "importedPermissions": "Imported Permissions",
+    "updatedPermissions": "Updated Permissions",
     "skippedDuplicates": "Skipped Duplicates",
     "importErrors": "Import Errors",
+    "importFailed": "Import failed",
+    "importWarnings": "Import Warnings",
     "actions": {
       "export": "Export Permissions",
       "import": "Import Permissions",
@@ -471,7 +474,11 @@
       "importUsers": "Import user permissions",
       "importTemplates": "Import permission templates",
       "clearExistingPermissions": "Clear existing permissions before import",
-      "skipDuplicates": "Skip duplicate permissions"
+      "skipDuplicates": "Skip duplicate permissions",
+      "duplicateHandling": "Duplicate Permission Handling",
+      "duplicateHandlingError": "Error (Fail on duplicates)",
+      "duplicateHandlingSkip": "Skip (Keep existing)",
+      "duplicateHandlingOverwrite": "Overwrite (Update existing)"
     },
     "quickSetupTitle": "Quick Permission Setup",
     "quickSetupDescription": "Set up common permission configurations with one click",
