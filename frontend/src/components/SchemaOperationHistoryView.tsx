@@ -16,10 +16,10 @@
 
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { DatabaseConnection, SchemaUpdateLog } from '../types/frontend'
+import type { Database, SchemaUpdateLog } from '../types/frontend'
 
 interface SchemaOperationHistoryViewProps {
-  connection: DatabaseConnection
+  connection: Database
   operationHistory: SchemaUpdateLog[]
   onRefresh: () => void
 }

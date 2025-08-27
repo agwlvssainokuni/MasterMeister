@@ -190,7 +190,7 @@ export interface RecordDeleteResult {
 // Database Connection Types
 export type DatabaseType = 'MYSQL' | 'MARIADB' | 'POSTGRESQL' | 'H2'
 
-export interface DatabaseConnectionRequest {
+export interface DatabaseRequest {
   name: string
   dbType: DatabaseType
   host: string
@@ -202,7 +202,7 @@ export interface DatabaseConnectionRequest {
   active: boolean
 }
 
-export interface DatabaseConnectionResult {
+export interface DatabaseResult {
   id: number
   name: string
   dbType: DatabaseType

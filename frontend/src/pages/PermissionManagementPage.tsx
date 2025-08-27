@@ -20,12 +20,12 @@ import {AdminLayout} from './layouts/AdminLayout'
 import {DatabaseSelectorView} from '../components/DatabaseSelectorView'
 import {PermissionManagementView} from '../components/PermissionManagementView'
 import {useNotification} from '../contexts/NotificationContext'
-import {databaseConnectionService} from '../services/databaseConnectionService'
+import {databaseService} from '../services/databaseService'
 import {permissionService} from '../services/permissionService'
 import type {
   BulkPermissionOptions,
   BulkPermissionResult,
-  DatabaseConnection,
+  Database,
   PermissionImportOptions,
   PermissionImportResult,
   PermissionValidationResult
@@ -35,15 +35,15 @@ export const PermissionManagementPage: React.FC = () => {
   const {t} = useTranslation()
   const {showSuccess, showError} = useNotification()
 
-  const [connections, setConnections] = useState<DatabaseConnection[]>([])
-  const [selectedConnection, setSelectedConnection] = useState<DatabaseConnection | null>(null)
+  const [connections, setConnections] = useState<Database[]>([])
+  const [selectedConnection, setSelectedConnection] = useState<Database | null>(null)
   const [loading, setLoading] = useState(false)
   const [connectionsLoading, setConnectionsLoading] = useState(true)
 
   const loadConnections = React.useCallback(async () => {
     try {
       setConnectionsLoading(true)
-      const allConnections = await databaseConnectionService.getAllConnections()
+      const allConnections = await databaseService.getAllConnections()
       const activeConnections = allConnections.filter(conn => conn.active)
       setConnections(activeConnections)
     } catch (error) {

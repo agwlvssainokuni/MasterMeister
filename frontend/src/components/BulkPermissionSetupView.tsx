@@ -21,11 +21,11 @@ import type {
   BulkPermissionResult,
   BulkPermissionScope,
   BulkPermissionType,
-  DatabaseConnection
+  Database
 } from '../types/frontend'
 
 interface BulkPermissionSetupViewProps {
-  connection: DatabaseConnection
+  connection: Database
   loading: boolean
   onBulkGrant: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
   onShowConfirmDialog: (

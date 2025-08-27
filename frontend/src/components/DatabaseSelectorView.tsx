@@ -16,12 +16,12 @@
 
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import type {DatabaseConnection} from '../types/frontend'
+import type {Database} from '../types/frontend'
 
 interface DatabaseSelectorViewProps {
-  connections: DatabaseConnection[]
-  selectedConnection: DatabaseConnection | null
-  onConnectionSelect: (connection: DatabaseConnection) => void
+  connections: Database[]
+  selectedConnection: Database | null
+  onConnectionSelect: (connection: Database) => void
   i18nPrefix: 'permissions' | 'schema'
   showTestStatus?: boolean
   className?: string
@@ -54,7 +54,7 @@ export const DatabaseSelectorView: React.FC<DatabaseSelectorViewProps> = (
     }
   }
 
-  const getConnectionStatusIcon = (connection: DatabaseConnection) => {
+  const getConnectionStatusIcon = (connection: Database) => {
     if (!showTestStatus) return null
     if (connection.testResult === true) return '✅'
     if (connection.testResult === false) return '❌'

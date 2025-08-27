@@ -226,7 +226,7 @@ export interface BulkPermissionResult {
   errors: string[]
 }
 
-export interface DatabaseConnectionForm {
+export interface DatabaseForm {
   name: string
   dbType: DatabaseType
   host: string
@@ -238,7 +238,7 @@ export interface DatabaseConnectionForm {
   active: boolean
 }
 
-export interface DatabaseConnection {
+export interface Database {
   id: number
   name: string
   dbType: DatabaseType

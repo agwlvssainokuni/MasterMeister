@@ -16,10 +16,10 @@
 
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { DatabaseConnection, SchemaMetadata, TableMetadata } from '../types/frontend'
+import type { Database, SchemaMetadata, TableMetadata } from '../types/frontend'
 
 interface SchemaMetadataViewProps {
-  connection: DatabaseConnection
+  connection: Database
   schema: SchemaMetadata | null
   loading: boolean
   error: string | null

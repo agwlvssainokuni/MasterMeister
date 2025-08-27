@@ -15,23 +15,19 @@
  */
 
 import apiClient from './apiClient'
-import { API_ENDPOINTS } from '../config/config'
+import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
-  DatabaseConnectionRequest,
-  DatabaseConnectionResult,
-  ConnectionTestResult as ApiConnectionTestResult
+  ConnectionTestResult as ApiConnectionTestResult,
+  DatabaseRequest,
+  DatabaseResult
 } from '../types/api'
-import type {
-  DatabaseConnection,
-  DatabaseConnectionForm,
-  ConnectionTestResult
-} from '../types/frontend'
+import type {ConnectionTestResult, Database, DatabaseForm} from '../types/frontend'
 
-class DatabaseConnectionService {
+class DatabaseService {
 
-  async getAllConnections(): Promise<DatabaseConnection[]> {
-    const response = await apiClient.get<ApiResponse<DatabaseConnectionResult[]>>(
+  async getAllConnections(): Promise<Database[]> {
+    const response = await apiClient.get<ApiResponse<DatabaseResult[]>>(
       API_ENDPOINTS.DATABASE_CONNECTIONS.LIST
     )
 
@@ -42,8 +38,8 @@ class DatabaseConnectionService {
     return response.data.data.map(this.convertToFrontendConnection)
   }
 
-  async getConnection(id: number): Promise<DatabaseConnection> {
-    const response = await apiClient.get<ApiResponse<DatabaseConnectionResult>>(
+  async getConnection(id: number): Promise<Database> {
+    const response = await apiClient.get<ApiResponse<DatabaseResult>>(
       API_ENDPOINTS.DATABASE_CONNECTIONS.GET(id)
     )
 
@@ -54,10 +50,10 @@ class DatabaseConnectionService {
     return this.convertToFrontendConnection(response.data.data)
   }
 
-  async createConnection(connectionForm: DatabaseConnectionForm): Promise<DatabaseConnection> {
-    const requestBody: DatabaseConnectionRequest = this.convertToApiRequest(connectionForm)
+  async createConnection(connectionForm: DatabaseForm): Promise<Database> {
+    const requestBody: DatabaseRequest = this.convertToApiRequest(connectionForm)
 
-    const response = await apiClient.post<ApiResponse<DatabaseConnectionResult>>(
+    const response = await apiClient.post<ApiResponse<DatabaseResult>>(
       API_ENDPOINTS.DATABASE_CONNECTIONS.CREATE,
       requestBody
     )
@@ -69,10 +65,10 @@ class DatabaseConnectionService {
     return this.convertToFrontendConnection(response.data.data)
   }
 
-  async updateConnection(id: number, connectionForm: DatabaseConnectionForm): Promise<DatabaseConnection> {
-    const requestBody: DatabaseConnectionRequest = this.convertToApiRequest(connectionForm)
+  async updateConnection(id: number, connectionForm: DatabaseForm): Promise<Database> {
+    const requestBody: DatabaseRequest = this.convertToApiRequest(connectionForm)
 
-    const response = await apiClient.put<ApiResponse<DatabaseConnectionResult>>(
+    const response = await apiClient.put<ApiResponse<DatabaseResult>>(
       API_ENDPOINTS.DATABASE_CONNECTIONS.UPDATE(id),
       requestBody
     )
@@ -106,8 +102,8 @@ class DatabaseConnectionService {
     return this.convertToFrontendTestResult(response.data.data)
   }
 
-  async activateConnection(id: number): Promise<DatabaseConnection> {
-    const response = await apiClient.post<ApiResponse<DatabaseConnectionResult>>(
+  async activateConnection(id: number): Promise<Database> {
+    const response = await apiClient.post<ApiResponse<DatabaseResult>>(
       API_ENDPOINTS.DATABASE_CONNECTIONS.ACTIVATE(id)
     )
 
@@ -118,8 +114,8 @@ class DatabaseConnectionService {
     return this.convertToFrontendConnection(response.data.data)
   }
 
-  async deactivateConnection(id: number): Promise<DatabaseConnection> {
-    const response = await apiClient.post<ApiResponse<DatabaseConnectionResult>>(
+  async deactivateConnection(id: number): Promise<Database> {
+    const response = await apiClient.post<ApiResponse<DatabaseResult>>(
       API_ENDPOINTS.DATABASE_CONNECTIONS.DEACTIVATE(id)
     )
 
@@ -131,7 +127,7 @@ class DatabaseConnectionService {
   }
 
   // Type conversion methods (API → Frontend)
-  private convertToFrontendConnection(apiConnection: DatabaseConnectionResult): DatabaseConnection {
+  private convertToFrontendConnection(apiConnection: DatabaseResult): Database {
     return {
       id: apiConnection.id,
       name: apiConnection.name,
@@ -159,7 +155,7 @@ class DatabaseConnectionService {
   }
 
   // Type conversion methods (Frontend → API)
-  private convertToApiRequest(connectionForm: DatabaseConnectionForm): DatabaseConnectionRequest {
+  private convertToApiRequest(connectionForm: DatabaseForm): DatabaseRequest {
     return {
       name: connectionForm.name,
       dbType: connectionForm.dbType,
@@ -174,4 +170,4 @@ class DatabaseConnectionService {
   }
 }
 
-export const databaseConnectionService = new DatabaseConnectionService()
+export const databaseService = new DatabaseService()

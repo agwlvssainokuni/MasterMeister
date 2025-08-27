@@ -22,14 +22,14 @@ import type {
   BulkPermissionOptions,
   BulkPermissionResult,
   BulkPermissionType,
-  DatabaseConnection,
+  Database,
   PermissionImportOptions,
   PermissionImportResult,
   PermissionValidationResult
 } from '../types/frontend'
 
 interface PermissionManagementViewProps {
-  connection: DatabaseConnection
+  connection: Database
   loading: boolean
   onExport: (connectionId: number, description?: string) => Promise<void>
   onImport: (connectionId: number, file: File, options: PermissionImportOptions) => Promise<PermissionImportResult>

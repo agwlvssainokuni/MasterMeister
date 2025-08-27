@@ -16,10 +16,10 @@
 
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { DatabaseConnection, DatabaseConnectionForm as ConnectionForm, DatabaseType } from '../types/frontend'
+import type { Database, DatabaseForm as ConnectionForm, DatabaseType } from '../types/frontend'
 
 interface DatabaseFormViewProps {
-  connection?: DatabaseConnection | null
+  connection?: Database | null
   onSubmit: (formData: ConnectionForm) => void
   onCancel: () => void
 }

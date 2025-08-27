@@ -21,16 +21,16 @@ import {DatabaseSelectorView} from '../components/DatabaseSelectorView'
 import {SchemaMetadataView} from '../components/SchemaMetadataView'
 import {SchemaOperationHistoryView} from '../components/SchemaOperationHistoryView'
 import {useNotification} from '../contexts/NotificationContext'
-import {databaseConnectionService} from '../services/databaseConnectionService'
+import {databaseService} from '../services/databaseService'
 import {schemaService} from '../services/schemaService'
-import type {DatabaseConnection, SchemaMetadata, SchemaUpdateLog} from '../types/frontend'
+import type {Database, SchemaMetadata, SchemaUpdateLog} from '../types/frontend'
 
 export const SchemaManagementPage: React.FC = () => {
   const {t} = useTranslation()
   const {addNotification} = useNotification()
 
-  const [connections, setConnections] = useState<DatabaseConnection[]>([])
-  const [selectedConnection, setSelectedConnection] = useState<DatabaseConnection | null>(null)
+  const [connections, setConnections] = useState<Database[]>([])
+  const [selectedConnection, setSelectedConnection] = useState<Database | null>(null)
   const [schema, setSchema] = useState<SchemaMetadata | null>(null)
   const [operationHistory, setOperationHistory] = useState<SchemaUpdateLog[]>([])
 
@@ -45,7 +45,7 @@ export const SchemaManagementPage: React.FC = () => {
   const loadConnections = async () => {
     try {
       setLoading(true)
-      const data = await databaseConnectionService.getAllConnections()
+      const data = await databaseService.getAllConnections()
       // Only show active connections
       const activeConnections = data.filter(conn => conn.active)
       setConnections(activeConnections)
@@ -57,7 +57,7 @@ export const SchemaManagementPage: React.FC = () => {
     }
   }
 
-  const handleConnectionSelect = async (connection: DatabaseConnection) => {
+  const handleConnectionSelect = async (connection: Database) => {
     setSelectedConnection(connection)
     setSchema(null)
     setOperationHistory([])

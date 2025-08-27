@@ -20,18 +20,18 @@ import {AdminLayout} from './layouts/AdminLayout'
 import {DatabaseListView} from '../components/DatabaseListView'
 import {DatabaseFormView} from '../components/DatabaseFormView'
 import {useNotification} from '../contexts/NotificationContext'
-import {databaseConnectionService} from '../services/databaseConnectionService'
-import type {DatabaseConnection, DatabaseConnectionForm as ConnectionForm} from '../types/frontend'
+import {databaseService} from '../services/databaseService'
+import type {Database, DatabaseForm as ConnectionForm} from '../types/frontend'
 
 export const DatabaseManagementPage: React.FC = () => {
   const {t} = useTranslation()
   const {addNotification} = useNotification()
 
-  const [connections, setConnections] = useState<DatabaseConnection[]>([])
+  const [connections, setConnections] = useState<Database[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
-  const [editingConnection, setEditingConnection] = useState<DatabaseConnection | null>(null)
+  const [editingConnection, setEditingConnection] = useState<Database | null>(null)
 
   useEffect(() => {
     loadConnections()
@@ -41,7 +41,7 @@ export const DatabaseManagementPage: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await databaseConnectionService.getAllConnections()
+      const data = await databaseService.getAllConnections()
       setConnections(data)
     } catch (err) {
       console.error('Error loading database connections:', err)
@@ -56,7 +56,7 @@ export const DatabaseManagementPage: React.FC = () => {
     setShowForm(true)
   }
 
-  const handleEditConnection = (connection: DatabaseConnection) => {
+  const handleEditConnection = (connection: Database) => {
     setEditingConnection(connection)
     setShowForm(true)
   }
@@ -64,13 +64,13 @@ export const DatabaseManagementPage: React.FC = () => {
   const handleFormSubmit = async (formData: ConnectionForm) => {
     try {
       if (editingConnection) {
-        await databaseConnectionService.updateConnection(editingConnection.id, formData)
+        await databaseService.updateConnection(editingConnection.id, formData)
         addNotification({
           type: 'success',
           message: t('databaseConnections.messages.updateSuccess', {name: formData.name})
         })
       } else {
-        await databaseConnectionService.createConnection(formData)
+        await databaseService.createConnection(formData)
         addNotification({
           type: 'success',
           message: t('databaseConnections.messages.createSuccess', {name: formData.name})
@@ -94,13 +94,13 @@ export const DatabaseManagementPage: React.FC = () => {
     setEditingConnection(null)
   }
 
-  const handleDeleteConnection = async (connection: DatabaseConnection) => {
+  const handleDeleteConnection = async (connection: Database) => {
     if (!window.confirm(t('databaseConnections.confirmDelete', {name: connection.name}))) {
       return
     }
 
     try {
-      await databaseConnectionService.deleteConnection(connection.id)
+      await databaseService.deleteConnection(connection.id)
       addNotification({
         type: 'success',
         message: t('databaseConnections.messages.deleteSuccess', {name: connection.name})
@@ -115,9 +115,9 @@ export const DatabaseManagementPage: React.FC = () => {
     }
   }
 
-  const handleTestConnection = async (connection: DatabaseConnection) => {
+  const handleTestConnection = async (connection: Database) => {
     try {
-      const result = await databaseConnectionService.testConnection(connection.id)
+      const result = await databaseService.testConnection(connection.id)
 
       if (result.connected) {
         addNotification({
@@ -147,16 +147,16 @@ export const DatabaseManagementPage: React.FC = () => {
     }
   }
 
-  const handleToggleActive = async (connection: DatabaseConnection) => {
+  const handleToggleActive = async (connection: Database) => {
     try {
       if (connection.active) {
-        await databaseConnectionService.deactivateConnection(connection.id)
+        await databaseService.deactivateConnection(connection.id)
         addNotification({
           type: 'success',
           message: t('databaseConnections.messages.deactivateSuccess', {name: connection.name})
         })
       } else {
-        await databaseConnectionService.activateConnection(connection.id)
+        await databaseService.activateConnection(connection.id)
         addNotification({
           type: 'success',
           message: t('databaseConnections.messages.activateSuccess', {name: connection.name})

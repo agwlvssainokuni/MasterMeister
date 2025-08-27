@@ -16,14 +16,14 @@
 
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import type { DatabaseConnection } from '../types/frontend'
+import type { Database } from '../types/frontend'
 
 interface DatabaseListViewProps {
-  connections: DatabaseConnection[]
-  onEdit: (connection: DatabaseConnection) => void
-  onDelete: (connection: DatabaseConnection) => void
-  onTest: (connection: DatabaseConnection) => void
-  onToggleActive: (connection: DatabaseConnection) => void
+  connections: Database[]
+  onEdit: (connection: Database) => void
+  onDelete: (connection: Database) => void
+  onTest: (connection: Database) => void
+  onToggleActive: (connection: Database) => void
 }
 
 export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
@@ -35,14 +35,14 @@ export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const getStatusIcon = (connection: DatabaseConnection) => {
+  const getStatusIcon = (connection: Database) => {
     if (!connection.active) return '⏸️'
     if (connection.testResult === true) return '✅'
     if (connection.testResult === false) return '❌'
     return '⏳'
   }
 
-  const getStatusText = (connection: DatabaseConnection) => {
+  const getStatusText = (connection: Database) => {
     if (!connection.active) return t('databaseConnections.status.inactive')
     if (connection.testResult === true) return t('databaseConnections.status.connected')
     if (connection.testResult === false) return t('databaseConnections.status.connectionFailed')
