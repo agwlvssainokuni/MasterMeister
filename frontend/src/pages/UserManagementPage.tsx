@@ -16,21 +16,19 @@
 
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {AdminLayout} from '../components/layouts/AdminLayout'
-import {PageWrapper} from '../components/PageWrapper'
+import {AdminLayout} from './layouts/AdminLayout'
 import {PendingUsersList} from '../components/PendingUsersList'
 
 export const UserManagementPage: React.FC = () => {
   const {t} = useTranslation()
 
   return (
-    <AdminLayout title={t('admin.users.title')}>
-      <PageWrapper
-        className="user-management-page"
-        description={t('admin.users.description')}
-      >
-        <PendingUsersList/>
-      </PageWrapper>
+    <AdminLayout
+      title={t('admin.users.title')}
+      description={t('admin.users.description')}
+      className="user-management-page"
+    >
+      <PendingUsersList/>
     </AdminLayout>
   )
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {useState} from 'react'
+import React, {useState} from 'react'
 import {Link, useSearchParams} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
 import {authService} from '../services/authService'
@@ -24,7 +24,7 @@ import '../styles/components/Form.css'
 import '../styles/components/Button.css'
 import '../styles/components/Alert.css'
 
-export const RegisterUserPage = () => {
+export const RegisterUserPage: React.FC = () => {
   const {t} = useTranslation()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')

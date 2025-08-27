@@ -16,14 +16,13 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.model.BulkPermissionRequest;
-import cherry.mastermeister.model.BulkPermissionResult;
 import cherry.mastermeister.entity.DatabaseConnectionEntity;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.entity.UserPermissionEntity;
-import cherry.mastermeister.enums.BulkPermissionScope;
 import cherry.mastermeister.enums.PermissionScope;
 import cherry.mastermeister.enums.UserStatus;
+import cherry.mastermeister.model.BulkPermissionRequest;
+import cherry.mastermeister.model.BulkPermissionResult;
 import cherry.mastermeister.model.SchemaMetadata;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
@@ -64,9 +63,12 @@ public class PermissionBulkService {
         this.schemaMetadataStorageService = schemaMetadataStorageService;
     }
 
-    public BulkPermissionResult grantBulkPermissions(Long connectionId, BulkPermissionRequest request) {
-        logger.info("Starting bulk permission grant: connection={}, type={}, scope={}", 
-                   connectionId, request.permissionType(), request.scope());
+    public BulkPermissionResult grantBulkPermissions(
+            Long connectionId,
+            BulkPermissionRequest request
+    ) {
+        logger.info("Starting bulk permission grant: connection={}, type={}, scope={}",
+                connectionId, request.permissionType(), request.scope());
 
         List<String> errors = new ArrayList<>();
         int processedUsers = 0;
@@ -77,7 +79,7 @@ public class PermissionBulkService {
         try {
             // 1. Validate connection exists and is active
             DatabaseConnectionEntity connection = validateConnection(connectionId);
-            
+
             // 2. Get target users
             List<UserEntity> targetUsers = getTargetUsers(request.userEmails());
             if (targetUsers.isEmpty()) {
@@ -96,7 +98,7 @@ public class PermissionBulkService {
 
             // 4. Create permissions
             String currentUserEmail = getCurrentUserEmail();
-            
+
             for (UserEntity user : targetUsers) {
                 for (TableMetadata table : targetTables) {
                     try {
@@ -128,16 +130,16 @@ public class PermissionBulkService {
                         createdPermissions++;
 
                     } catch (Exception e) {
-                        logger.error("Failed to create permission for user {} on table {}.{}: {}", 
-                                   user.getEmail(), table.schema(), table.tableName(), e.getMessage());
-                        errors.add(String.format("Failed to grant permission to %s for table %s.%s: %s", 
-                                 user.getEmail(), table.schema(), table.tableName(), e.getMessage()));
+                        logger.error("Failed to create permission for user {} on table {}.{}: {}",
+                                user.getEmail(), table.schema(), table.tableName(), e.getMessage());
+                        errors.add(String.format("Failed to grant permission to %s for table %s.%s: %s",
+                                user.getEmail(), table.schema(), table.tableName(), e.getMessage()));
                     }
                 }
             }
 
-            logger.info("Bulk permission grant completed: {} permissions created, {} skipped, {} errors", 
-                       createdPermissions, skippedExisting, errors.size());
+            logger.info("Bulk permission grant completed: {} permissions created, {} skipped, {} errors",
+                    createdPermissions, skippedExisting, errors.size());
 
         } catch (Exception e) {
             logger.error("Bulk permission grant failed", e);
@@ -147,26 +149,30 @@ public class PermissionBulkService {
         return new BulkPermissionResult(processedUsers, processedTables, createdPermissions, skippedExisting, errors);
     }
 
-    private DatabaseConnectionEntity validateConnection(Long connectionId) {
+    private DatabaseConnectionEntity validateConnection(
+            Long connectionId
+    ) {
         Optional<DatabaseConnectionEntity> connection = databaseConnectionRepository.findById(connectionId);
         if (connection.isEmpty()) {
             throw new IllegalArgumentException("Database connection not found: " + connectionId);
         }
-        
+
         DatabaseConnectionEntity conn = connection.get();
         if (!conn.isActive()) {
             throw new IllegalArgumentException("Database connection is not active: " + connectionId);
         }
-        
+
         return conn;
     }
 
-    private List<UserEntity> getTargetUsers(List<String> userEmails) {
+    private List<UserEntity> getTargetUsers(
+            List<String> userEmails
+    ) {
         if (userEmails == null || userEmails.isEmpty()) {
             // Return all approved users if no specific emails provided
             return userRepository.findByStatus(UserStatus.APPROVED);
         }
-        
+
         return userEmails.stream()
                 .map(userRepository::findByEmail)
                 .filter(Optional::isPresent)
@@ -175,19 +181,22 @@ public class PermissionBulkService {
                 .collect(Collectors.toList());
     }
 
-    private List<TableMetadata> getTargetTables(Long connectionId, BulkPermissionRequest request) {
+    private List<TableMetadata> getTargetTables(
+            Long connectionId,
+            BulkPermissionRequest request
+    ) {
         Optional<SchemaMetadata> schemaMetadataOpt = schemaMetadataStorageService.getSchemaMetadata(connectionId);
         if (schemaMetadataOpt.isEmpty()) {
             throw new IllegalArgumentException("Schema metadata not found for connection: " + connectionId);
         }
-        
+
         SchemaMetadata schemaMetadata = schemaMetadataOpt.get();
         List<TableMetadata> allTables = schemaMetadata.tables();
-        
+
         switch (request.scope()) {
             case ALL_TABLES:
                 return filterSystemTables(allTables, request.includeSystemTables());
-            
+
             case SCHEMA:
                 if (request.schemaNames() == null || request.schemaNames().isEmpty()) {
                     throw new IllegalArgumentException("Schema names must be specified for SCHEMA scope");
@@ -195,7 +204,7 @@ public class PermissionBulkService {
                 return allTables.stream()
                         .filter(table -> request.schemaNames().contains(table.schema()))
                         .collect(Collectors.toList());
-            
+
             case TABLE_LIST:
                 if (request.tableNames() == null || request.tableNames().isEmpty()) {
                     throw new IllegalArgumentException("Table names must be specified for TABLE_LIST scope");
@@ -203,17 +212,20 @@ public class PermissionBulkService {
                 return allTables.stream()
                         .filter(table -> request.tableNames().contains(table.schema() + "." + table.tableName()))
                         .collect(Collectors.toList());
-            
+
             default:
                 throw new IllegalArgumentException("Unknown bulk permission scope: " + request.scope());
         }
     }
 
-    private List<TableMetadata> filterSystemTables(List<TableMetadata> tables, boolean includeSystemTables) {
+    private List<TableMetadata> filterSystemTables(
+            List<TableMetadata> tables,
+            boolean includeSystemTables
+    ) {
         if (includeSystemTables) {
             return tables;
         }
-        
+
         // Filter out common system schemas
         return tables.stream()
                 .filter(table -> !isSystemSchema(table.schema()))
@@ -223,12 +235,12 @@ public class PermissionBulkService {
     private boolean isSystemSchema(String schemaName) {
         String schema = schemaName.toLowerCase();
         return schema.equals("information_schema") ||
-               schema.equals("performance_schema") ||
-               schema.equals("mysql") ||
-               schema.equals("sys") ||
-               schema.equals("pg_catalog") ||
-               schema.equals("pg_toast") ||
-               schema.startsWith("pg_temp");
+                schema.equals("performance_schema") ||
+                schema.equals("mysql") ||
+                schema.equals("sys") ||
+                schema.equals("pg_catalog") ||
+                schema.equals("pg_toast") ||
+                schema.startsWith("pg_temp");
     }
 
     private String getCurrentUserEmail() {

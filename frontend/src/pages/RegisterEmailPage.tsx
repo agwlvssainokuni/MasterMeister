@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-import {useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Link, useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
-import {RegisterEmailForm} from '../components/RegisterEmailForm.tsx'
+import {authService} from '../services/authService'
+import type {RegisterEmailCredentials} from '../types/frontend'
 import '../styles/layouts/AuthLayout.css'
 import '../styles/components/Alert.css'
+import '../styles/components/Form.css'
+import '../styles/components/Button.css'
 
-export const RegisterEmailPage = () => {
+export const RegisterEmailPage: React.FC = () => {
   const {t} = useTranslation()
   const {isAuthenticated} = useAuth()
   const navigate = useNavigate()
   const [registrationComplete, setRegistrationComplete] = useState(false)
+  const [credentials, setCredentials] = useState<RegisterEmailCredentials>({
+    email: '',
+  })
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -34,8 +42,45 @@ export const RegisterEmailPage = () => {
     }
   }, [isAuthenticated, navigate])
 
-  const handleRegisterSuccess = () => {
-    setRegistrationComplete(true)
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const {name, value} = event.target
+    setCredentials(prev => ({...prev, [name]: value}))
+    setError(null)
+  }
+
+  const validateForm = (): string | null => {
+    if (!credentials.email) {
+      return t('registerEmail.validation.required')
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(credentials.email)) {
+      return t('registerEmail.validation.invalidEmail')
+    }
+
+    return null
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+
+    const validationError = validateForm()
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await authService.registerEmail(credentials)
+      // Store email for success message display
+      sessionStorage.setItem('registrationEmail', credentials.email)
+      setRegistrationComplete(true)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t('registerEmail.error.failed'))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (isAuthenticated) {
@@ -54,7 +99,7 @@ export const RegisterEmailPage = () => {
           <div className="auth-content">
             <div className="alert alert-success" role="alert">
               <h2>{t('registerEmail.success.title')}</h2>
-              <p>{t('registerEmail.success.message', { email: sessionStorage.getItem('registrationEmail') || '' })}</p>
+              <p>{t('registerEmail.success.message', {email: sessionStorage.getItem('registrationEmail') || ''})}</p>
               <p>{t('registerEmail.success.instruction')}</p>
             </div>
 
@@ -81,7 +126,45 @@ export const RegisterEmailPage = () => {
         </div>
 
         <div className="auth-content">
-          <RegisterEmailForm onRegisterSuccess={handleRegisterSuccess}/>
+          <form className="form" onSubmit={handleSubmit}>
+            <div className="form-header">
+              <h1 className="form-title">{t('registerEmail.title')}</h1>
+              <p className="form-subtitle">{t('registerEmail.description')}</p>
+            </div>
+
+            {error && (
+              <div className="alert alert-error" role="alert">
+                {error}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">
+                {t('registerEmail.email.label')}
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={credentials.email}
+                onChange={handleInputChange}
+                className="form-input"
+                required
+                autoComplete="email"
+                placeholder={t('registerEmail.email.placeholder')}
+              />
+            </div>
+
+            <div className="form-actions">
+              <button
+                type="submit"
+                className="button button-primary button-lg button-full"
+                disabled={isLoading}
+              >
+                {isLoading ? t('registerEmail.submitting') : t('registerEmail.submit')}
+              </button>
+            </div>
+          </form>
 
           <div className="auth-links">
             <p>

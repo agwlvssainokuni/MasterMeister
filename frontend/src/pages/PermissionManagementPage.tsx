@@ -16,9 +16,8 @@
 
 import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {AdminLayout} from '../components/layouts/AdminLayout'
-import {PageWrapper} from '../components/PageWrapper'
-import {PermissionConnectionSelector} from '../components/PermissionConnectionSelector'
+import {AdminLayout} from './layouts/AdminLayout'
+import {DatabaseSelectorView} from '../components/DatabaseSelectorView'
 import {PermissionManager} from '../components/PermissionManager'
 import {useNotification} from '../contexts/NotificationContext'
 import {databaseConnectionService} from '../services/databaseConnectionService'
@@ -172,37 +171,36 @@ export const PermissionManagementPage: React.FC = () => {
   }
 
   return (
-    <AdminLayout title={t('permissions.title')}>
-      <PageWrapper
-        className="permission-management-page"
-        description={t('permissions.description')}
-      >
-        {connectionsLoading ? (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>{t('common.loading')}</p>
-          </div>
-        ) : (
-          <>
-            <PermissionConnectionSelector
-              connections={connections}
-              selectedConnection={selectedConnection}
-              onConnectionSelect={setSelectedConnection}
+    <AdminLayout
+      title={t('permissions.title')}
+      description={t('permissions.description')}
+      className="permission-management-page"
+    >
+      {connectionsLoading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>{t('common.loading')}</p>
+        </div>
+      ) : (
+        <>
+          <DatabaseSelectorView
+            connections={connections}
+            selectedConnection={selectedConnection}
+            onConnectionSelect={setSelectedConnection}
+            i18nPrefix="permissions"
+          />
+          {selectedConnection && (
+            <PermissionManager
+              connection={selectedConnection}
+              loading={loading}
+              onExport={handleExportPermissions}
+              onImport={handleImportPermissions}
+              onValidate={handleValidateYaml}
+              onBulkGrant={handleBulkGrantPermissions}
             />
-
-            {selectedConnection && (
-              <PermissionManager
-                connection={selectedConnection}
-                loading={loading}
-                onExport={handleExportPermissions}
-                onImport={handleImportPermissions}
-                onValidate={handleValidateYaml}
-                onBulkGrant={handleBulkGrantPermissions}
-              />
-            )}
-          </>
-        )}
-      </PageWrapper>
+          )}
+        </>
+      )}
     </AdminLayout>
   )
 }

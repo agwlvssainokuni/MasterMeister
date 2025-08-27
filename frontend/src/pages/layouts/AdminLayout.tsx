@@ -18,21 +18,28 @@ import React from 'react'
 import {Link, useLocation} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
 import {useAuth} from '../../contexts/AuthContext'
-import {LogoutButton} from '../LogoutButton'
-import {PageHeader} from '../PageHeader'
+import {LogoutButton} from '../../components/LogoutButton'
 import {adminSubNavigationItems, mainNavigationItems} from '../../config/navigation'
 import '../../styles/layouts/AdminLayout.css'
 
 interface AdminLayoutProps {
-  children: React.ReactNode
   title?: string
+  description?: string
+  className?: string
+  children: React.ReactNode
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({children, title}) => {
+export const AdminLayout: React.FC<AdminLayoutProps> = (
+  {
+    title,
+    description,
+    className = '',
+    children,
+  }
+) => {
   const {t} = useTranslation()
   const {user} = useAuth()
   const location = useLocation()
-
 
   const isActivePath = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/')
@@ -86,9 +93,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({children, title}) => {
       </nav>
 
       <main className="admin-main">
-        <div className="main-content">
-          <PageHeader title={title}/>
-          {children}
+        <div className={`main-content ${className}`}>
+          {(title || description) && (
+            <div className="page-header">
+              {title && <h1 className="page-title">{title}</h1>}
+              {description && <p className="page-description">{description}</p>}
+            </div>
+          )}
+          <div className="page-content">
+            {children}
+          </div>
         </div>
       </main>
 

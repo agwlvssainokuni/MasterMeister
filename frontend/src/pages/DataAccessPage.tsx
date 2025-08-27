@@ -17,7 +17,7 @@
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {useNotification} from '../contexts/NotificationContext'
-import {UserLayout} from '../components/layouts/UserLayout'
+import {UserLayout} from './layouts/UserLayout'
 import {TablesList} from '../components/TablesList'
 import {DataTable} from '../components/DataTable'
 import {RecordEditModal} from '../components/RecordEditModal'

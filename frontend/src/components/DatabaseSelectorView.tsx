@@ -15,33 +15,47 @@
  */
 
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import type { DatabaseConnection } from '../types/frontend'
+import {useTranslation} from 'react-i18next'
+import type {DatabaseConnection} from '../types/frontend'
 
-interface SchemaConnectionSelectorProps {
+interface DatabaseSelectorViewProps {
   connections: DatabaseConnection[]
   selectedConnection: DatabaseConnection | null
   onConnectionSelect: (connection: DatabaseConnection) => void
+  i18nPrefix: 'permissions' | 'schema'
+  showTestStatus?: boolean
+  className?: string
 }
 
-export const SchemaConnectionSelector: React.FC<SchemaConnectionSelectorProps> = ({
-  connections,
-  selectedConnection,
-  onConnectionSelect
-}) => {
-  const { t } = useTranslation()
+export const DatabaseSelectorView: React.FC<DatabaseSelectorViewProps> = (
+  {
+    connections,
+    selectedConnection,
+    onConnectionSelect,
+    i18nPrefix,
+    showTestStatus = false,
+    className = ''
+  }
+) => {
+  const {t} = useTranslation()
 
   const getDatabaseTypeLabel = (dbType: string) => {
     switch (dbType) {
-      case 'MYSQL': return 'MySQL'
-      case 'MARIADB': return 'MariaDB'
-      case 'POSTGRESQL': return 'PostgreSQL'
-      case 'H2': return 'H2'
-      default: return dbType
+      case 'MYSQL':
+        return 'MySQL'
+      case 'MARIADB':
+        return 'MariaDB'
+      case 'POSTGRESQL':
+        return 'PostgreSQL'
+      case 'H2':
+        return 'H2'
+      default:
+        return dbType
     }
   }
 
   const getConnectionStatusIcon = (connection: DatabaseConnection) => {
+    if (!showTestStatus) return null
     if (connection.testResult === true) return '✅'
     if (connection.testResult === false) return '❌'
     return '⏳'
@@ -49,28 +63,26 @@ export const SchemaConnectionSelector: React.FC<SchemaConnectionSelectorProps> =
 
   if (connections.length === 0) {
     return (
-      <div className="connection-selector">
+      <div className={`database-selector ${className}`}>
         <div className="empty-state">
           <div className="empty-icon">🔗</div>
-          <h3>{t('schema.noActiveConnections')}</h3>
-          <p>{t('schema.noActiveConnectionsDescription')}</p>
+          <h3>{t(`${i18nPrefix}.noActiveConnections`)}</h3>
+          <p>{t(`${i18nPrefix}.noActiveConnectionsDescription`)}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="connection-selector">
-      <h3 className="selector-title">{t('schema.selectConnection')}</h3>
-      <p className="selector-description">{t('schema.selectConnectionDescription')}</p>
-      
+    <div className={`database-selector ${className}`}>
+      <h3 className="selector-title">{t(`${i18nPrefix}.selectConnection`)}</h3>
+      <p className="selector-description">{t(`${i18nPrefix}.selectConnectionDescription`)}</p>
+
       <div className="connection-cards">
         {connections.map(connection => (
           <div
             key={connection.id}
-            className={`connection-selector-card ${
-              selectedConnection?.id === connection.id ? 'selected' : ''
-            }`}
+            className={`connection-card ${selectedConnection?.id === connection.id ? 'selected' : ''}`}
             onClick={() => onConnectionSelect(connection)}
           >
             <div className="card-header">
@@ -80,13 +92,15 @@ export const SchemaConnectionSelector: React.FC<SchemaConnectionSelectorProps> =
                   {getDatabaseTypeLabel(connection.dbType)}
                 </span>
               </div>
-              <div className="connection-status">
-                <span className="status-icon">
-                  {getConnectionStatusIcon(connection)}
-                </span>
-              </div>
+              {showTestStatus && (
+                <div className="connection-status">
+                  <span className="status-icon">
+                    {getConnectionStatusIcon(connection)}
+                  </span>
+                </div>
+              )}
             </div>
-            
+
             <div className="card-details">
               <div className="detail-item">
                 <span className="detail-label">{t('databaseConnections.fields.host')}</span>
@@ -97,11 +111,11 @@ export const SchemaConnectionSelector: React.FC<SchemaConnectionSelectorProps> =
                 <span className="detail-value">{connection.databaseName}</span>
               </div>
             </div>
-            
+
             {selectedConnection?.id === connection.id && (
               <div className="selected-indicator">
                 <span className="indicator-icon">✓</span>
-                <span className="indicator-text">{t('schema.connectionSelected')}</span>
+                <span className="indicator-text">{t(`${i18nPrefix}.connectionSelected`)}</span>
               </div>
             )}
           </div>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {useState} from 'react'
+import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {useAuth} from '../contexts/AuthContext'
 import '../styles/components/Button.css'
@@ -26,11 +26,13 @@ interface LogoutButtonProps {
   className?: string
 }
 
-export const LogoutButton = ({
-  variant = 'secondary',
-  size = 'md',
-  className = ''
-}: LogoutButtonProps) => {
+export const LogoutButton: React.FC<LogoutButtonProps> = (
+  {
+    variant = 'secondary',
+    size = 'md',
+    className = ''
+  }
+) => {
   const {t} = useTranslation()
   const {logout, isLoading} = useAuth()
   const [error, setError] = useState<string | null>(null)

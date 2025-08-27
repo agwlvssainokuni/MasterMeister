@@ -15,22 +15,30 @@
  */
 
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useAuth } from '../../contexts/AuthContext'
-import { LogoutButton } from '../LogoutButton'
-import { PageHeader } from '../PageHeader'
-import { mainNavigationItems } from '../../config/navigation'
+import {Link, useLocation} from 'react-router-dom'
+import {useTranslation} from 'react-i18next'
+import {useAuth} from '../../contexts/AuthContext'
+import {LogoutButton} from '../../components/LogoutButton'
+import {mainNavigationItems} from '../../config/navigation'
 import '../../styles/layouts/UserLayout.css'
 
 interface UserLayoutProps {
-  children: React.ReactNode
   title?: string
+  description?: string
+  className?: string
+  children: React.ReactNode
 }
 
-export const UserLayout: React.FC<UserLayoutProps> = ({ children, title }) => {
-  const { t } = useTranslation()
-  const { user } = useAuth()
+export const UserLayout: React.FC<UserLayoutProps> = (
+  {
+    title,
+    description,
+    className = '',
+    children,
+  }
+) => {
+  const {t} = useTranslation()
+  const {user} = useAuth()
   const location = useLocation()
 
   // Filter main navigation items for user (exclude admin)
@@ -49,7 +57,7 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children, title }) => {
               <h1 className="app-title">{t('app.title')}</h1>
             </Link>
           </div>
-          
+
           <nav className="main-navigation">
             {userNavigationItems.map(item => (
               <Link
@@ -75,15 +83,22 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children, title }) => {
               <span className="user-email">{user?.email}</span>
               <span className="user-role">{user?.role}</span>
             </div>
-            <LogoutButton />
+            <LogoutButton/>
           </div>
         </div>
       </header>
 
       <main className="user-main">
-        <div className="main-content">
-          <PageHeader title={title} />
-          {children}
+        <div className={`main-content ${className}`}>
+          {(title || description) && (
+            <div className="page-header">
+              {title && <h1 className="page-title">{title}</h1>}
+              {description && <p className="page-description">{description}</p>}
+            </div>
+          )}
+          <div className="page-content">
+            {children}
+          </div>
         </div>
       </main>
 

@@ -16,50 +16,48 @@
 
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {AdminLayout} from '../components/layouts/AdminLayout'
+import {AdminLayout} from './layouts/AdminLayout'
 import {FeatureCard} from '../components/FeatureCard'
-import {PageWrapper} from '../components/PageWrapper'
 
 export const AdminDashboardPage: React.FC = () => {
   const {t} = useTranslation()
 
   return (
-    <AdminLayout title={t('admin.dashboard.title')}>
-      <PageWrapper
-        className="admin-dashboard"
-        description={t('admin.dashboard.description')}
-      >
-        <div className="dashboard-welcome">
-          <h2>{t('admin.dashboard.welcome')}</h2>
-        </div>
+    <AdminLayout
+      title={t('admin.dashboard.title')}
+      description={t('admin.dashboard.description')}
+      className="admin-dashboard"
+    >
+      <div className="dashboard-welcome">
+        <h2>{t('admin.dashboard.welcome')}</h2>
+      </div>
 
-        <div className="card-grid card-grid-4">
-          <FeatureCard
-            title={t('admin.features.userManagement.title')}
-            description={t('admin.features.userManagement.description')}
-            actionText={t('admin.features.userManagement.action')}
-            actionPath="/admin/users"
-          />
-          <FeatureCard
-            title={t('admin.features.databaseConnections.title')}
-            description={t('admin.features.databaseConnections.description')}
-            actionText={t('admin.features.databaseConnections.action')}
-            actionPath="/admin/databases"
-          />
-          <FeatureCard
-            title={t('admin.features.schemaManagement.title')}
-            description={t('admin.features.schemaManagement.description')}
-            actionText={t('admin.features.schemaManagement.action')}
-            actionPath="/admin/schema"
-          />
-          <FeatureCard
-            title={t('admin.features.permissions.title')}
-            description={t('admin.features.permissions.description')}
-            actionText={t('admin.features.permissions.action')}
-            actionPath="/admin/permissions"
-          />
-        </div>
-      </PageWrapper>
+      <div className="card-grid card-grid-4">
+        <FeatureCard
+          title={t('admin.features.userManagement.title')}
+          description={t('admin.features.userManagement.description')}
+          actionText={t('admin.features.userManagement.action')}
+          actionPath="/admin/users"
+        />
+        <FeatureCard
+          title={t('admin.features.databaseConnections.title')}
+          description={t('admin.features.databaseConnections.description')}
+          actionText={t('admin.features.databaseConnections.action')}
+          actionPath="/admin/databases"
+        />
+        <FeatureCard
+          title={t('admin.features.schemaManagement.title')}
+          description={t('admin.features.schemaManagement.description')}
+          actionText={t('admin.features.schemaManagement.action')}
+          actionPath="/admin/schema"
+        />
+        <FeatureCard
+          title={t('admin.features.permissions.title')}
+          description={t('admin.features.permissions.description')}
+          actionText={t('admin.features.permissions.action')}
+          actionPath="/admin/permissions"
+        />
+      </div>
     </AdminLayout>
   )
 }

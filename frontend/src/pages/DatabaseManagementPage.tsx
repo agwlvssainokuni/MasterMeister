@@ -16,8 +16,7 @@
 
 import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {AdminLayout} from '../components/layouts/AdminLayout'
-import {PageWrapper} from '../components/PageWrapper'
+import {AdminLayout} from './layouts/AdminLayout'
 import {DatabaseConnectionList} from '../components/DatabaseConnectionList'
 import {DatabaseConnectionForm} from '../components/DatabaseConnectionForm'
 import {useNotification} from '../contexts/NotificationContext'
@@ -176,65 +175,67 @@ export const DatabaseManagementPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AdminLayout title={t('databaseConnections.title')}>
-        <PageWrapper className="database-management-page">
-          <div className="loading-state">
-            <div className="loading-spinner"></div>
-            <p>{t('common.loading')}</p>
-          </div>
-        </PageWrapper>
+      <AdminLayout
+        title={t('databaseConnections.title')}
+        description={t('databaseConnections.description')}
+        className="database-connections-page"
+      >
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>{t('common.loading')}</p>
+        </div>
       </AdminLayout>
     )
   }
 
   if (error) {
     return (
-      <AdminLayout title={t('databaseConnections.title')}>
-        <PageWrapper className="database-management-page">
-          <div className="error-state">
-            <p className="error-message">{error}</p>
-            <button onClick={loadConnections} className="button button-primary">
-              {t('common.retry')}
-            </button>
-          </div>
-        </PageWrapper>
+      <AdminLayout title={t('databaseConnections.title')} description={t('databaseConnections.description')}
+                   className="database-connections-page">
+
+        <div className="error-state">
+          <p className="error-message">{error}</p>
+          <button onClick={loadConnections} className="button button-primary">
+            {t('common.retry')}
+          </button>
+        </div>
+
       </AdminLayout>
     )
   }
 
   return (
-    <AdminLayout title={t('databaseConnections.title')}>
-      <PageWrapper
-        className="database-connections-page"
-        description={t('databaseConnections.description')}
-      >
-        <div className="section-header">
-          <div className="section-actions">
-            <button
-              className="button button-primary"
-              onClick={handleCreateConnection}
-            >
-              {t('databaseConnections.createConnection')}
-            </button>
-          </div>
+    <AdminLayout
+      title={t('databaseConnections.title')}
+      description={t('databaseConnections.description')}
+      className="database-connections-page"
+    >
+      <div className="section-header">
+        <div className="section-actions">
+          <button
+            className="button button-primary"
+            onClick={handleCreateConnection}
+          >
+            {t('databaseConnections.createConnection')}
+          </button>
         </div>
+      </div>
 
-        {showForm ? (
-          <DatabaseConnectionForm
-            connection={editingConnection}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
-        ) : (
-          <DatabaseConnectionList
-            connections={connections}
-            onEdit={handleEditConnection}
-            onDelete={handleDeleteConnection}
-            onTest={handleTestConnection}
-            onToggleActive={handleToggleActive}
-          />
-        )}
-      </PageWrapper>
+      {showForm ? (
+        <DatabaseConnectionForm
+          connection={editingConnection}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormCancel}
+        />
+      ) : (
+        <DatabaseConnectionList
+          connections={connections}
+          onEdit={handleEditConnection}
+          onDelete={handleDeleteConnection}
+          onTest={handleTestConnection}
+          onToggleActive={handleToggleActive}
+        />
+      )}
     </AdminLayout>
   )
 }

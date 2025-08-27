@@ -17,8 +17,7 @@
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {useAuth} from '../contexts/AuthContext'
-import {UserLayout} from '../components/layouts/UserLayout'
-import {PageWrapper} from '../components/PageWrapper'
+import {UserLayout} from './layouts/UserLayout'
 import {FeatureCard} from '../components/FeatureCard'
 
 export const DashboardPage: React.FC = () => {
@@ -27,29 +26,25 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <UserLayout title={t('dashboard.title')}>
-      <PageWrapper className="user-dashboard">
-        <div className="dashboard-welcome">
-          <p>{t('dashboard.welcome')}</p>
-        </div>
-
-        <div className="card-grid card-grid-2">
+      <div className="dashboard-welcome">
+        <p>{t('dashboard.welcome')}</p>
+      </div>
+      <div className="card-grid card-grid-2">
+        <FeatureCard
+          title={t('dashboard.dataAccess.title')}
+          description={t('dashboard.dataAccess.description')}
+          actionText={t('dashboard.dataAccess.button')}
+          actionPath="/data"
+        />
+        {user?.role === 'ADMIN' && (
           <FeatureCard
-            title={t('dashboard.dataAccess.title')}
-            description={t('dashboard.dataAccess.description')}
-            actionText={t('dashboard.dataAccess.button')}
-            actionPath="/data"
+            title={t('dashboard.adminPanel.title')}
+            description={t('dashboard.adminPanel.description')}
+            actionText={t('dashboard.adminPanel.button')}
+            actionPath="/admin"
           />
-
-          {user?.role === 'ADMIN' && (
-            <FeatureCard
-              title={t('dashboard.adminPanel.title')}
-              description={t('dashboard.adminPanel.description')}
-              actionText={t('dashboard.adminPanel.button')}
-              actionPath="/admin"
-            />
-          )}
-        </div>
-      </PageWrapper>
+        )}
+      </div>
     </UserLayout>
   )
 }

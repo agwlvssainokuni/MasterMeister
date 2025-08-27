@@ -16,9 +16,8 @@
 
 import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {AdminLayout} from '../components/layouts/AdminLayout'
-import {PageWrapper} from '../components/PageWrapper'
-import {SchemaConnectionSelector} from '../components/SchemaConnectionSelector'
+import {AdminLayout} from './layouts/AdminLayout'
+import {DatabaseSelectorView} from '../components/DatabaseSelectorView'
 import {SchemaMetadataView} from '../components/SchemaMetadataView'
 import {SchemaOperationHistory} from '../components/SchemaOperationHistory'
 import {useNotification} from '../contexts/NotificationContext'
@@ -153,92 +152,94 @@ export const SchemaManagementPage: React.FC = () => {
 
   if (loading && connections.length === 0) {
     return (
-      <AdminLayout title={t('schema.title')}>
-        <PageWrapper className="schema-management-page">
-          <div className="loading-state">
-            <div className="loading-spinner"></div>
-            <p>{t('common.loading')}</p>
-          </div>
-        </PageWrapper>
+      <AdminLayout
+        title={t('schema.title')}
+        description={t('schema.description')}
+        className="schema-management-page"
+      >
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>{t('common.loading')}</p>
+        </div>
       </AdminLayout>
     )
   }
 
   if (error && connections.length === 0) {
     return (
-      <AdminLayout title={t('schema.title')}>
-        <PageWrapper className="schema-management-page">
-          <div className="error-state">
-            <p className="error-message">{error}</p>
-            <button onClick={loadConnections} className="button button-primary">
-              {t('common.retry')}
-            </button>
-          </div>
-        </PageWrapper>
+      <AdminLayout
+        title={t('schema.title')}
+        description={t('schema.description')}
+        className="schema-management-page"
+      >
+        <div className="error-state">
+          <p className="error-message">{error}</p>
+          <button onClick={loadConnections} className="button button-primary">
+            {t('common.retry')}
+          </button>
+        </div>
       </AdminLayout>
     )
   }
 
   return (
-    <AdminLayout title={t('schema.title')}>
-      <PageWrapper
-        className="schema-management-page"
-        description={t('schema.description')}
-      >
-        <SchemaConnectionSelector
-          connections={connections}
-          selectedConnection={selectedConnection}
-          onConnectionSelect={handleConnectionSelect}
-        />
-
-        {selectedConnection && (
-          <div className="schema-content">
-            <div className="tabs">
-              <ul className="tabs-list">
-                <li className={`tab-item ${activeTab === 'schema' ? 'active' : ''}`}>
-                  <button
-                    type="button"
-                    className="tab-button"
-                    onClick={() => setActiveTab('schema')}
-                  >
-                    {t('schema.tabs.metadata')}
-                  </button>
-                </li>
-                <li className={`tab-item ${activeTab === 'history' ? 'active' : ''}`}>
-                  <button
-                    type="button"
-                    className="tab-button"
-                    onClick={() => setActiveTab('history')}
-                  >
-                    {t('schema.tabs.history')}
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            <div className="tab-content">
-              {activeTab === 'schema' && (
-                <SchemaMetadataView
-                  connection={selectedConnection}
-                  schema={schema}
-                  loading={loading}
-                  error={error}
-                  onReadSchema={handleReadSchema}
-                  onRefreshSchema={handleRefreshSchema}
-                />
-              )}
-
-              {activeTab === 'history' && (
-                <SchemaOperationHistory
-                  connection={selectedConnection}
-                  operationHistory={operationHistory}
-                  onRefresh={() => loadOperationHistory(selectedConnection.id)}
-                />
-              )}
-            </div>
+    <AdminLayout
+      title={t('schema.title')}
+      description={t('schema.description')}
+      className="schema-management-page"
+    >
+      <DatabaseSelectorView
+        connections={connections}
+        selectedConnection={selectedConnection}
+        onConnectionSelect={handleConnectionSelect}
+        i18nPrefix="schema"
+        showTestStatus={true}
+      />
+      {selectedConnection && (
+        <div className="schema-content">
+          <div className="tabs">
+            <ul className="tabs-list">
+              <li className={`tab-item ${activeTab === 'schema' ? 'active' : ''}`}>
+                <button
+                  type="button"
+                  className="tab-button"
+                  onClick={() => setActiveTab('schema')}
+                >
+                  {t('schema.tabs.metadata')}
+                </button>
+              </li>
+              <li className={`tab-item ${activeTab === 'history' ? 'active' : ''}`}>
+                <button
+                  type="button"
+                  className="tab-button"
+                  onClick={() => setActiveTab('history')}
+                >
+                  {t('schema.tabs.history')}
+                </button>
+              </li>
+            </ul>
           </div>
-        )}
-      </PageWrapper>
+          <div className="tab-content">
+            {activeTab === 'schema' && (
+              <SchemaMetadataView
+                connection={selectedConnection}
+                schema={schema}
+                loading={loading}
+                error={error}
+                onReadSchema={handleReadSchema}
+                onRefreshSchema={handleRefreshSchema}
+              />
+            )}
+            {activeTab === 'history' && (
+              <SchemaOperationHistory
+                connection={selectedConnection}
+                operationHistory={operationHistory}
+                onRefresh={() => loadOperationHistory(selectedConnection.id)}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </AdminLayout>
   )
 }
