@@ -36,13 +36,13 @@ import java.util.Optional;
 
 @Service
 @Transactional
-public class PermissionManagementService {
+public class PermissionService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final UserPermissionRepository userPermissionRepository;
     private final UserRepository userRepository;
 
-    public PermissionManagementService(
+    public PermissionService(
             UserPermissionRepository userPermissionRepository,
             UserRepository userRepository
     ) {

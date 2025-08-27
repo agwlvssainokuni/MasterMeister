@@ -23,7 +23,7 @@ import cherry.mastermeister.enums.*;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import cherry.mastermeister.repository.UserPermissionRepository;
 import cherry.mastermeister.repository.UserRepository;
-import cherry.mastermeister.service.PermissionManagementService;
+import cherry.mastermeister.service.PermissionService;
 import cherry.mastermeister.service.PermissionYamlService;
 import cherry.mastermeister.service.PermissionYamlService.ImportOptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,7 +60,7 @@ public class PermissionImportIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private PermissionManagementService permissionManagementService;
+    private PermissionService permissionService;
 
     private UserEntity testUser;
     private DatabaseConnectionEntity testConnection;

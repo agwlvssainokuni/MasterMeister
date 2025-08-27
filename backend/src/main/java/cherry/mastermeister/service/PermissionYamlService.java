@@ -51,7 +51,7 @@ import java.util.Optional;
 public class PermissionYamlService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final PermissionManagementService permissionManagementService;
+    private final PermissionService permissionService;
     private final PermissionTemplateService permissionTemplateService;
     private final DatabaseService databaseService;
     private final UserRepository userRepository;
@@ -62,13 +62,13 @@ public class PermissionYamlService {
     private EntityManager entityManager;
 
     public PermissionYamlService(
-            PermissionManagementService permissionManagementService,
+            PermissionService permissionService,
             PermissionTemplateService permissionTemplateService,
             DatabaseService databaseService,
             UserRepository userRepository,
             UserPermissionRepository userPermissionRepository
     ) {
-        this.permissionManagementService = permissionManagementService;
+        this.permissionService = permissionService;
         this.permissionTemplateService = permissionTemplateService;
         this.databaseService = databaseService;
         this.userRepository = userRepository;
@@ -339,7 +339,7 @@ public class PermissionYamlService {
             }
         }
 
-        permissionManagementService.createPermission(
+        permissionService.createPermission(
                 userId, connectionId, scope, permissionType,
                 permData.schemaName(), permData.tableName(), permData.columnName(),
                 permData.granted(), permData.expiresAt(), permData.comment()
