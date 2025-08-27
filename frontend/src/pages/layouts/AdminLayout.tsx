@@ -19,6 +19,7 @@ import {Link, useLocation} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
 import {useAuth} from '../../contexts/AuthContext'
 import {LogoutButton} from '../../components/LogoutButton'
+import {LanguageSelector} from '../../components/LanguageSelector'
 import {adminSubNavigationItems, mainNavigationItems} from '../../config/navigation'
 import '../../styles/layouts/AdminLayout.css'
 
@@ -73,6 +74,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = (
               <span className="user-email">{user?.email}</span>
               <span className="user-role admin-role">{user?.role}</span>
             </div>
+            <LanguageSelector/>
             <LogoutButton/>
           </div>
         </div>

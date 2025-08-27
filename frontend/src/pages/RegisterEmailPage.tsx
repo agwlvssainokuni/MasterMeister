@@ -18,6 +18,7 @@ import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Link, useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
+import {LanguageSelector} from '../components/LanguageSelector'
 import {authService} from '../services/authService'
 import type {RegisterEmailCredentials} from '../types/frontend'
 import '../styles/layouts/AuthLayout.css'
@@ -26,7 +27,7 @@ import '../styles/components/Form.css'
 import '../styles/components/Button.css'
 
 export const RegisterEmailPage: React.FC = () => {
-  const {t} = useTranslation()
+  const {t, i18n} = useTranslation()
   const {isAuthenticated} = useAuth()
   const navigate = useNavigate()
   const [registrationComplete, setRegistrationComplete] = useState(false)
@@ -72,7 +73,10 @@ export const RegisterEmailPage: React.FC = () => {
 
     setIsLoading(true)
     try {
-      await authService.registerEmail(credentials)
+      await authService.registerEmail({
+        ...credentials,
+        language: i18n.language
+      })
       // Store email for success message display
       sessionStorage.setItem('registrationEmail', credentials.email)
       setRegistrationComplete(true)
@@ -173,6 +177,10 @@ export const RegisterEmailPage: React.FC = () => {
                 {t('registerEmail.loginLink')}
               </Link>
             </p>
+          </div>
+
+          <div className="language-selector-container">
+            <LanguageSelector/>
           </div>
         </div>
       </div>

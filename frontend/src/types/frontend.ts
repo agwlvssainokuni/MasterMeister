@@ -49,6 +49,7 @@ export interface AdminAction {
 // Email First Registration Flow
 export interface RegisterEmailCredentials {
   email: string
+  language?: string
 }
 
 export interface RegisterEmailResult {
@@ -60,6 +61,7 @@ export interface RegisterUserCredentials {
   email: string
   password: string
   confirmPassword: string
+  language?: string
 }
 
 export interface RegisterUserResult {

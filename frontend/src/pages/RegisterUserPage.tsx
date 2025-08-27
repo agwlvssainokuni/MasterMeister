@@ -17,6 +17,7 @@
 import React, {useState} from 'react'
 import {Link, useSearchParams} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
+import {LanguageSelector} from '../components/LanguageSelector'
 import {authService} from '../services/authService'
 import type {RegisterUserCredentials} from '../types/frontend'
 import '../styles/layouts/AuthLayout.css'
@@ -25,7 +26,7 @@ import '../styles/components/Button.css'
 import '../styles/components/Alert.css'
 
 export const RegisterUserPage: React.FC = () => {
-  const {t} = useTranslation()
+  const {t, i18n} = useTranslation()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
 
@@ -73,7 +74,10 @@ export const RegisterUserPage: React.FC = () => {
 
     setIsLoading(true)
     try {
-      await authService.registerUser(credentials)
+      await authService.registerUser({
+        ...credentials,
+        language: i18n.language
+      })
       setRegistrationComplete(true)
     } catch (error) {
       setError(error instanceof Error ? error.message : t('register.error.failed'))
@@ -85,6 +89,9 @@ export const RegisterUserPage: React.FC = () => {
   if (!token) {
     return (
       <div className="auth-layout">
+        <div className="language-selector-container">
+          <LanguageSelector/>
+        </div>
         <div className="auth-container">
           <div className="alert alert-error">
             {t('register.invalidToken')}
@@ -124,86 +131,92 @@ export const RegisterUserPage: React.FC = () => {
   return (
     <div className="auth-layout">
       <div className="auth-container">
-        <form className="form" onSubmit={handleSubmit}>
-          <div className="form-header">
-            <h1 className="form-title">{t('register.title')}</h1>
-            <p className="form-subtitle">
-              {t('register.description')}
-            </p>
-          </div>
-
-          {error && (
-            <div className="alert alert-error" role="alert">
-              {error}
+        <div className="auth-content">
+          <form className="form" onSubmit={handleSubmit}>
+            <div className="form-header">
+              <h1 className="form-title">{t('register.title')}</h1>
+              <p className="form-subtitle">
+                {t('register.description')}
+              </p>
             </div>
-          )}
 
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              {t('register.email.label')}
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={credentials.email}
-              onChange={handleInputChange}
-              className="form-input"
-              required
-              autoComplete="email"
-              placeholder={t('register.email.placeholder')}
-            />
+            {error && (
+              <div className="alert alert-error" role="alert">
+                {error}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">
+                {t('register.email.label')}
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={credentials.email}
+                onChange={handleInputChange}
+                className="form-input"
+                required
+                autoComplete="email"
+                placeholder={t('register.email.placeholder')}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">
+                {t('register.password.label')}
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={credentials.password}
+                onChange={handleInputChange}
+                className="form-input"
+                required
+                autoComplete="new-password"
+                placeholder={t('register.password.placeholder')}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirmPassword" className="form-label">
+                {t('register.confirmPassword.label')}
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={credentials.confirmPassword}
+                onChange={handleInputChange}
+                className="form-input"
+                required
+                autoComplete="new-password"
+                placeholder={t('register.confirmPassword.placeholder')}
+              />
+            </div>
+
+            <div className="form-actions">
+              <button
+                type="submit"
+                className="button button-primary button-lg button-full"
+                disabled={isLoading}
+              >
+                {isLoading ? t('register.submitting') : t('register.submit')}
+              </button>
+            </div>
+          </form>
+
+          <div className="auth-footer">
+            <Link to="/register-email" className="auth-link">
+              {t('register.startOver')}
+            </Link>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">
-              {t('register.password.label')}
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={credentials.password}
-              onChange={handleInputChange}
-              className="form-input"
-              required
-              autoComplete="new-password"
-              placeholder={t('register.password.placeholder')}
-            />
+          <div className="language-selector-container">
+            <LanguageSelector/>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword" className="form-label">
-              {t('register.confirmPassword.label')}
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              value={credentials.confirmPassword}
-              onChange={handleInputChange}
-              className="form-input"
-              required
-              autoComplete="new-password"
-              placeholder={t('register.confirmPassword.placeholder')}
-            />
-          </div>
-
-          <div className="form-actions">
-            <button
-              type="submit"
-              className="button button-primary button-lg button-full"
-              disabled={isLoading}
-            >
-              {isLoading ? t('register.submitting') : t('register.submit')}
-            </button>
-          </div>
-        </form>
-
-        <div className="auth-footer">
-          <Link to="/register-email" className="auth-link">
-            {t('register.startOver')}
-          </Link>
         </div>
       </div>
     </div>

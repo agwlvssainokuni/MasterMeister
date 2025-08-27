@@ -18,6 +18,7 @@ import React, {useCallback, useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Link, useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
+import {LanguageSelector} from '../components/LanguageSelector'
 import type {LoginCredentials} from '../types/frontend'
 import '../styles/layouts/AuthLayout.css'
 import '../styles/components/Form.css'
@@ -143,6 +144,10 @@ export const LoginPage: React.FC = () => {
               </Link>
               {t('auth.registerSuffix')}
             </p>
+          </div>
+
+          <div className="language-selector-container">
+            <LanguageSelector/>
           </div>
         </div>
       </div>

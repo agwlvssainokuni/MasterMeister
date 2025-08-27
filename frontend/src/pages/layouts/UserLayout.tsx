@@ -19,6 +19,7 @@ import {Link, useLocation} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
 import {useAuth} from '../../contexts/AuthContext'
 import {LogoutButton} from '../../components/LogoutButton'
+import {LanguageSelector} from '../../components/LanguageSelector'
 import {mainNavigationItems} from '../../config/navigation'
 import '../../styles/layouts/UserLayout.css'
 
@@ -83,6 +84,7 @@ export const UserLayout: React.FC<UserLayoutProps> = (
               <span className="user-email">{user?.email}</span>
               <span className="user-role">{user?.role}</span>
             </div>
+            <LanguageSelector/>
             <LogoutButton/>
           </div>
         </div>

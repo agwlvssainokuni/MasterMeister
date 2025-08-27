@@ -34,7 +34,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'ja', // デフォルト言語を日本語に設定
+    lng: localStorage.getItem('language') || 'ja', // localStorage から読み込み、なければ日本語
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false // Reactは既にXSS対策済み

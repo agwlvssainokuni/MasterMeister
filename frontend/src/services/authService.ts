@@ -144,7 +144,7 @@ class AuthService {
   async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {
     const request: RegisterEmailRequest = {
       email: credentials.email,
-      language: navigator.language.startsWith('ja') ? 'ja' : 'en'
+      language: credentials.language,
     }
 
     const response = await apiClient.post<ApiResponse<ApiRegisterEmailResult>>(
@@ -164,7 +164,7 @@ class AuthService {
       token: credentials.token,
       email: credentials.email,
       password: credentials.password,
-      language: navigator.language.startsWith('ja') ? 'ja' : 'en'
+      language: credentials.language,
     }
 
     const response = await apiClient.post<ApiResponse<ApiRegisterUserResult>>(
