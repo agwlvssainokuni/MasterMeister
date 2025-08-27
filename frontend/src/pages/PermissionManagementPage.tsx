@@ -174,7 +174,7 @@ export const PermissionManagementPage: React.FC = () => {
     <AdminLayout
       title={t('permissions.title')}
       description={t('permissions.description')}
-      className="permission-management-page"
+      className="permission-page"
     >
       {connectionsLoading ? (
         <div className="loading-state">

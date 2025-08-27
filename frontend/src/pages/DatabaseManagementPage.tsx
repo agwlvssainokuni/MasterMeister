@@ -178,7 +178,7 @@ export const DatabaseManagementPage: React.FC = () => {
       <AdminLayout
         title={t('databases.title')}
         description={t('databases.description')}
-        className="database-management-page"
+        className="database-page"
       >
         <div className="loading-state">
           <div className="loading-spinner"></div>
@@ -191,7 +191,7 @@ export const DatabaseManagementPage: React.FC = () => {
   if (error) {
     return (
       <AdminLayout title={t('databases.title')} description={t('databases.description')}
-                   className="database-management-page">
+                   className="database-page">
 
         <div className="error-state">
           <p className="error-message">{error}</p>

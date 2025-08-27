@@ -46,9 +46,9 @@ export const AdminDashboardPage: React.FC = () => {
           actionPath="/admin/databases"
         />
         <FeatureCard
-          title={t('admin.features.schemaManagement.title')}
-          description={t('admin.features.schemaManagement.description')}
-          actionText={t('admin.features.schemaManagement.action')}
+          title={t('admin.features.schema.title')}
+          description={t('admin.features.schema.description')}
+          actionText={t('admin.features.schema.action')}
           actionPath="/admin/schema"
         />
         <FeatureCard

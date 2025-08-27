@@ -155,7 +155,7 @@ export const SchemaManagementPage: React.FC = () => {
       <AdminLayout
         title={t('schema.title')}
         description={t('schema.description')}
-        className="schema-management-page"
+        className="schema-page"
       >
         <div className="loading-state">
           <div className="loading-spinner"></div>
@@ -170,7 +170,7 @@ export const SchemaManagementPage: React.FC = () => {
       <AdminLayout
         title={t('schema.title')}
         description={t('schema.description')}
-        className="schema-management-page"
+        className="schema-page"
       >
         <div className="error-state">
           <p className="error-message">{error}</p>
@@ -186,7 +186,7 @@ export const SchemaManagementPage: React.FC = () => {
     <AdminLayout
       title={t('schema.title')}
       description={t('schema.description')}
-      className="schema-management-page"
+      className="schema-page"
     >
       <DatabaseSelectorView
         connections={connections}

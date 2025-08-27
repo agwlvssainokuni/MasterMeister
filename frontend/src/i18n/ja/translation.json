@@ -171,7 +171,7 @@
         "description": "マスターデータアクセス用の外部データベース接続を設定・管理します。",
         "action": "接続設定管理"
       },
-      "schemaManagement": {
+      "schema": {
         "title": "スキーマ管理",
         "description": "接続されたデータベースからスキーマメタデータを読み取り・更新します。",
         "action": "スキーマ管理"
