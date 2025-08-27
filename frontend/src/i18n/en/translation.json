@@ -108,7 +108,7 @@
     "dataAccess": "Data Access",
     "admin": "Admin",
     "userManagement": "User Management",
-    "databaseConnections": "DB Connections",
+    "databases": "DB Connections",
     "permissions": "Permissions",
     "settings": "Settings"
   },
@@ -166,7 +166,7 @@
         "description": "Review and approve user registration requests, manage user roles and permissions.",
         "action": "Manage Users"
       },
-      "databaseConnections": {
+      "databases": {
         "title": "Database Connections",
         "description": "Configure and manage connections to external databases for master data access.",
         "action": "Manage Connections"
@@ -295,7 +295,7 @@
       "button": "Admin Panel"
     }
   },
-  "databaseConnections": {
+  "databases": {
     "title": "Database Connections",
     "description": "Manage connections to external databases",
     "createConnection": "Create New Connection",

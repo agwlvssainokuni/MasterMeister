@@ -103,11 +103,11 @@ export const DatabaseSelectorView: React.FC<DatabaseSelectorViewProps> = (
 
             <div className="card-details">
               <div className="detail-item">
-                <span className="detail-label">{t('databaseConnections.fields.host')}</span>
+                <span className="detail-label">{t('databases.fields.host')}</span>
                 <span className="detail-value">{connection.host}:{connection.port}</span>
               </div>
               <div className="detail-item">
-                <span className="detail-label">{t('databaseConnections.fields.database')}</span>
+                <span className="detail-label">{t('databases.fields.database')}</span>
                 <span className="detail-value">{connection.databaseName}</span>
               </div>
             </div>

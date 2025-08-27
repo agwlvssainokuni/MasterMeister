@@ -43,10 +43,10 @@ export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
   }
 
   const getStatusText = (connection: Database) => {
-    if (!connection.active) return t('databaseConnections.status.inactive')
-    if (connection.testResult === true) return t('databaseConnections.status.connected')
-    if (connection.testResult === false) return t('databaseConnections.status.connectionFailed')
-    return t('databaseConnections.status.untested')
+    if (!connection.active) return t('databases.status.inactive')
+    if (connection.testResult === true) return t('databases.status.connected')
+    if (connection.testResult === false) return t('databases.status.connectionFailed')
+    return t('databases.status.untested')
   }
 
   const formatDate = (date: Date) => {
@@ -73,8 +73,8 @@ export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
     return (
       <div className="empty-state">
         <div className="empty-icon">🔗</div>
-        <h3>{t('databaseConnections.noConnections')}</h3>
-        <p>{t('databaseConnections.noConnectionsDescription')}</p>
+        <h3>{t('databases.noConnections')}</h3>
+        <p>{t('databases.noConnectionsDescription')}</p>
       </div>
     )
   }
@@ -99,20 +99,20 @@ export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
 
             <div className="connection-details">
               <div className="detail-row">
-                <span className="detail-label">{t('databaseConnections.fields.host')}</span>
+                <span className="detail-label">{t('databases.fields.host')}</span>
                 <span className="detail-value">{connection.host}:{connection.port}</span>
               </div>
               <div className="detail-row">
-                <span className="detail-label">{t('databaseConnections.fields.database')}</span>
+                <span className="detail-label">{t('databases.fields.database')}</span>
                 <span className="detail-value">{connection.databaseName}</span>
               </div>
               <div className="detail-row">
-                <span className="detail-label">{t('databaseConnections.fields.username')}</span>
+                <span className="detail-label">{t('databases.fields.username')}</span>
                 <span className="detail-value">{connection.username}</span>
               </div>
               {connection.lastTestedAt && (
                 <div className="detail-row">
-                  <span className="detail-label">{t('databaseConnections.lastTested')}</span>
+                  <span className="detail-label">{t('databases.lastTested')}</span>
                   <span className="detail-value">{formatDate(connection.lastTestedAt)}</span>
                 </div>
               )}
@@ -122,41 +122,41 @@ export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
               <button
                 className="button button-sm button-secondary"
                 onClick={() => onTest(connection)}
-                title={t('databaseConnections.actions.test')}
+                title={t('databases.actions.test')}
               >
-                🔍 {t('databaseConnections.actions.test')}
+                🔍 {t('databases.actions.test')}
               </button>
               <button
                 className={`button button-sm ${connection.active ? 'button-warning' : 'button-success'}`}
                 onClick={() => onToggleActive(connection)}
-                title={connection.active ? t('databaseConnections.actions.deactivate') : t('databaseConnections.actions.activate')}
+                title={connection.active ? t('databases.actions.deactivate') : t('databases.actions.activate')}
               >
                 {connection.active ? '⏸️' : '▶️'} 
-                {connection.active ? t('databaseConnections.actions.deactivate') : t('databaseConnections.actions.activate')}
+                {connection.active ? t('databases.actions.deactivate') : t('databases.actions.activate')}
               </button>
               <button
                 className="button button-sm button-primary"
                 onClick={() => onEdit(connection)}
-                title={t('databaseConnections.actions.edit')}
+                title={t('databases.actions.edit')}
               >
-                ✏️ {t('databaseConnections.actions.edit')}
+                ✏️ {t('databases.actions.edit')}
               </button>
               <button
                 className="button button-sm button-danger"
                 onClick={() => onDelete(connection)}
-                title={t('databaseConnections.actions.delete')}
+                title={t('databases.actions.delete')}
               >
-                🗑️ {t('databaseConnections.actions.delete')}
+                🗑️ {t('databases.actions.delete')}
               </button>
             </div>
 
             <div className="connection-footer">
               <span className="timestamp">
-                {t('databaseConnections.created')}: {formatDate(connection.createdAt)}
+                {t('databases.created')}: {formatDate(connection.createdAt)}
               </span>
               {connection.updatedAt && connection.updatedAt.getTime() !== connection.createdAt.getTime() && (
                 <span className="timestamp">
-                  {t('databaseConnections.updated')}: {formatDate(connection.updatedAt)}
+                  {t('databases.updated')}: {formatDate(connection.updatedAt)}
                 </span>
               )}
             </div>

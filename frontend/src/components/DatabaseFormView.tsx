@@ -90,22 +90,22 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
     const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = t('databaseConnections.validation.nameRequired')
+      newErrors.name = t('databases.validation.nameRequired')
     }
     if (!formData.host.trim()) {
-      newErrors.host = t('databaseConnections.validation.hostRequired')
+      newErrors.host = t('databases.validation.hostRequired')
     }
     if (!formData.port || formData.port <= 0 || formData.port > 65535) {
-      newErrors.port = t('databaseConnections.validation.portInvalid')
+      newErrors.port = t('databases.validation.portInvalid')
     }
     if (!formData.databaseName.trim()) {
-      newErrors.databaseName = t('databaseConnections.validation.databaseNameRequired')
+      newErrors.databaseName = t('databases.validation.databaseNameRequired')
     }
     if (!formData.username.trim()) {
-      newErrors.username = t('databaseConnections.validation.usernameRequired')
+      newErrors.username = t('databases.validation.usernameRequired')
     }
     if (!formData.password.trim() && !connection) {
-      newErrors.password = t('databaseConnections.validation.passwordRequired')
+      newErrors.password = t('databases.validation.passwordRequired')
     }
 
     setErrors(newErrors)
@@ -136,14 +136,14 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
       <div className="form-header">
         <h2>
           {isEditing 
-            ? t('databaseConnections.editConnection') 
-            : t('databaseConnections.createConnection')
+            ? t('databases.editConnection') 
+            : t('databases.createConnection')
           }
         </h2>
         <p className="form-description">
           {isEditing 
-            ? t('databaseConnections.editDescription') 
-            : t('databaseConnections.createDescription')
+            ? t('databases.editDescription') 
+            : t('databases.createDescription')
           }
         </p>
       </div>
@@ -152,7 +152,7 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
         <div className="form-grid">
           <div className="form-group">
             <label htmlFor="name" className="form-label">
-              {t('databaseConnections.fields.name')} <span className="required">*</span>
+              {t('databases.fields.name')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -160,14 +160,14 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
               className={`form-input ${errors.name ? 'error' : ''}`}
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder={t('databaseConnections.placeholders.name')}
+              placeholder={t('databases.placeholders.name')}
             />
             {errors.name && <span className="error-text">{errors.name}</span>}
           </div>
 
           <div className="form-group">
             <label htmlFor="dbType" className="form-label">
-              {t('databaseConnections.fields.dbType')} <span className="required">*</span>
+              {t('databases.fields.dbType')} <span className="required">*</span>
             </label>
             <select
               id="dbType"
@@ -185,7 +185,7 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
 
           <div className="form-group">
             <label htmlFor="host" className="form-label">
-              {t('databaseConnections.fields.host')} <span className="required">*</span>
+              {t('databases.fields.host')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -193,14 +193,14 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
               className={`form-input ${errors.host ? 'error' : ''}`}
               value={formData.host}
               onChange={(e) => handleInputChange('host', e.target.value)}
-              placeholder={t('databaseConnections.placeholders.host')}
+              placeholder={t('databases.placeholders.host')}
             />
             {errors.host && <span className="error-text">{errors.host}</span>}
           </div>
 
           <div className="form-group">
             <label htmlFor="port" className="form-label">
-              {t('databaseConnections.fields.port')} <span className="required">*</span>
+              {t('databases.fields.port')} <span className="required">*</span>
             </label>
             <input
               type="number"
@@ -216,7 +216,7 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
 
           <div className="form-group">
             <label htmlFor="databaseName" className="form-label">
-              {t('databaseConnections.fields.database')} <span className="required">*</span>
+              {t('databases.fields.database')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -224,14 +224,14 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
               className={`form-input ${errors.databaseName ? 'error' : ''}`}
               value={formData.databaseName}
               onChange={(e) => handleInputChange('databaseName', e.target.value)}
-              placeholder={t('databaseConnections.placeholders.database')}
+              placeholder={t('databases.placeholders.database')}
             />
             {errors.databaseName && <span className="error-text">{errors.databaseName}</span>}
           </div>
 
           <div className="form-group">
             <label htmlFor="username" className="form-label">
-              {t('databaseConnections.fields.username')} <span className="required">*</span>
+              {t('databases.fields.username')} <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -239,14 +239,14 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
               className={`form-input ${errors.username ? 'error' : ''}`}
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
-              placeholder={t('databaseConnections.placeholders.username')}
+              placeholder={t('databases.placeholders.username')}
             />
             {errors.username && <span className="error-text">{errors.username}</span>}
           </div>
 
           <div className="form-group">
             <label htmlFor="password" className="form-label">
-              {t('databaseConnections.fields.password')} {!isEditing && <span className="required">*</span>}
+              {t('databases.fields.password')} {!isEditing && <span className="required">*</span>}
             </label>
             <input
               type="password"
@@ -255,21 +255,21 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               placeholder={isEditing 
-                ? t('databaseConnections.placeholders.passwordEdit') 
-                : t('databaseConnections.placeholders.password')
+                ? t('databases.placeholders.passwordEdit') 
+                : t('databases.placeholders.password')
               }
             />
             {errors.password && <span className="error-text">{errors.password}</span>}
             {isEditing && (
               <small className="form-hint">
-                {t('databaseConnections.hints.passwordEdit')}
+                {t('databases.hints.passwordEdit')}
               </small>
             )}
           </div>
 
           <div className="form-group form-group-full">
             <label htmlFor="connectionParams" className="form-label">
-              {t('databaseConnections.fields.connectionParams')}
+              {t('databases.fields.connectionParams')}
             </label>
             <input
               type="text"
@@ -277,10 +277,10 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
               className="form-input"
               value={formData.connectionParams}
               onChange={(e) => handleInputChange('connectionParams', e.target.value)}
-              placeholder={t('databaseConnections.placeholders.connectionParams')}
+              placeholder={t('databases.placeholders.connectionParams')}
             />
             <small className="form-hint">
-              {t('databaseConnections.hints.connectionParams')}
+              {t('databases.hints.connectionParams')}
             </small>
           </div>
 
@@ -292,11 +292,11 @@ export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
                 onChange={(e) => handleInputChange('active', e.target.checked)}
               />
               <span className="checkbox-label">
-                {t('databaseConnections.fields.active')}
+                {t('databases.fields.active')}
               </span>
             </label>
             <small className="form-hint">
-              {t('databaseConnections.hints.active')}
+              {t('databases.hints.active')}
             </small>
           </div>
         </div>

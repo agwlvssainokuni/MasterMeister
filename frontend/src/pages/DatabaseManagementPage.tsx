@@ -67,13 +67,13 @@ export const DatabaseManagementPage: React.FC = () => {
         await databaseService.updateConnection(editingConnection.id, formData)
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.updateSuccess', {name: formData.name})
+          message: t('databases.messages.updateSuccess', {name: formData.name})
         })
       } else {
         await databaseService.createConnection(formData)
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.createSuccess', {name: formData.name})
+          message: t('databases.messages.createSuccess', {name: formData.name})
         })
       }
 
@@ -84,7 +84,7 @@ export const DatabaseManagementPage: React.FC = () => {
       console.error('Error saving database connection:', err)
       addNotification({
         type: 'error',
-        message: err instanceof Error ? err.message : t('databaseConnections.messages.saveError')
+        message: err instanceof Error ? err.message : t('databases.messages.saveError')
       })
     }
   }
@@ -95,7 +95,7 @@ export const DatabaseManagementPage: React.FC = () => {
   }
 
   const handleDeleteConnection = async (connection: Database) => {
-    if (!window.confirm(t('databaseConnections.confirmDelete', {name: connection.name}))) {
+    if (!window.confirm(t('databases.confirmDelete', {name: connection.name}))) {
       return
     }
 
@@ -103,14 +103,14 @@ export const DatabaseManagementPage: React.FC = () => {
       await databaseService.deleteConnection(connection.id)
       addNotification({
         type: 'success',
-        message: t('databaseConnections.messages.deleteSuccess', {name: connection.name})
+        message: t('databases.messages.deleteSuccess', {name: connection.name})
       })
       await loadConnections()
     } catch (err) {
       console.error('Error deleting database connection:', err)
       addNotification({
         type: 'error',
-        message: err instanceof Error ? err.message : t('databaseConnections.messages.deleteError')
+        message: err instanceof Error ? err.message : t('databases.messages.deleteError')
       })
     }
   }
@@ -122,7 +122,7 @@ export const DatabaseManagementPage: React.FC = () => {
       if (result.connected) {
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.testSuccess', {
+          message: t('databases.messages.testSuccess', {
             name: connection.name,
             responseTime: result.responseTimeMs
           })
@@ -130,7 +130,7 @@ export const DatabaseManagementPage: React.FC = () => {
       } else {
         addNotification({
           type: 'error',
-          message: t('databaseConnections.messages.testFailed', {
+          message: t('databases.messages.testFailed', {
             name: connection.name,
             error: result.message || result.errorDetails || 'Unknown error'
           })
@@ -142,7 +142,7 @@ export const DatabaseManagementPage: React.FC = () => {
       console.error('Error testing database connection:', err)
       addNotification({
         type: 'error',
-        message: err instanceof Error ? err.message : t('databaseConnections.messages.testError')
+        message: err instanceof Error ? err.message : t('databases.messages.testError')
       })
     }
   }
@@ -153,13 +153,13 @@ export const DatabaseManagementPage: React.FC = () => {
         await databaseService.deactivateConnection(connection.id)
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.deactivateSuccess', {name: connection.name})
+          message: t('databases.messages.deactivateSuccess', {name: connection.name})
         })
       } else {
         await databaseService.activateConnection(connection.id)
         addNotification({
           type: 'success',
-          message: t('databaseConnections.messages.activateSuccess', {name: connection.name})
+          message: t('databases.messages.activateSuccess', {name: connection.name})
         })
       }
 
@@ -168,7 +168,7 @@ export const DatabaseManagementPage: React.FC = () => {
       console.error('Error toggling connection status:', err)
       addNotification({
         type: 'error',
-        message: err instanceof Error ? err.message : t('databaseConnections.messages.toggleError')
+        message: err instanceof Error ? err.message : t('databases.messages.toggleError')
       })
     }
   }
@@ -176,9 +176,9 @@ export const DatabaseManagementPage: React.FC = () => {
   if (loading) {
     return (
       <AdminLayout
-        title={t('databaseConnections.title')}
-        description={t('databaseConnections.description')}
-        className="database-connections-page"
+        title={t('databases.title')}
+        description={t('databases.description')}
+        className="database-management-page"
       >
         <div className="loading-state">
           <div className="loading-spinner"></div>
@@ -190,8 +190,8 @@ export const DatabaseManagementPage: React.FC = () => {
 
   if (error) {
     return (
-      <AdminLayout title={t('databaseConnections.title')} description={t('databaseConnections.description')}
-                   className="database-connections-page">
+      <AdminLayout title={t('databases.title')} description={t('databases.description')}
+                   className="database-management-page">
 
         <div className="error-state">
           <p className="error-message">{error}</p>
@@ -206,8 +206,8 @@ export const DatabaseManagementPage: React.FC = () => {
 
   return (
     <AdminLayout
-      title={t('databaseConnections.title')}
-      description={t('databaseConnections.description')}
+      title={t('databases.title')}
+      description={t('databases.description')}
       className="database-connections-page"
     >
       <div className="section-header">
@@ -216,7 +216,7 @@ export const DatabaseManagementPage: React.FC = () => {
             className="button button-primary"
             onClick={handleCreateConnection}
           >
-            {t('databaseConnections.createConnection')}
+            {t('databases.createConnection')}
           </button>
         </div>
       </div>

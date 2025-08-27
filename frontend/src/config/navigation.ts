@@ -41,7 +41,7 @@ export const adminSubNavigationItems: NavigationItem[] = [
   },
   {
     path: '/admin/databases',
-    labelKey: 'navigation.databaseConnections'
+    labelKey: 'navigation.databases'
   },
   {
     path: '/admin/schema',

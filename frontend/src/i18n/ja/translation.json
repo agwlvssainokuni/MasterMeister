@@ -108,7 +108,7 @@
     "dataAccess": "データアクセス",
     "admin": "管理者",
     "userManagement": "ユーザー管理",
-    "databaseConnections": "DB接続設定",
+    "databases": "DB接続設定",
     "permissions": "権限",
     "settings": "設定"
   },
@@ -166,7 +166,7 @@
         "description": "ユーザー登録リクエストの確認と承認、ユーザーロールと権限の管理を行います。",
         "action": "ユーザー管理"
       },
-      "databaseConnections": {
+      "databases": {
         "title": "データベース接続設定",
         "description": "マスターデータアクセス用の外部データベース接続を設定・管理します。",
         "action": "接続設定管理"
@@ -295,7 +295,7 @@
       "button": "管理パネル"
     }
   },
-  "databaseConnections": {
+  "databases": {
     "title": "データベース接続設定",
     "description": "外部データベースへの接続設定を管理します",
     "createConnection": "新しい接続を作成",
