@@ -41,18 +41,18 @@ public class RecordUpdateService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
-    private final SchemaMetadataStorageService schemaMetadataStorageService;
+    private final SchemaMetadataService schemaMetadataService;
     private final PermissionUtils permissionUtils;
     private final AuditLogService auditLogService;
 
     public RecordUpdateService(
             DatabaseService databaseService,
-            SchemaMetadataStorageService schemaMetadataStorageService,
+            SchemaMetadataService schemaMetadataService,
             PermissionUtils permissionUtils,
             AuditLogService auditLogService
     ) {
         this.databaseService = databaseService;
-        this.schemaMetadataStorageService = schemaMetadataStorageService;
+        this.schemaMetadataService = schemaMetadataService;
         this.permissionUtils = permissionUtils;
         this.auditLogService = auditLogService;
     }
@@ -73,7 +73,7 @@ public class RecordUpdateService {
 
         try {
             // Get table metadata
-            TableMetadata tableMetadata = schemaMetadataStorageService.getTableMetadata(
+            TableMetadata tableMetadata = schemaMetadataService.getTableMetadata(
                     connectionId, schemaName, tableName);
 
             // Get writable columns with permissions

@@ -32,12 +32,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class SchemaMetadataStorageService {
+public class SchemaMetadataService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final SchemaMetadataRepository schemaMetadataRepository;
 
-    public SchemaMetadataStorageService(
+    public SchemaMetadataService(
             SchemaMetadataRepository schemaMetadataRepository
     ) {
         this.schemaMetadataRepository = schemaMetadataRepository;

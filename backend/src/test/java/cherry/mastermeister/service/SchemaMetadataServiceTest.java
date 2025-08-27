@@ -36,16 +36,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class SchemaMetadataStorageServiceTest {
+class SchemaMetadataServiceTest {
 
     @Mock
     private SchemaMetadataRepository schemaMetadataRepository;
 
-    private SchemaMetadataStorageService service;
+    private SchemaMetadataService service;
 
     @BeforeEach
     void setUp() {
-        service = new SchemaMetadataStorageService(
+        service = new SchemaMetadataService(
                 schemaMetadataRepository
         );
     }

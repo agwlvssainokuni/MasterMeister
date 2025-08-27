@@ -42,8 +42,7 @@ public class RecordReadService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
-    private final SchemaMetadataStorageService schemaMetadataStorageService;
-    private final PermissionAuthService permissionAuthService;
+    private final SchemaMetadataService schemaMetadataService;
     private final PermissionUtils permissionUtils;
     private final AuditLogService auditLogService;
     private final QueryBuilderService queryBuilderService;
@@ -53,15 +52,13 @@ public class RecordReadService {
 
     public RecordReadService(
             DatabaseService databaseService,
-            SchemaMetadataStorageService schemaMetadataStorageService,
-            PermissionAuthService permissionAuthService,
+            SchemaMetadataService schemaMetadataService,
             PermissionUtils permissionUtils,
             AuditLogService auditLogService,
             QueryBuilderService queryBuilderService
     ) {
         this.databaseService = databaseService;
-        this.schemaMetadataStorageService = schemaMetadataStorageService;
-        this.permissionAuthService = permissionAuthService;
+        this.schemaMetadataService = schemaMetadataService;
         this.permissionUtils = permissionUtils;
         this.auditLogService = auditLogService;
         this.queryBuilderService = queryBuilderService;
@@ -92,7 +89,7 @@ public class RecordReadService {
 
         try {
             // Get table metadata
-            TableMetadata tableMetadata = schemaMetadataStorageService.getTableMetadata(
+            TableMetadata tableMetadata = schemaMetadataService.getTableMetadata(
                     connectionId, schemaName, tableName);
 
             // Get accessible columns with permissions

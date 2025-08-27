@@ -44,18 +44,18 @@ public class SchemaUpdateService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
-    private final SchemaMetadataStorageService schemaMetadataStorageService;
+    private final SchemaMetadataService schemaMetadataService;
     private final SchemaUpdateLogRepository schemaUpdateLogRepository;
     private final AuditLogService auditLogService;
 
     public SchemaUpdateService(
             DatabaseService databaseService,
-            SchemaMetadataStorageService schemaMetadataStorageService,
+            SchemaMetadataService schemaMetadataService,
             SchemaUpdateLogRepository schemaUpdateLogRepository,
             AuditLogService auditLogService
     ) {
         this.databaseService = databaseService;
-        this.schemaMetadataStorageService = schemaMetadataStorageService;
+        this.schemaMetadataService = schemaMetadataService;
         this.schemaUpdateLogRepository = schemaUpdateLogRepository;
         this.auditLogService = auditLogService;
     }
@@ -211,7 +211,7 @@ public class SchemaUpdateService {
             );
 
             // Save the schema metadata to the database
-            return schemaMetadataStorageService.saveSchemaMetadata(schemaMetadata);
+            return schemaMetadataService.saveSchemaMetadata(schemaMetadata);
         } catch (SQLException e) {
             logger.error("Failed to read schema metadata for connection ID: {}", connectionId, e);
             throw new RuntimeException("Schema reading failed", e);
@@ -220,7 +220,7 @@ public class SchemaUpdateService {
 
     public Optional<SchemaMetadata> getStoredSchemaMetadata(Long connectionId) {
         logger.debug("Retrieving stored schema metadata for connection ID: {}", connectionId);
-        return schemaMetadataStorageService.getSchemaMetadata(connectionId);
+        return schemaMetadataService.getSchemaMetadata(connectionId);
     }
 
     private List<String> readSchemas(DatabaseMetaData metaData, DatabaseType dbType) throws SQLException {

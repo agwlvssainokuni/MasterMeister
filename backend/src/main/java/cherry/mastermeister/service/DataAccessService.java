@@ -31,14 +31,14 @@ import java.util.List;
 public class DataAccessService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final SchemaMetadataStorageService schemaMetadataStorageService;
+    private final SchemaMetadataService schemaMetadataService;
     private final PermissionUtils permissionUtils;
 
     public DataAccessService(
-            SchemaMetadataStorageService schemaMetadataStorageService,
+            SchemaMetadataService schemaMetadataService,
             PermissionUtils permissionUtils
     ) {
-        this.schemaMetadataStorageService = schemaMetadataStorageService;
+        this.schemaMetadataService = schemaMetadataService;
         this.permissionUtils = permissionUtils;
     }
 
@@ -56,7 +56,7 @@ public class DataAccessService {
         permissionUtils.requireConnectionPermission(connectionId, permissionType);
 
         // Get all tables for the connection
-        List<TableMetadata> allTables = schemaMetadataStorageService.getTablesForConnection(connectionId);
+        List<TableMetadata> allTables = schemaMetadataService.getTablesForConnection(connectionId);
 
         // Filter tables based on specified permission
         List<TableMetadata> accessibleTables = permissionUtils.filterByTablePermission(
@@ -104,6 +104,6 @@ public class DataAccessService {
         permissionUtils.requireTablePermission(connectionId, PermissionType.READ, schemaName, tableName);
 
         // Get table information
-        return schemaMetadataStorageService.getTableMetadata(connectionId, schemaName, tableName);
+        return schemaMetadataService.getTableMetadata(connectionId, schemaName, tableName);
     }
 }

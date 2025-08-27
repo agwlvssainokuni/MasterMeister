@@ -46,18 +46,18 @@ public class RecordDeleteService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
-    private final SchemaMetadataStorageService schemaMetadataStorageService;
+    private final SchemaMetadataService schemaMetadataService;
     private final PermissionUtils permissionUtils;
     private final AuditLogService auditLogService;
 
     public RecordDeleteService(
             DatabaseService databaseService,
-            SchemaMetadataStorageService schemaMetadataStorageService,
+            SchemaMetadataService schemaMetadataService,
             PermissionUtils permissionUtils,
             AuditLogService auditLogService
     ) {
         this.databaseService = databaseService;
-        this.schemaMetadataStorageService = schemaMetadataStorageService;
+        this.schemaMetadataService = schemaMetadataService;
         this.permissionUtils = permissionUtils;
         this.auditLogService = auditLogService;
     }
@@ -79,7 +79,7 @@ public class RecordDeleteService {
 
         try {
             // Get table metadata
-            TableMetadata tableMetadata = schemaMetadataStorageService.getTableMetadata(
+            TableMetadata tableMetadata = schemaMetadataService.getTableMetadata(
                     connectionId, schemaName, tableName);
 
             // Get readable columns for WHERE conditions (need READ permission for WHERE)
@@ -138,43 +138,43 @@ public class RecordDeleteService {
 
         } catch (DataIntegrityViolationException e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log referential integrity violation (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
                     "DELETE", "Referential integrity violation: " + e.getMessage(), executionTime,
                     String.format("DELETE failed due to foreign key constraints, WHERE %d conditions", whereConditions.size()));
-            
+
             logger.warn("Referential integrity violation prevented deletion from {}.{}: {}",
                     schemaName, tableName, e.getMessage());
             throw e;  // Re-throw to be handled by GlobalExceptionHandler
         } catch (DataAccessException e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log database failure (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
                     "DELETE", e.getMessage(), executionTime,
                     String.format("DELETE failed: WHERE %d conditions", whereConditions.size()));
-            
+
             logger.error("Failed to delete records from table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw new RuntimeException("Failed to delete records", e);
         } catch (IllegalArgumentException e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log validation failure (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
                     "DELETE", "Validation failed: " + e.getMessage(), executionTime,
                     "Permission check or WHERE clause validation failed");
-            
+
             logger.error("Validation error deleting records from table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw e;
         } catch (Exception e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log unexpected failure (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
                     "DELETE", "Unexpected error: " + e.getMessage(), executionTime,
                     "Internal server error during record deletion");
-            
+
             logger.error("Unexpected error deleting records from table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw new RuntimeException("Failed to delete records due to internal error", e);
         }

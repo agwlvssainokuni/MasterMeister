@@ -49,18 +49,18 @@ public class PermissionBulkService {
     private final UserRepository userRepository;
     private final UserPermissionRepository userPermissionRepository;
     private final DatabaseConnectionRepository databaseConnectionRepository;
-    private final SchemaMetadataStorageService schemaMetadataStorageService;
+    private final SchemaMetadataService schemaMetadataService;
 
     public PermissionBulkService(
             UserRepository userRepository,
             UserPermissionRepository userPermissionRepository,
             DatabaseConnectionRepository databaseConnectionRepository,
-            SchemaMetadataStorageService schemaMetadataStorageService
+            SchemaMetadataService schemaMetadataService
     ) {
         this.userRepository = userRepository;
         this.userPermissionRepository = userPermissionRepository;
         this.databaseConnectionRepository = databaseConnectionRepository;
-        this.schemaMetadataStorageService = schemaMetadataStorageService;
+        this.schemaMetadataService = schemaMetadataService;
     }
 
     public BulkPermissionResult grantBulkPermissions(
@@ -185,7 +185,7 @@ public class PermissionBulkService {
             Long connectionId,
             BulkPermissionRequest request
     ) {
-        Optional<SchemaMetadata> schemaMetadataOpt = schemaMetadataStorageService.getSchemaMetadata(connectionId);
+        Optional<SchemaMetadata> schemaMetadataOpt = schemaMetadataService.getSchemaMetadata(connectionId);
         if (schemaMetadataOpt.isEmpty()) {
             throw new IllegalArgumentException("Schema metadata not found for connection: " + connectionId);
         }

@@ -43,18 +43,18 @@ public class RecordCreateService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
-    private final SchemaMetadataStorageService schemaMetadataStorageService;
+    private final SchemaMetadataService schemaMetadataService;
     private final PermissionUtils permissionUtils;
     private final AuditLogService auditLogService;
 
     public RecordCreateService(
             DatabaseService databaseService,
-            SchemaMetadataStorageService schemaMetadataStorageService,
+            SchemaMetadataService schemaMetadataService,
             PermissionUtils permissionUtils,
             AuditLogService auditLogService
     ) {
         this.databaseService = databaseService;
-        this.schemaMetadataStorageService = schemaMetadataStorageService;
+        this.schemaMetadataService = schemaMetadataService;
         this.permissionUtils = permissionUtils;
         this.auditLogService = auditLogService;
     }
@@ -66,7 +66,7 @@ public class RecordCreateService {
             Long connectionId, String schemaName, String tableName, Map<String, Object> recordData
     ) {
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
-        
+
         long startTime = System.currentTimeMillis();
 
         // Check WRITE permission for the table
@@ -74,7 +74,7 @@ public class RecordCreateService {
 
         try {
             // Get table metadata
-            TableMetadata tableMetadata = schemaMetadataStorageService.getTableMetadata(
+            TableMetadata tableMetadata = schemaMetadataService.getTableMetadata(
                     connectionId, schemaName, tableName);
 
             // Get writable columns with permissions
@@ -92,14 +92,14 @@ public class RecordCreateService {
             NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
             InsertQueryResult insertQuery = buildInsertQuery(schemaName, tableName, validatedData);
-            
+
             logger.debug("Executing INSERT query: {}", insertQuery.query());
             logger.debug("Query parameters: {}", insertQuery.parameters());
 
             KeyHolder keyHolder = new GeneratedKeyHolder();
             int rowsAffected = namedJdbcTemplate.update(
-                    insertQuery.query(), 
-                    insertQuery.parameterSource(), 
+                    insertQuery.query(),
+                    insertQuery.parameterSource(),
                     keyHolder
             );
 
@@ -118,8 +118,8 @@ public class RecordCreateService {
                     createdRecord, columnTypes, executionTime, insertQuery.query());
 
             // Log detailed record creation success
-            auditLogService.logDataModificationDetailed(connectionId, schemaName, tableName, 
-                    "CREATE", 1, executionTime, insertQuery.query(), 
+            auditLogService.logDataModificationDetailed(connectionId, schemaName, tableName,
+                    "CREATE", 1, executionTime, insertQuery.query(),
                     String.format("Created record with %d columns", validatedData.size()));
 
             logger.info("Successfully created record in {}.{} in {}ms", schemaName, tableName, executionTime);
@@ -128,32 +128,32 @@ public class RecordCreateService {
 
         } catch (DataAccessException e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log detailed database failure (REQUIRES_NEW ensures this is recorded even if transaction rolls back)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
-                    "CREATE", e.getMessage(), executionTime, 
+                    "CREATE", e.getMessage(), executionTime,
                     recordData != null ? "INSERT with " + recordData.size() + " fields" : "INSERT failed");
-            
+
             logger.error("Failed to create record in table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw new RuntimeException("Failed to create record", e);
         } catch (IllegalArgumentException e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log validation failure (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
-                    "CREATE", "Validation failed: " + e.getMessage(), executionTime, 
+                    "CREATE", "Validation failed: " + e.getMessage(), executionTime,
                     "Data validation or permission check failed");
-            
+
             logger.error("Validation error creating record in table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw e;
         } catch (Exception e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log unexpected failure (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
-                    "CREATE", "Unexpected error: " + e.getMessage(), executionTime, 
+                    "CREATE", "Unexpected error: " + e.getMessage(), executionTime,
                     "Internal server error during record creation");
-            
+
             logger.error("Unexpected error creating record in table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw new RuntimeException("Failed to create record due to internal error", e);
         }
@@ -182,21 +182,21 @@ public class RecordCreateService {
 
         for (ColumnMetadata column : writableColumns) {
             String columnName = column.columnName();
-            
+
             // Skip auto-increment columns - they will be generated by database
             if (column.autoIncrement()) {
                 continue;
             }
-            
+
             if (inputData.containsKey(columnName)) {
                 Object value = inputData.get(columnName);
-                
+
                 // Basic validation - null check for NOT NULL columns
                 if (value == null && !column.nullable()) {
                     throw new IllegalArgumentException(
                             "Column '" + columnName + "' is required (NOT NULL)");
                 }
-                
+
                 validatedData.put(columnName, value);
             } else if (!column.nullable() && column.defaultValue() == null) {
                 // Required column with no default value
@@ -215,7 +215,7 @@ public class RecordCreateService {
             String schemaName, String tableName, Map<String, Object> data
     ) {
         String fullTableName = buildTableName(schemaName, tableName);
-        
+
         if (data.isEmpty()) {
             throw new IllegalArgumentException("No data provided for insert");
         }
@@ -223,7 +223,7 @@ public class RecordCreateService {
         List<String> columns = data.keySet().stream()
                 .map(this::escapeColumnName)
                 .collect(Collectors.toList());
-        
+
         List<String> parameterNames = data.keySet().stream()
                 .map(col -> ":" + col)
                 .collect(Collectors.toList());
