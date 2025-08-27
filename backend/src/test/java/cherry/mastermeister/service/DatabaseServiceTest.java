@@ -34,16 +34,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class DatabaseConnectionServiceTest {
+class DatabaseServiceTest {
 
     @Mock
     private DatabaseConnectionRepository repository;
 
-    private DatabaseConnectionService service;
+    private DatabaseService service;
 
     @BeforeEach
     void setUp() {
-        service = new DatabaseConnectionService(repository);
+        service = new DatabaseService(repository);
     }
 
     @Test

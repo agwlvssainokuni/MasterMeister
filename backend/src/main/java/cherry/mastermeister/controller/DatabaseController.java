@@ -20,7 +20,7 @@ import cherry.mastermeister.controller.dto.ApiResponse;
 import cherry.mastermeister.controller.dto.DatabaseConnectionRequest;
 import cherry.mastermeister.controller.dto.DatabaseConnectionResult;
 import cherry.mastermeister.model.DatabaseConnection;
-import cherry.mastermeister.service.DatabaseConnectionService;
+import cherry.mastermeister.service.DatabaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,23 +34,25 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/database-connections")
+@RequestMapping("/api/admin/databases")
 @PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Database Connection Management", description = "APIs for managing database connections")
-public class DatabaseConnectionController {
+public class DatabaseController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final DatabaseConnectionService databaseConnectionService;
+    private final DatabaseService databaseService;
 
-    public DatabaseConnectionController(DatabaseConnectionService databaseConnectionService) {
-        this.databaseConnectionService = databaseConnectionService;
+    public DatabaseController(
+            DatabaseService databaseService
+    ) {
+        this.databaseService = databaseService;
     }
 
     @GetMapping
     @Operation(summary = "Get all database connections", description = "Retrieve list of all database connections")
     public ApiResponse<List<DatabaseConnectionResult>> getAllConnections() {
-        List<DatabaseConnection> connections = databaseConnectionService.getAllConnections();
+        List<DatabaseConnection> connections = databaseService.getAllConnections();
         List<DatabaseConnectionResult> results = connections.stream()
                 .map(this::toResult)
                 .toList();
@@ -60,7 +62,7 @@ public class DatabaseConnectionController {
     @GetMapping("/{id}")
     @Operation(summary = "Get database connection by ID", description = "Retrieve a specific database connection")
     public ApiResponse<DatabaseConnectionResult> getConnection(@PathVariable Long id) {
-        DatabaseConnection connection = databaseConnectionService.getConnection(id);
+        DatabaseConnection connection = databaseService.getConnection(id);
         return ApiResponse.success(toResult(connection));
     }
 
@@ -68,7 +70,7 @@ public class DatabaseConnectionController {
     @Operation(summary = "Create database connection", description = "Create a new database connection")
     public ApiResponse<DatabaseConnectionResult> createConnection(@Valid @RequestBody DatabaseConnectionRequest request) {
         DatabaseConnection model = toModel(request);
-        DatabaseConnection savedConnection = databaseConnectionService.createConnection(model);
+        DatabaseConnection savedConnection = databaseService.createConnection(model);
         logger.info("Created database connection: {} (ID: {})", savedConnection.name(), savedConnection.id());
         return ApiResponse.success(toResult(savedConnection));
     }
@@ -78,7 +80,7 @@ public class DatabaseConnectionController {
     public ApiResponse<DatabaseConnectionResult> updateConnection(
             @PathVariable Long id, @Valid @RequestBody DatabaseConnectionRequest request) {
         DatabaseConnection model = toModel(request);
-        DatabaseConnection updatedConnection = databaseConnectionService.updateConnection(id, model);
+        DatabaseConnection updatedConnection = databaseService.updateConnection(id, model);
         logger.info("Updated database connection: {} (ID: {})", updatedConnection.name(), id);
         return ApiResponse.success(toResult(updatedConnection));
     }
@@ -86,7 +88,7 @@ public class DatabaseConnectionController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete database connection", description = "Delete a database connection")
     public ApiResponse<Void> deleteConnection(@PathVariable Long id) {
-        databaseConnectionService.deleteConnection(id);
+        databaseService.deleteConnection(id);
         logger.info("Deleted database connection ID: {}", id);
         return ApiResponse.success(null);
     }
@@ -94,7 +96,7 @@ public class DatabaseConnectionController {
     @PostMapping("/{id}/test")
     @Operation(summary = "Test database connection", description = "Test connectivity for a specific database connection")
     public ApiResponse<Map<String, Object>> testConnection(@PathVariable Long id) {
-        Map<String, Object> result = databaseConnectionService.testConnectionWithDetails(id);
+        Map<String, Object> result = databaseService.testConnectionWithDetails(id);
         boolean isConnected = (Boolean) result.get("connected");
         logger.info("Connection test for ID {}: {}", id, isConnected ? "SUCCESS" : "FAILED");
         return ApiResponse.success(result);
@@ -103,7 +105,7 @@ public class DatabaseConnectionController {
     @PostMapping("/{id}/activate")
     @Operation(summary = "Activate database connection", description = "Activate a database connection")
     public ApiResponse<DatabaseConnectionResult> activateConnection(@PathVariable Long id) {
-        DatabaseConnection connection = databaseConnectionService.activateConnection(id);
+        DatabaseConnection connection = databaseService.activateConnection(id);
         logger.info("Activated database connection: {} (ID: {})", connection.name(), id);
         return ApiResponse.success(toResult(connection));
     }
@@ -111,7 +113,7 @@ public class DatabaseConnectionController {
     @PostMapping("/{id}/deactivate")
     @Operation(summary = "Deactivate database connection", description = "Deactivate a database connection")
     public ApiResponse<DatabaseConnectionResult> deactivateConnection(@PathVariable Long id) {
-        DatabaseConnection connection = databaseConnectionService.deactivateConnection(id);
+        DatabaseConnection connection = databaseService.deactivateConnection(id);
         logger.info("Deactivated database connection: {} (ID: {})", connection.name(), id);
         return ApiResponse.success(toResult(connection));
     }

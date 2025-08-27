@@ -57,9 +57,9 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(List.of(ex.getMessage())));
     }
 
-    @ExceptionHandler(DatabaseConnectionNotFoundException.class)
+    @ExceptionHandler(DatabaseNotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> handleDatabaseConnectionNotFoundException(
-            DatabaseConnectionNotFoundException ex) {
+            DatabaseNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error(List.of(ex.getMessage())));
     }

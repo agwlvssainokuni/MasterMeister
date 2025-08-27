@@ -43,18 +43,18 @@ import java.util.function.Supplier;
 public class SchemaUpdateService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final DatabaseConnectionService databaseConnectionService;
+    private final DatabaseService databaseService;
     private final SchemaMetadataStorageService schemaMetadataStorageService;
     private final SchemaUpdateLogRepository schemaUpdateLogRepository;
     private final AuditLogService auditLogService;
 
     public SchemaUpdateService(
-            DatabaseConnectionService databaseConnectionService,
+            DatabaseService databaseService,
             SchemaMetadataStorageService schemaMetadataStorageService,
             SchemaUpdateLogRepository schemaUpdateLogRepository,
             AuditLogService auditLogService
     ) {
-        this.databaseConnectionService = databaseConnectionService;
+        this.databaseService = databaseService;
         this.schemaMetadataStorageService = schemaMetadataStorageService;
         this.schemaUpdateLogRepository = schemaUpdateLogRepository;
         this.auditLogService = auditLogService;
@@ -193,8 +193,8 @@ public class SchemaUpdateService {
     public SchemaMetadata readAndRefreshSchema(Long connectionId) {
         logger.info("Reading and refreshing schema metadata for connection ID: {}", connectionId);
 
-        DatabaseConnection connection = databaseConnectionService.getConnection(connectionId);
-        DataSource dataSource = databaseConnectionService.getDataSource(connectionId);
+        DatabaseConnection connection = databaseService.getConnection(connectionId);
+        DataSource dataSource = databaseService.getDataSource(connectionId);
 
         try (Connection conn = dataSource.getConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();

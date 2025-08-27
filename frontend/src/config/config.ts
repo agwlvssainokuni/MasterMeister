@@ -44,15 +44,15 @@ export const API_ENDPOINTS = {
     RECORD_DELETE: (connectionId: number, schemaName: string, tableName: string) => 
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records:delete`
   },
-  DATABASE_CONNECTIONS: {
-    LIST: '/admin/database-connections',
-    GET: (id: number) => `/admin/database-connections/${id}`,
-    CREATE: '/admin/database-connections',
-    UPDATE: (id: number) => `/admin/database-connections/${id}`,
-    DELETE: (id: number) => `/admin/database-connections/${id}`,
-    TEST: (id: number) => `/admin/database-connections/${id}/test`,
-    ACTIVATE: (id: number) => `/admin/database-connections/${id}/activate`,
-    DEACTIVATE: (id: number) => `/admin/database-connections/${id}/deactivate`
+  DATABASES: {
+    LIST: '/admin/databases',
+    GET: (id: number) => `/admin/databases/${id}`,
+    CREATE: '/admin/databases',
+    UPDATE: (id: number) => `/admin/databases/${id}`,
+    DELETE: (id: number) => `/admin/databases/${id}`,
+    TEST: (id: number) => `/admin/databases/${id}/test`,
+    ACTIVATE: (id: number) => `/admin/databases/${id}/activate`,
+    DEACTIVATE: (id: number) => `/admin/databases/${id}/deactivate`
   },
   SCHEMA: {
     READ: (connectionId: number) => `/admin/schema/${connectionId}`,

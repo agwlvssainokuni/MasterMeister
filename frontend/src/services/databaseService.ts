@@ -28,7 +28,7 @@ class DatabaseService {
 
   async getAllConnections(): Promise<Database[]> {
     const response = await apiClient.get<ApiResponse<DatabaseResult[]>>(
-      API_ENDPOINTS.DATABASE_CONNECTIONS.LIST
+      API_ENDPOINTS.DATABASES.LIST
     )
 
     if (!response.data.ok || !response.data.data) {
@@ -40,7 +40,7 @@ class DatabaseService {
 
   async getConnection(id: number): Promise<Database> {
     const response = await apiClient.get<ApiResponse<DatabaseResult>>(
-      API_ENDPOINTS.DATABASE_CONNECTIONS.GET(id)
+      API_ENDPOINTS.DATABASES.GET(id)
     )
 
     if (!response.data.ok || !response.data.data) {
@@ -54,7 +54,7 @@ class DatabaseService {
     const requestBody: DatabaseRequest = this.convertToApiRequest(connectionForm)
 
     const response = await apiClient.post<ApiResponse<DatabaseResult>>(
-      API_ENDPOINTS.DATABASE_CONNECTIONS.CREATE,
+      API_ENDPOINTS.DATABASES.CREATE,
       requestBody
     )
 
@@ -69,7 +69,7 @@ class DatabaseService {
     const requestBody: DatabaseRequest = this.convertToApiRequest(connectionForm)
 
     const response = await apiClient.put<ApiResponse<DatabaseResult>>(
-      API_ENDPOINTS.DATABASE_CONNECTIONS.UPDATE(id),
+      API_ENDPOINTS.DATABASES.UPDATE(id),
       requestBody
     )
 
@@ -82,7 +82,7 @@ class DatabaseService {
 
   async deleteConnection(id: number): Promise<void> {
     const response = await apiClient.delete<ApiResponse<void>>(
-      API_ENDPOINTS.DATABASE_CONNECTIONS.DELETE(id)
+      API_ENDPOINTS.DATABASES.DELETE(id)
     )
 
     if (!response.data.ok) {
@@ -92,7 +92,7 @@ class DatabaseService {
 
   async testConnection(id: number): Promise<ConnectionTestResult> {
     const response = await apiClient.post<ApiResponse<ApiConnectionTestResult>>(
-      API_ENDPOINTS.DATABASE_CONNECTIONS.TEST(id)
+      API_ENDPOINTS.DATABASES.TEST(id)
     )
 
     if (!response.data.ok || !response.data.data) {
@@ -104,7 +104,7 @@ class DatabaseService {
 
   async activateConnection(id: number): Promise<Database> {
     const response = await apiClient.post<ApiResponse<DatabaseResult>>(
-      API_ENDPOINTS.DATABASE_CONNECTIONS.ACTIVATE(id)
+      API_ENDPOINTS.DATABASES.ACTIVATE(id)
     )
 
     if (!response.data.ok || !response.data.data) {
@@ -116,7 +116,7 @@ class DatabaseService {
 
   async deactivateConnection(id: number): Promise<Database> {
     const response = await apiClient.post<ApiResponse<DatabaseResult>>(
-      API_ENDPOINTS.DATABASE_CONNECTIONS.DEACTIVATE(id)
+      API_ENDPOINTS.DATABASES.DEACTIVATE(id)
     )
 
     if (!response.data.ok || !response.data.data) {

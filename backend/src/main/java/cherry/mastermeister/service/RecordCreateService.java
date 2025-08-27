@@ -32,8 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,18 +42,18 @@ import java.util.stream.Collectors;
 public class RecordCreateService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final DatabaseConnectionService databaseConnectionService;
+    private final DatabaseService databaseService;
     private final SchemaMetadataStorageService schemaMetadataStorageService;
     private final PermissionUtils permissionUtils;
     private final AuditLogService auditLogService;
 
     public RecordCreateService(
-            DatabaseConnectionService databaseConnectionService,
+            DatabaseService databaseService,
             SchemaMetadataStorageService schemaMetadataStorageService,
             PermissionUtils permissionUtils,
             AuditLogService auditLogService
     ) {
-        this.databaseConnectionService = databaseConnectionService;
+        this.databaseService = databaseService;
         this.schemaMetadataStorageService = schemaMetadataStorageService;
         this.permissionUtils = permissionUtils;
         this.auditLogService = auditLogService;
@@ -90,7 +88,7 @@ public class RecordCreateService {
             Map<String, Object> validatedData = validateAndFilterData(recordData, writableColumns);
 
             // Build and execute INSERT query
-            DataSource dataSource = databaseConnectionService.getDataSource(connectionId);
+            DataSource dataSource = databaseService.getDataSource(connectionId);
             NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
             InsertQueryResult insertQuery = buildInsertQuery(schemaName, tableName, validatedData);

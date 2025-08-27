@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 public class RecordReadService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final DatabaseConnectionService databaseConnectionService;
+    private final DatabaseService databaseService;
     private final SchemaMetadataStorageService schemaMetadataStorageService;
     private final PermissionAuthService permissionAuthService;
     private final PermissionUtils permissionUtils;
@@ -52,14 +52,14 @@ public class RecordReadService {
     private int largeDatasetThreshold;
 
     public RecordReadService(
-            DatabaseConnectionService databaseConnectionService,
+            DatabaseService databaseService,
             SchemaMetadataStorageService schemaMetadataStorageService,
             PermissionAuthService permissionAuthService,
             PermissionUtils permissionUtils,
             AuditLogService auditLogService,
             QueryBuilderService queryBuilderService
     ) {
-        this.databaseConnectionService = databaseConnectionService;
+        this.databaseService = databaseService;
         this.schemaMetadataStorageService = schemaMetadataStorageService;
         this.permissionAuthService = permissionAuthService;
         this.permissionUtils = permissionUtils;
@@ -104,7 +104,7 @@ public class RecordReadService {
             }
 
             // Build and execute query
-            DataSource dataSource = databaseConnectionService.getDataSource(connectionId);
+            DataSource dataSource = databaseService.getDataSource(connectionId);
             NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
             // Use QueryBuilderService for dynamic query generation

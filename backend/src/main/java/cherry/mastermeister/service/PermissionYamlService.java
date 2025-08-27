@@ -53,7 +53,7 @@ public class PermissionYamlService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final PermissionManagementService permissionManagementService;
     private final PermissionTemplateService permissionTemplateService;
-    private final DatabaseConnectionService databaseConnectionService;
+    private final DatabaseService databaseService;
     private final UserRepository userRepository;
     private final UserPermissionRepository userPermissionRepository;
     private final ObjectMapper yamlMapper;
@@ -64,13 +64,13 @@ public class PermissionYamlService {
     public PermissionYamlService(
             PermissionManagementService permissionManagementService,
             PermissionTemplateService permissionTemplateService,
-            DatabaseConnectionService databaseConnectionService,
+            DatabaseService databaseService,
             UserRepository userRepository,
             UserPermissionRepository userPermissionRepository
     ) {
         this.permissionManagementService = permissionManagementService;
         this.permissionTemplateService = permissionTemplateService;
-        this.databaseConnectionService = databaseConnectionService;
+        this.databaseService = databaseService;
         this.userRepository = userRepository;
         this.userPermissionRepository = userPermissionRepository;
 
@@ -110,7 +110,7 @@ public class PermissionYamlService {
 
         // Validate connection exists
         try {
-            databaseConnectionService.getConnection(targetConnectionId);
+            databaseService.getConnection(targetConnectionId);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid connection ID: " + targetConnectionId, e);
         }
@@ -136,7 +136,7 @@ public class PermissionYamlService {
                 LocalDateTime.now(), getCurrentUserEmail(), description);
 
         // Connection info
-        DatabaseConnection connection = databaseConnectionService.getConnection(connectionId);
+        DatabaseConnection connection = databaseService.getConnection(connectionId);
         PermissionExportData.ConnectionInfo connectionInfo = new PermissionExportData.ConnectionInfo(
                 connectionId, connection.name(), connection.dbType().name(), connection.databaseName());
 

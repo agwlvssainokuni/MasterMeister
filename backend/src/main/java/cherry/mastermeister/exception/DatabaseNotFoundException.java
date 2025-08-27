@@ -16,8 +16,8 @@
 
 package cherry.mastermeister.exception;
 
-public class DatabaseConnectionNotFoundException extends RuntimeException {
-    public DatabaseConnectionNotFoundException(String message) {
+public class DatabaseNotFoundException extends RuntimeException {
+    public DatabaseNotFoundException(String message) {
         super(message);
     }
 }

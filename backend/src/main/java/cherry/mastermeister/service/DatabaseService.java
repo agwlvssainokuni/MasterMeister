@@ -17,7 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.DatabaseConnectionEntity;
-import cherry.mastermeister.exception.DatabaseConnectionNotFoundException;
+import cherry.mastermeister.exception.DatabaseNotFoundException;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
@@ -36,13 +36,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class DatabaseConnectionService {
+public class DatabaseService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseConnectionRepository databaseConnectionRepository;
     private final Map<Long, HikariDataSource> dataSourceCache = new ConcurrentHashMap<>();
 
-    public DatabaseConnectionService(DatabaseConnectionRepository databaseConnectionRepository) {
+    public DatabaseService(DatabaseConnectionRepository databaseConnectionRepository) {
         this.databaseConnectionRepository = databaseConnectionRepository;
     }
 
@@ -219,7 +219,7 @@ public class DatabaseConnectionService {
 
     private DatabaseConnectionEntity findEntityById(Long connectionId) {
         return databaseConnectionRepository.findById(connectionId)
-                .orElseThrow(() -> new DatabaseConnectionNotFoundException("Database connection not found: " + connectionId));
+                .orElseThrow(() -> new DatabaseNotFoundException("Database connection not found: " + connectionId));
     }
 
     private DatabaseConnection toModel(DatabaseConnectionEntity entity) {

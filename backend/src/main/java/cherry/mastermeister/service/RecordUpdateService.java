@@ -40,18 +40,18 @@ import java.util.stream.Collectors;
 public class RecordUpdateService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final DatabaseConnectionService databaseConnectionService;
+    private final DatabaseService databaseService;
     private final SchemaMetadataStorageService schemaMetadataStorageService;
     private final PermissionUtils permissionUtils;
     private final AuditLogService auditLogService;
 
     public RecordUpdateService(
-            DatabaseConnectionService databaseConnectionService,
+            DatabaseService databaseService,
             SchemaMetadataStorageService schemaMetadataStorageService,
             PermissionUtils permissionUtils,
             AuditLogService auditLogService
     ) {
-        this.databaseConnectionService = databaseConnectionService;
+        this.databaseService = databaseService;
         this.schemaMetadataStorageService = schemaMetadataStorageService;
         this.permissionUtils = permissionUtils;
         this.auditLogService = auditLogService;
@@ -99,7 +99,7 @@ public class RecordUpdateService {
             }
 
             // Build and execute UPDATE query
-            DataSource dataSource = databaseConnectionService.getDataSource(connectionId);
+            DataSource dataSource = databaseService.getDataSource(connectionId);
             NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
             UpdateQueryResult updateQuery = buildUpdateQuery(schemaName, tableName,
