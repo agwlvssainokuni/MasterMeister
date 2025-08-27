@@ -18,13 +18,13 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { DatabaseConnection, SchemaUpdateLog } from '../types/frontend'
 
-interface SchemaOperationHistoryProps {
+interface SchemaOperationHistoryViewProps {
   connection: DatabaseConnection
   operationHistory: SchemaUpdateLog[]
   onRefresh: () => void
 }
 
-export const SchemaOperationHistory: React.FC<SchemaOperationHistoryProps> = ({
+export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProps> = ({
   operationHistory,
   onRefresh
 }) => {

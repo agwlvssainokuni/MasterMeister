@@ -20,13 +20,13 @@ import {dataAccessService} from '../services/dataAccessService'
 import type {AccessibleTable} from '../types/frontend'
 import '../styles/components/Table.css'
 
-interface TablesListProps {
+interface TablesListViewProps {
   connectionId: number
   onTableSelect: (table: AccessibleTable) => void
   selectedTable?: AccessibleTable
 }
 
-export const TablesList: React.FC<TablesListProps> = (
+export const TablesListView: React.FC<TablesListViewProps> = (
   {connectionId, onTableSelect, selectedTable}
 ) => {
   const {t} = useTranslation()

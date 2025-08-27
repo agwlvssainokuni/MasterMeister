@@ -17,8 +17,8 @@
 import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {AdminLayout} from './layouts/AdminLayout'
-import {DatabaseConnectionList} from '../components/DatabaseConnectionList'
-import {DatabaseConnectionForm} from '../components/DatabaseConnectionForm'
+import {DatabaseListView} from '../components/DatabaseListView'
+import {DatabaseFormView} from '../components/DatabaseFormView'
 import {useNotification} from '../contexts/NotificationContext'
 import {databaseConnectionService} from '../services/databaseConnectionService'
 import type {DatabaseConnection, DatabaseConnectionForm as ConnectionForm} from '../types/frontend'
@@ -222,13 +222,13 @@ export const DatabaseManagementPage: React.FC = () => {
       </div>
 
       {showForm ? (
-        <DatabaseConnectionForm
+        <DatabaseFormView
           connection={editingConnection}
           onSubmit={handleFormSubmit}
           onCancel={handleFormCancel}
         />
       ) : (
-        <DatabaseConnectionList
+        <DatabaseListView
           connections={connections}
           onEdit={handleEditConnection}
           onDelete={handleDeleteConnection}

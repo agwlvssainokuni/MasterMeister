@@ -26,7 +26,7 @@ import '../styles/components/Loading.css'
 import '../styles/components/Alert.css'
 import '../styles/components/Modal.css'
 
-export const PendingUsersList = () => {
+export const PendingUsersListView = () => {
   const {t, i18n} = useTranslation()
   const {showSuccess, showError} = useNotification()
   const [users, setUsers] = useState<PendingUser[]>([])

@@ -18,7 +18,7 @@ import React from 'react'
 import {useTranslation} from 'react-i18next'
 import type {BulkPermissionOptions, BulkPermissionType} from '../types/frontend'
 
-interface BulkPermissionConfirmDialogProps {
+interface BulkPermissionConfirmModalProps {
   isOpen: boolean
   permissionType: BulkPermissionType
   options: BulkPermissionOptions
@@ -27,7 +27,7 @@ interface BulkPermissionConfirmDialogProps {
   onCancel: () => void
 }
 
-export const BulkPermissionConfirmDialog: React.FC<BulkPermissionConfirmDialogProps> = (
+export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProps> = (
   {
     isOpen,
     permissionType,

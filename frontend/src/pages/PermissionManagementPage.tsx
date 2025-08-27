@@ -18,7 +18,7 @@ import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {AdminLayout} from './layouts/AdminLayout'
 import {DatabaseSelectorView} from '../components/DatabaseSelectorView'
-import {PermissionManager} from '../components/PermissionManager'
+import {PermissionManagementView} from '../components/PermissionManagementView'
 import {useNotification} from '../contexts/NotificationContext'
 import {databaseConnectionService} from '../services/databaseConnectionService'
 import {permissionService} from '../services/permissionService'
@@ -190,7 +190,7 @@ export const PermissionManagementPage: React.FC = () => {
             i18nPrefix="permissions"
           />
           {selectedConnection && (
-            <PermissionManager
+            <PermissionManagementView
               connection={selectedConnection}
               loading={loading}
               onExport={handleExportPermissions}

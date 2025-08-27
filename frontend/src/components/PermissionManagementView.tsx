@@ -16,8 +16,8 @@
 
 import React, {useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {BulkPermissionSetup} from './BulkPermissionSetup'
-import {BulkPermissionConfirmDialog} from './BulkPermissionConfirmDialog'
+import {BulkPermissionSetupView} from './BulkPermissionSetupView'
+import {BulkPermissionConfirmModal} from './BulkPermissionConfirmModal'
 import type {
   BulkPermissionOptions,
   BulkPermissionResult,
@@ -28,7 +28,7 @@ import type {
   PermissionValidationResult
 } from '../types/frontend'
 
-interface PermissionManagerProps {
+interface PermissionManagementViewProps {
   connection: DatabaseConnection
   loading: boolean
   onExport: (connectionId: number, description?: string) => Promise<void>
@@ -37,7 +37,7 @@ interface PermissionManagerProps {
   onBulkGrant?: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
 }
 
-export const PermissionManager: React.FC<PermissionManagerProps> = (
+export const PermissionManagementView: React.FC<PermissionManagementViewProps> = (
   {
     connection,
     loading,
@@ -179,7 +179,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = (
 
       <div className="tab-content">
         {activeTab === 'quickSetup' && onBulkGrant && (
-          <BulkPermissionSetup
+          <BulkPermissionSetupView
             connection={connection}
             loading={loading}
             onBulkGrant={onBulkGrant}
@@ -474,7 +474,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = (
       </div>
 
       {showConfirmDialog && confirmOptions && (
-        <BulkPermissionConfirmDialog
+        <BulkPermissionConfirmModal
           isOpen={showConfirmDialog}
           permissionType={confirmOptions.type}
           options={confirmOptions.options}

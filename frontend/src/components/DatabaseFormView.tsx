@@ -18,13 +18,13 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { DatabaseConnection, DatabaseConnectionForm as ConnectionForm, DatabaseType } from '../types/frontend'
 
-interface DatabaseConnectionFormProps {
+interface DatabaseFormViewProps {
   connection?: DatabaseConnection | null
   onSubmit: (formData: ConnectionForm) => void
   onCancel: () => void
 }
 
-export const DatabaseConnectionForm: React.FC<DatabaseConnectionFormProps> = ({
+export const DatabaseFormView: React.FC<DatabaseFormViewProps> = ({
   connection,
   onSubmit,
   onCancel

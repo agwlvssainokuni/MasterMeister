@@ -30,7 +30,7 @@ import type {
 } from '../types/frontend'
 import '../styles/components/Table.css'
 
-interface DataTableProps {
+interface DataTableViewProps {
   connectionId: number
   schemaName: string
   tableName: string
@@ -42,7 +42,7 @@ interface DataTableProps {
   onDataReload?: () => void
 }
 
-export const DataTable: React.FC<DataTableProps> = (
+export const DataTableView: React.FC<DataTableViewProps> = (
   {
     connectionId,
     schemaName,

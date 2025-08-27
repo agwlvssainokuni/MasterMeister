@@ -19,7 +19,7 @@ import {useTranslation} from 'react-i18next'
 import {AdminLayout} from './layouts/AdminLayout'
 import {DatabaseSelectorView} from '../components/DatabaseSelectorView'
 import {SchemaMetadataView} from '../components/SchemaMetadataView'
-import {SchemaOperationHistory} from '../components/SchemaOperationHistory'
+import {SchemaOperationHistoryView} from '../components/SchemaOperationHistoryView'
 import {useNotification} from '../contexts/NotificationContext'
 import {databaseConnectionService} from '../services/databaseConnectionService'
 import {schemaService} from '../services/schemaService'
@@ -231,7 +231,7 @@ export const SchemaManagementPage: React.FC = () => {
               />
             )}
             {activeTab === 'history' && (
-              <SchemaOperationHistory
+              <SchemaOperationHistoryView
                 connection={selectedConnection}
                 operationHistory={operationHistory}
                 onRefresh={() => loadOperationHistory(selectedConnection.id)}

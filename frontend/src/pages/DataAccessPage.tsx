@@ -18,8 +18,8 @@ import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {useNotification} from '../contexts/NotificationContext'
 import {UserLayout} from './layouts/UserLayout'
-import {TablesList} from '../components/TablesList'
-import {DataTable} from '../components/DataTable'
+import {TablesListView} from '../components/TablesListView'
+import {DataTableView} from '../components/DataTableView'
 import {RecordEditModal} from '../components/RecordEditModal'
 import {RecordDeleteModal} from '../components/RecordDeleteModal'
 import {PermissionGuard} from '../components/PermissionGuard'
@@ -115,7 +115,7 @@ export const DataAccessPage: React.FC = () => {
 
       <div className="data-access-layout">
         <aside className="tables-sidebar">
-          <TablesList
+          <TablesListView
             connectionId={connectionId}
             onTableSelect={handleTableSelect}
             selectedTable={selectedTable}
@@ -124,7 +124,7 @@ export const DataAccessPage: React.FC = () => {
 
         <main className="data-content">
           {selectedTable && tableMetadata ? (
-            <DataTable
+            <DataTableView
               key={dataTableKey}
               connectionId={selectedTable.connectionId}
               schemaName={selectedTable.schemaName}

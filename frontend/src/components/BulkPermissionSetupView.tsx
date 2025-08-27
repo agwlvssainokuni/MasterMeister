@@ -24,7 +24,7 @@ import type {
   DatabaseConnection
 } from '../types/frontend'
 
-interface BulkPermissionSetupProps {
+interface BulkPermissionSetupViewProps {
   connection: DatabaseConnection
   loading: boolean
   onBulkGrant: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
@@ -35,7 +35,7 @@ interface BulkPermissionSetupProps {
   ) => void
 }
 
-export const BulkPermissionSetup: React.FC<BulkPermissionSetupProps> = (
+export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
   {
     connection,
     loading,

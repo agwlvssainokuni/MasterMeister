@@ -18,7 +18,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { DatabaseConnection } from '../types/frontend'
 
-interface DatabaseConnectionListProps {
+interface DatabaseListViewProps {
   connections: DatabaseConnection[]
   onEdit: (connection: DatabaseConnection) => void
   onDelete: (connection: DatabaseConnection) => void
@@ -26,7 +26,7 @@ interface DatabaseConnectionListProps {
   onToggleActive: (connection: DatabaseConnection) => void
 }
 
-export const DatabaseConnectionList: React.FC<DatabaseConnectionListProps> = ({
+export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
   connections,
   onEdit,
   onDelete,
