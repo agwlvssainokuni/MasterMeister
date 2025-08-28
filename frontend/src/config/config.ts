@@ -16,6 +16,25 @@
 
 export const API_BASE_URL = '/api'
 
+// Authentication configuration
+export const AUTH_CONFIG = {
+  /**
+   * Token refresh buffer time in milliseconds
+   *
+   * This determines how early the system will proactively refresh tokens
+   * before they expire to prevent authentication interruptions.
+   *
+   * Examples:
+   * - 60000 (1 minute): Refresh when 1 minute remaining
+   * - 120000 (2 minutes): Refresh when 2 minutes remaining
+   * - 300000 (5 minutes): Refresh when 5 minutes remaining
+   *
+   * Note: Should be less than the token's actual lifetime.
+   * Backend tokens typically have 5-minute lifetime.
+   */
+  TOKEN_REFRESH_BUFFER_MS: 60000, // Default: 1 minute
+}
+
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/auth/login',
@@ -33,15 +52,15 @@ export const API_ENDPOINTS = {
   },
   DATA_ACCESS: {
     ACCESSIBLE_TABLES: (connectionId: number) => `/data/${connectionId}/tables`,
-    TABLE_METADATA: (connectionId: number, schemaName: string, tableName: string) => 
+    TABLE_METADATA: (connectionId: number, schemaName: string, tableName: string) =>
       `/data/${connectionId}/tables/${schemaName}/${tableName}/metadata`,
-    TABLE_RECORDS: (connectionId: number, schemaName: string, tableName: string) => 
+    TABLE_RECORDS: (connectionId: number, schemaName: string, tableName: string) =>
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
-    RECORD_CREATE: (connectionId: number, schemaName: string, tableName: string) => 
+    RECORD_CREATE: (connectionId: number, schemaName: string, tableName: string) =>
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
-    RECORD_UPDATE: (connectionId: number, schemaName: string, tableName: string) => 
+    RECORD_UPDATE: (connectionId: number, schemaName: string, tableName: string) =>
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
-    RECORD_DELETE: (connectionId: number, schemaName: string, tableName: string) => 
+    RECORD_DELETE: (connectionId: number, schemaName: string, tableName: string) =>
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records:delete`
   },
   DATABASES: {

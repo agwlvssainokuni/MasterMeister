@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {AUTH_CONFIG} from '../config/config'
+
 interface JWTPayload {
   sub: string // userUuid
   email: string // email address
@@ -49,7 +51,26 @@ export const isTokenExpired = (token: string): boolean => {
   return payload.exp < now
 }
 
-export const extractUserFromToken = (token: string): { email: string; role: 'USER' | 'ADMIN' } | null => {
+export const isTokenExpiringSoon = (
+  token: string,
+  bufferTimeMs = AUTH_CONFIG.TOKEN_REFRESH_BUFFER_MS,
+): boolean => {
+  const payload = parseJWT(token)
+  if (!payload) {
+    return true
+  }
+
+  const now = Math.floor(Date.now() / 1000)
+  const bufferTimeSeconds = Math.floor(bufferTimeMs / 1000)
+  return payload.exp < (now + bufferTimeSeconds)
+}
+
+export const extractUserFromToken = (
+  token: string,
+): {
+  email: string
+  role: 'USER' | 'ADMIN'
+} | null => {
   const payload = parseJWT(token)
   if (!payload) {
     return null

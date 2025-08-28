@@ -17,6 +17,7 @@
 import axios from 'axios'
 import {API_BASE_URL, API_ENDPOINTS} from '../config/config'
 import type {ApiResponse, LoginResult, RefreshTokenRequest} from "../types/api"
+import {isTokenExpiringSoon} from '../utils/jwt'
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -25,15 +26,55 @@ const apiClient = axios.create({
   }
 })
 
+// Global flag to prevent concurrent refresh attempts
+let isRefreshing = false
+
+// Background refresh function
+const refreshTokenInBackground = async (refreshToken: string) => {
+  if (isRefreshing) return
+
+  isRefreshing = true
+  try {
+    const response = await axios.post<ApiResponse<LoginResult>>(
+      `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
+        refreshToken
+      } as RefreshTokenRequest
+    )
+
+    const {data} = response.data
+    if (data) {
+      localStorage.setItem('accessToken', data.accessToken)
+      localStorage.setItem('refreshToken', data.refreshToken)
+
+      // Notify AuthContext of successful refresh
+      onTokenRefresh?.(data.accessToken, data.refreshToken)
+    }
+  } catch (error) {
+    console.warn('Background token refresh failed:', error)
+  } finally {
+    isRefreshing = false
+  }
+}
+
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken')
+    const refreshToken = localStorage.getItem('refreshToken')
+
+    // Trigger background refresh if token is expiring soon
+    if (token && refreshToken && !isRefreshing && isTokenExpiringSoon(token)) {
+      refreshTokenInBackground(refreshToken).catch(() => {
+        // Ignore errors - response interceptor will handle them
+      })
+    }
+
     if (token) {
       config.headers = {
         ...config.headers,
         Authorization: `Bearer ${token}`,
       }
     }
+
     return config
   },
   (error) => Promise.reject(error)
@@ -61,7 +102,8 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true
 
       const refreshToken = localStorage.getItem('refreshToken')
-      if (refreshToken) {
+      if (refreshToken && !isRefreshing) {
+        isRefreshing = true
         try {
           const response = await axios.post<ApiResponse<LoginResult>>(
             `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
@@ -85,9 +127,11 @@ apiClient.interceptors.response.use(
           localStorage.removeItem('accessToken')
           localStorage.removeItem('refreshToken')
           onAuthFailure?.()
+        } finally {
+          isRefreshing = false
         }
       } else {
-        // No refresh token - redirect to login
+        // No refresh token or already refreshing - redirect to login
         onAuthFailure?.()
       }
     }

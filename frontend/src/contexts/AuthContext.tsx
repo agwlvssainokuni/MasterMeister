@@ -81,7 +81,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
         isAuthenticated: false,
         user: null,
         accessToken: null,
-        refreshToken: null
+        refreshToken: null,
       })
       throw error
     } finally {
@@ -97,7 +97,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
         isAuthenticated: false,
         user: null,
         accessToken: null,
-        refreshToken: null
+        refreshToken: null,
       })
     } catch (error) {
       console.warn('Logout failed:', error)
@@ -106,7 +106,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
         isAuthenticated: false,
         user: null,
         accessToken: null,
-        refreshToken: null
+        refreshToken: null,
       })
     } finally {
       setIsLoading(false)

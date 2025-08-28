@@ -144,7 +144,7 @@ class AuthService {
   async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {
     const request: RegisterEmailRequest = {
       email: credentials.email,
-      language: credentials.language,
+      language: credentials.language || 'ja',
     }
 
     const response = await apiClient.post<ApiResponse<ApiRegisterEmailResult>>(
@@ -164,7 +164,7 @@ class AuthService {
       token: credentials.token,
       email: credentials.email,
       password: credentials.password,
-      language: credentials.language,
+      language: credentials.language || 'ja',
     }
 
     const response = await apiClient.post<ApiResponse<ApiRegisterUserResult>>(
@@ -182,7 +182,6 @@ class AuthService {
       email: apiResult.email
     }
   }
-
 
   getCurrentAuthState(): AuthState {
     const accessToken = localStorage.getItem('accessToken')
