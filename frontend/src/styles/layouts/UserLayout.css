@@ -17,12 +17,19 @@
 .user-layout {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   background-color: var(--color-background);
 }
 
 .user-header {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  position: sticky;
+  position: fixed;
+  top: 0;
+  left: 50%; /* 画面中央から開始 */
+  transform: translateX(-50%); /* 自身の幅の50%分左にずらして中央配置 */
+  width: 100%; /* 小画面では画面幅に合わせる */
+  max-width: 1280px; /* 大画面では最大1280px */
+  z-index: 1000;
 }
 
 .user-header .header-content {
@@ -138,6 +145,8 @@
   flex: 1;
   background: var(--color-background);
   padding: var(--spacing-md);
+  /* Header height: padding-top(16px) + padding-bottom(16px) + title-height(~32px) + navigation-gap(16px) = ~80px */
+  margin-top: calc(var(--spacing-md) * 2 + 32px + var(--spacing-md));
 }
 
 .user-main .main-content {

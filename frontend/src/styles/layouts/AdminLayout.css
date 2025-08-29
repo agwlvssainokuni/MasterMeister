@@ -17,12 +17,19 @@
 .admin-layout {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   background-color: var(--color-background);
 }
 
 .admin-header {
   background: linear-gradient(135deg, var(--color-danger) 0%, #8b0000 100%);
-  position: sticky;
+  position: fixed;
+  top: 0;
+  left: 50%; /* 画面中央から開始 */
+  transform: translateX(-50%); /* 自身の幅の50%分左にずらして中央配置 */
+  width: 100%; /* 小画面では画面幅に合わせる */
+  max-width: 1280px; /* 大画面では最大1280px */
+  z-index: 1000;
 }
 
 .admin-header .header-content {
@@ -151,6 +158,14 @@
   background-color: var(--color-background-dark);
   border-bottom: var(--border-width) solid rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  /* Position directly below header: header padding(16px * 2) + content height(~32px) */
+  top: calc(var(--spacing-md) * 2 + 32px);
+  left: 50%; /* 画面中央から開始 */
+  transform: translateX(-50%); /* 自身の幅の50%分左にずらして中央配置 */
+  width: 100%; /* 小画面では画面幅に合わせる */
+  max-width: 1280px; /* 大画面では最大1280px (ヘッダと統一) */
+  z-index: 999;
 }
 
 .admin-subnav .subnav-content {
@@ -199,6 +214,8 @@
   flex: 1;
   background: var(--color-background);
   padding: var(--spacing-md);
+  /* Total fixed header height: header(64px) + subnav(~48px) = ~112px */
+  margin-top: calc(var(--spacing-md) * 2 + 32px + var(--spacing-sm) * 2 + 32px);
 }
 
 .admin-main .main-content {
