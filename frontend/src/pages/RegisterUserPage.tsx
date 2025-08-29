@@ -20,10 +20,6 @@ import {useTranslation} from 'react-i18next'
 import {LanguageSelector} from '../components/LanguageSelector'
 import {authService} from '../services/authService'
 import type {RegisterUserCredentials} from '../types/frontend'
-import '../styles/layouts/AuthLayout.css'
-import '../styles/components/Form.css'
-import '../styles/components/Button.css'
-import '../styles/components/Alert.css'
 
 export const RegisterUserPage: React.FC = () => {
   const {t, i18n} = useTranslation()

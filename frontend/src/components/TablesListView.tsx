@@ -18,7 +18,6 @@ import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
 import type {AccessibleTable} from '../types/frontend'
-import '../styles/components/Table.css'
 
 interface TablesListViewProps {
   connectionId: number
@@ -27,7 +26,11 @@ interface TablesListViewProps {
 }
 
 export const TablesListView: React.FC<TablesListViewProps> = (
-  {connectionId, onTableSelect, selectedTable}
+  {
+    connectionId,
+    onTableSelect,
+    selectedTable,
+  }
 ) => {
   const {t} = useTranslation()
   const [tables, setTables] = useState<AccessibleTable[]>([])

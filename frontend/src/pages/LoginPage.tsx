@@ -20,10 +20,6 @@ import {Link, useNavigate} from 'react-router-dom'
 import {useAuth} from '../contexts/AuthContext'
 import {LanguageSelector} from '../components/LanguageSelector'
 import type {LoginCredentials} from '../types/frontend'
-import '../styles/layouts/AuthLayout.css'
-import '../styles/components/Form.css'
-import '../styles/components/Button.css'
-import '../styles/components/Alert.css'
 
 export const LoginPage: React.FC = () => {
   const {t} = useTranslation()

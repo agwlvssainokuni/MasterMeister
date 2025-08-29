@@ -17,8 +17,6 @@
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {useAuth} from '../contexts/AuthContext'
-import '../styles/components/Button.css'
-import '../styles/components/Alert.css'
 
 interface LogoutButtonProps {
   variant?: 'primary' | 'secondary'

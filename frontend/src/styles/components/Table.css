@@ -31,7 +31,7 @@
 
 /* テーブルヘッダー */
 .table-header {
-  background-color: var(--color-surface);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   border-bottom: var(--border-width-thick) solid var(--color-border);
 }
 
@@ -39,8 +39,8 @@
   padding: var(--spacing-md) var(--spacing-lg);
   text-align: left;
   font-weight: var(--font-weight-medium);
-  color: var(--color-text);
-  border-right: var(--border-width) solid var(--color-border);
+  color: white;
+  border-right: var(--border-width) solid rgba(255, 255, 255, 0.2);
 }
 
 .table-header th:last-child {
@@ -97,6 +97,19 @@
 
 .table-body tr:last-child {
   border-bottom: none;
+}
+
+/* Zebra striping for table-striped */
+.table-striped .table-body tr:nth-child(even) {
+  background-color: var(--color-surface);
+}
+
+.table-striped .table-body tr:nth-child(odd) {
+  background-color: var(--color-background);
+}
+
+.table-striped .table-body tr:hover {
+  background-color: var(--color-border) !important;
 }
 
 .table-body td {

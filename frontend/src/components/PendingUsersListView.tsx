@@ -20,11 +20,6 @@ import type {PendingUser} from '../types/frontend'
 import {adminService} from '../services/adminService'
 import {ConfirmDialog} from './ConfirmDialog'
 import {useNotification} from '../contexts/NotificationContext'
-import '../styles/components/Table.css'
-import '../styles/components/Button.css'
-import '../styles/components/Loading.css'
-import '../styles/components/Alert.css'
-import '../styles/components/Modal.css'
 
 export const PendingUsersListView = () => {
   const {t, i18n} = useTranslation()
@@ -151,20 +146,20 @@ export const PendingUsersListView = () => {
 
   return (
     <div className="admin-users-table">
-      <table className="table">
-        <thead>
+      <table className="table table-striped">
+        <thead className="table-header">
         <tr>
-          <th>{t('admin.users.table.email')}</th>
-          <th style={{width: '12rem'}}>{t('admin.users.table.registeredAt')}</th>
-          <th style={{width: '12rem'}}>{t('admin.users.table.actions')}</th>
+          <th className="table-cell-center">{t('admin.users.table.email')}</th>
+          <th className="table-cell-center" style={{width: '12rem'}}>{t('admin.users.table.registeredAt')}</th>
+          <th className="table-cell-center" style={{width: '12rem'}}>{t('admin.users.table.actions')}</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody className="table-body">
         {users.map(user => (
           <tr key={user.id}>
             <td>{user.email}</td>
-            <td>{formatDate(user.registeredAt)}</td>
-            <td>
+            <td className="table-cell-center">{formatDate(user.registeredAt)}</td>
+            <td className="table-cell-center">
               <div className="admin-actions">
                 <button
                   type="button"

@@ -21,7 +21,6 @@ import {useAuth} from '../../contexts/AuthContext'
 import {LogoutButton} from '../../components/LogoutButton'
 import {LanguageSelector} from '../../components/LanguageSelector'
 import {mainNavigationItems} from '../../config/navigation'
-import '../../styles/layouts/UserLayout.css'
 
 interface UserLayoutProps {
   title?: string

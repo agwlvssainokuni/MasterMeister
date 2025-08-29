@@ -18,7 +18,6 @@ import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
 import type {ColumnMetadata, RecordCreateData, RecordUpdateData, TableRecord} from '../types/frontend'
-import '../styles/components/Modal.css'
 
 interface RecordEditModalProps {
   isOpen: boolean
@@ -34,7 +33,18 @@ interface RecordEditModalProps {
 }
 
 export const RecordEditModal: React.FC<RecordEditModalProps> = (
-  {isOpen, mode, connectionId, schemaName, tableName, columns, existingRecord, onClose, onSuccess, onError}
+  {
+    isOpen,
+    mode,
+    connectionId,
+    schemaName,
+    tableName,
+    columns,
+    existingRecord,
+    onClose,
+    onSuccess,
+    onError,
+  }
 ) => {
   const {t} = useTranslation()
   const [formData, setFormData] = useState<Record<string, unknown>>({})

@@ -17,7 +17,6 @@
 import React, {useEffect, useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import type {ColumnFilter, ColumnMetadata} from '../types/frontend'
-import '../styles/components/Table.css'
 
 interface ColumnFilterProps {
   column: ColumnMetadata
@@ -25,11 +24,13 @@ interface ColumnFilterProps {
   onFilterChange: (filter: ColumnFilter | null) => void
 }
 
-export const ColumnFilterComponent: React.FC<ColumnFilterProps> = ({
-                                                                     column,
-                                                                     currentFilter,
-                                                                     onFilterChange
-                                                                   }) => {
+export const ColumnFilterComponent: React.FC<ColumnFilterProps> = (
+  {
+    column,
+    currentFilter,
+    onFilterChange,
+  }
+) => {
   const {t} = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [operator, setOperator] = useState<ColumnFilter['operator']>(currentFilter?.operator || 'EQUALS')

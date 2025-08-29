@@ -18,7 +18,6 @@ import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
 import type {ColumnMetadata, RecordDeleteData, TableRecord} from '../types/frontend'
-import '../styles/components/Modal.css'
 
 interface RecordDeleteModalProps {
   isOpen: boolean
@@ -33,7 +32,17 @@ interface RecordDeleteModalProps {
 }
 
 export const RecordDeleteModal: React.FC<RecordDeleteModalProps> = (
-  {isOpen, connectionId, schemaName, tableName, record, columns, onClose, onSuccess, onError}
+  {
+    isOpen,
+    connectionId,
+    schemaName,
+    tableName,
+    record,
+    columns,
+    onClose,
+    onSuccess,
+    onError,
+  }
 ) => {
   const {t} = useTranslation()
   const [loading, setLoading] = useState(false)

@@ -21,10 +21,6 @@ import {useAuth} from '../contexts/AuthContext'
 import {LanguageSelector} from '../components/LanguageSelector'
 import {authService} from '../services/authService'
 import type {RegisterEmailCredentials} from '../types/frontend'
-import '../styles/layouts/AuthLayout.css'
-import '../styles/components/Alert.css'
-import '../styles/components/Form.css'
-import '../styles/components/Button.css'
 
 export const RegisterEmailPage: React.FC = () => {
   const {t, i18n} = useTranslation()

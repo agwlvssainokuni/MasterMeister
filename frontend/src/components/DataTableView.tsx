@@ -28,7 +28,6 @@ import type {
   SortOrder,
   TableRecord
 } from '../types/frontend'
-import '../styles/components/Table.css'
 
 interface DataTableViewProps {
   connectionId: number

@@ -15,7 +15,6 @@
  */
 
 import React, {createContext, type ReactNode, useCallback, useContext, useState} from 'react'
-import '../styles/components/Notification.css'
 
 interface Notification {
   id: string
