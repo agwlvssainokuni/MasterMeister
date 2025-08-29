@@ -18,20 +18,19 @@ import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {useNotification} from '../contexts/NotificationContext'
 import {UserLayout} from './layouts/UserLayout'
-import {TablesListView} from '../components/TablesListView'
+import {DatabaseTreeView} from '../components/DatabaseTreeView'
 import {DataTableView} from '../components/DataTableView'
 import {RecordEditModal} from '../components/RecordEditModal'
 import {RecordDeleteModal} from '../components/RecordDeleteModal'
 import {PermissionGuard} from '../components/PermissionGuard'
 import {dataAccessService} from '../services/dataAccessService'
-import type {AccessibleTable, TableMetadata, TableRecord} from '../types/frontend'
+import type {AccessibleTable, Database, TableMetadata, TableRecord} from '../types/frontend'
 
 export const DataAccessPage: React.FC = () => {
   const {t} = useTranslation()
   const {addNotification} = useNotification()
 
-  // Mock connection ID - in real implementation, this would come from route params or state
-  const [connectionId] = useState(1)
+  const [selectedDatabase, setSelectedDatabase] = useState<Database>()
   const [selectedTable, setSelectedTable] = useState<AccessibleTable>()
   const [tableMetadata, setTableMetadata] = useState<TableMetadata>()
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -39,6 +38,13 @@ export const DataAccessPage: React.FC = () => {
   const [editMode, setEditMode] = useState<'create' | 'edit'>('create')
   const [selectedRecord, setSelectedRecord] = useState<TableRecord>()
   const [dataTableKey, setDataTableKey] = useState(0) // For forcing DataTable reload
+
+  const handleDatabaseSelect = (database: Database) => {
+    setSelectedDatabase(database)
+    // Clear table selection when database changes
+    setSelectedTable(undefined)
+    setTableMetadata(undefined)
+  }
 
   const handleTableSelect = async (table: AccessibleTable) => {
     try {
@@ -114,10 +120,11 @@ export const DataAccessPage: React.FC = () => {
       <p className="page-description">{t('dataAccess.description')}</p>
 
       <div className="data-access-layout">
-        <aside className="tables-sidebar">
-          <TablesListView
-            connectionId={connectionId}
+        <aside className="tree-sidebar">
+          <DatabaseTreeView
+            onDatabaseSelect={handleDatabaseSelect}
             onTableSelect={handleTableSelect}
+            selectedDatabase={selectedDatabase}
             selectedTable={selectedTable}
           />
         </aside>
@@ -136,11 +143,18 @@ export const DataAccessPage: React.FC = () => {
               onRecordCreate={handleCreateRecord}
               onDataReload={handleDataReload}
             />
+          ) : selectedDatabase ? (
+            <div className="empty-content">
+              <div className="empty-icon">🗃️</div>
+              <h3>{t('dataAccess.databaseSelected')}</h3>
+              <p>{selectedDatabase.name} ({selectedDatabase.dbType})</p>
+              <p className="empty-description">{t('dataAccess.selectTableFromTree')}</p>
+            </div>
           ) : (
             <div className="empty-content">
               <div className="empty-icon">📊</div>
-              <h3>{t('dataAccess.selectTable')}</h3>
-              <p>{t('dataAccess.selectTableDescription')}</p>
+              <h3>{t('dataAccess.selectDatabase')}</h3>
+              <p>{t('dataAccess.selectDatabaseDescription')}</p>
             </div>
           )}
         </main>

@@ -209,6 +209,15 @@
     "description": "権限に基づいてデータベースレコードを参照・管理します",
     "selectTable": "テーブルを選択",
     "selectTableDescription": "サイドバーからテーブルを選択してデータを表示・管理してください",
+    "selectDatabase": "データベースを選択",
+    "selectDatabaseDescription": "左側のツリーからデータベースを選択してください",
+    "databaseSelected": "データベースが選択されました",
+    "selectTableFromTree": "ツリーからテーブルを選択してデータを表示してください",
+    "databaseTree": "データベース一覧",
+    "databaseLoadError": "データベースの読み込みに失敗しました",
+    "schemaLoadError": "スキーマの読み込みに失敗しました",
+    "tableLoadError": "テーブル一覧の読み込みに失敗しました",
+    "noDatabases": "利用可能なデータベースがありません",
     "metadataLoadError": "テーブルメタデータの読み込みに失敗しました"
   },
   "tablesList": {

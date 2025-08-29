@@ -209,6 +209,15 @@
     "description": "Browse and manage database records with permissions",
     "selectTable": "Select a Table",
     "selectTableDescription": "Choose a table from the sidebar to view and manage its data",
+    "selectDatabase": "Select a Database",
+    "selectDatabaseDescription": "Choose a database from the tree on the left",
+    "databaseSelected": "Database Selected",
+    "selectTableFromTree": "Select a table from the tree to view its data",
+    "databaseTree": "Database Tree",
+    "databaseLoadError": "Failed to load databases",
+    "schemaLoadError": "Failed to load schemas",
+    "tableLoadError": "Failed to load table list",
+    "noDatabases": "No databases available",
     "metadataLoadError": "Failed to load table metadata"
   },
   "tablesList": {

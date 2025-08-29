@@ -30,6 +30,7 @@
 @import './styles/components/Loading.css';
 @import './styles/components/LanguageSelector.css';
 @import './styles/components/Notification.css';
+@import './styles/components/DatabaseTreeView.css';
 
 /* レイアウトスタイル */
 @import './styles/layouts/AuthLayout.css';
@@ -39,6 +40,7 @@
 /* ページスタイル */
 @import './styles/pages/UserManagementPage.css';
 @import './styles/pages/DatabaseManagementPage.css';
+@import './styles/pages/DataAccessPage.css';
 
 @import './App.css';
 
