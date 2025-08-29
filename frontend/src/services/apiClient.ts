@@ -22,15 +22,27 @@ import {isTokenExpiringSoon} from '../utils/jwt'
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
+
+// Callbacks for handling auth events
+let onAuthFailure: (() => void) | null = null
+let onTokenRefresh: ((accessToken: string, refreshToken: string) => void) | null = null
+
+export const setAuthFailureHandler = (handler: () => void) => {
+  onAuthFailure = handler
+}
+
+export const setTokenRefreshHandler = (handler: (accessToken: string, refreshToken: string) => void) => {
+  onTokenRefresh = handler
+}
 
 // Global flag to prevent concurrent refresh attempts
 let isRefreshing = false
 
 // Background refresh function
-const refreshTokenInBackground = async (refreshToken: string) => {
+const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResult | undefined> => {
   if (isRefreshing) return
 
   isRefreshing = true
@@ -41,16 +53,19 @@ const refreshTokenInBackground = async (refreshToken: string) => {
       } as RefreshTokenRequest
     )
 
-    const {data} = response.data
+    const {data} = response.data as ApiResponse<LoginResult>
     if (data) {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
 
       // Notify AuthContext of successful refresh
       onTokenRefresh?.(data.accessToken, data.refreshToken)
+
+      return data
     }
   } catch (error) {
     console.warn('Background token refresh failed:', error)
+    return
   } finally {
     isRefreshing = false
   }
@@ -80,18 +95,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// Callbacks for handling auth events
-let onAuthFailure: (() => void) | null = null
-let onTokenRefresh: ((accessToken: string, refreshToken: string) => void) | null = null
-
-export const setAuthFailureHandler = (handler: () => void) => {
-  onAuthFailure = handler
-}
-
-export const setTokenRefreshHandler = (handler: (accessToken: string, refreshToken: string) => void) => {
-  onTokenRefresh = handler
-}
-
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -103,32 +106,15 @@ apiClient.interceptors.response.use(
 
       const refreshToken = localStorage.getItem('refreshToken')
       if (refreshToken && !isRefreshing) {
-        isRefreshing = true
-        try {
-          const response = await axios.post<ApiResponse<LoginResult>>(
-            `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
-              refreshToken
-            } as RefreshTokenRequest
-          )
-
-          const {data} = response.data
-          if (data) {
-            localStorage.setItem('accessToken', data.accessToken)
-            localStorage.setItem('refreshToken', data.refreshToken)
-
-            // Notify AuthContext of successful token refresh
-            onTokenRefresh?.(data.accessToken, data.refreshToken)
-
-            originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
-            return apiClient(originalRequest)
-          }
-        } catch {
+        const loginResult = await refreshTokenInBackground(refreshToken)
+        if (loginResult) {
+          originalRequest.headers.Authorization = `Bearer ${loginResult.accessToken}`
+          return apiClient(originalRequest)
+        } else {
           // Token refresh failed - redirect to login
           localStorage.removeItem('accessToken')
           localStorage.removeItem('refreshToken')
           onAuthFailure?.()
-        } finally {
-          isRefreshing = false
         }
       } else {
         // No refresh token or already refreshing - redirect to login
