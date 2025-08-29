@@ -304,7 +304,12 @@
     "editDescription": "Modify the database connection settings",
     "noConnections": "No database connections",
     "noConnectionsDescription": "Create a new connection to start accessing master data",
-    "confirmDelete": "Are you sure you want to delete connection '{{name}}'? This action cannot be undone.",
+    "confirmDelete": {
+      "title": "Delete Database Connection",
+      "message": "Are you sure you want to delete connection '{{name}}'? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
     "lastTested": "Last tested",
     "created": "Created",
     "updated": "Updated",

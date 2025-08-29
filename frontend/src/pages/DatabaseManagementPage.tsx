@@ -19,6 +19,7 @@ import {useTranslation} from 'react-i18next'
 import {AdminLayout} from './layouts/AdminLayout'
 import {DatabaseListView} from '../components/DatabaseListView'
 import {DatabaseFormView} from '../components/DatabaseFormView'
+import {ConfirmDialog} from '../components/ConfirmDialog'
 import {useNotification} from '../contexts/NotificationContext'
 import {databaseService} from '../services/databaseService'
 import type {Database, DatabaseForm as ConnectionForm} from '../types/frontend'
@@ -32,6 +33,15 @@ export const DatabaseManagementPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingConnection, setEditingConnection] = useState<Database | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean
+    connection: Database | null
+    loading: boolean
+  }>({
+    isOpen: false,
+    connection: null,
+    loading: false
+  })
 
   useEffect(() => {
     loadConnections()
@@ -94,23 +104,51 @@ export const DatabaseManagementPage: React.FC = () => {
     setEditingConnection(null)
   }
 
-  const handleDeleteConnection = async (connection: Database) => {
-    if (!window.confirm(t('databases.confirmDelete', {name: connection.name}))) {
-      return
-    }
+  const handleDeleteConnection = (connection: Database) => {
+    setDeleteConfirm({
+      isOpen: true,
+      connection,
+      loading: false
+    })
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirm.connection) return
+
+    const connection = deleteConfirm.connection
 
     try {
+      setDeleteConfirm(prev => ({...prev, loading: true}))
+
       await databaseService.deleteConnection(connection.id)
+
       addNotification({
         type: 'success',
         message: t('databases.messages.deleteSuccess', {name: connection.name})
       })
+
       await loadConnections()
+      setDeleteConfirm({
+        isOpen: false,
+        connection: null,
+        loading: false
+      })
     } catch (err) {
       console.error('Error deleting database connection:', err)
       addNotification({
         type: 'error',
         message: err instanceof Error ? err.message : t('databases.messages.deleteError')
+      })
+      setDeleteConfirm(prev => ({...prev, loading: false}))
+    }
+  }
+
+  const handleCancelDelete = () => {
+    if (!deleteConfirm.loading) {
+      setDeleteConfirm({
+        isOpen: false,
+        connection: null,
+        loading: false
       })
     }
   }
@@ -238,6 +276,18 @@ export const DatabaseManagementPage: React.FC = () => {
           />
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title={t('databases.confirmDelete.title')}
+        message={t('databases.confirmDelete.message', {name: deleteConfirm.connection?.name || ''})}
+        confirmText={t('databases.confirmDelete.confirm')}
+        cancelText={t('databases.confirmDelete.cancel')}
+        type="danger"
+        loading={deleteConfirm.loading}
+      />
     </AdminLayout>
   )
 }

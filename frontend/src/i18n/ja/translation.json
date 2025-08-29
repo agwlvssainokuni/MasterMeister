@@ -304,7 +304,12 @@
     "editDescription": "データベース接続設定を変更してください",
     "noConnections": "データベース接続がありません",
     "noConnectionsDescription": "新しい接続を作成してマスタデータアクセスを開始しましょう",
-    "confirmDelete": "接続「{{name}}」を削除してもよろしいですか？この操作は取り消せません。",
+    "confirmDelete": {
+      "title": "データベース接続削除",
+      "message": "接続「{{name}}」を削除してもよろしいですか？この操作は取り消せません。",
+      "confirm": "削除",
+      "cancel": "キャンセル"
+    },
     "lastTested": "最終テスト日時",
     "created": "作成日時",
     "updated": "更新日時",
