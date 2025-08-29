@@ -19,15 +19,16 @@ package cherry.mastermeister.controller;
 import cherry.mastermeister.controller.dto.ApiResponse;
 import cherry.mastermeister.controller.dto.DatabaseConnectionRequest;
 import cherry.mastermeister.controller.dto.DatabaseConnectionResult;
+import cherry.mastermeister.controller.dto.ValidationGroups;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.service.DatabaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,14 +62,18 @@ public class DatabaseController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get database connection by ID", description = "Retrieve a specific database connection")
-    public ApiResponse<DatabaseConnectionResult> getConnection(@PathVariable Long id) {
+    public ApiResponse<DatabaseConnectionResult> getConnection(
+            @PathVariable Long id
+    ) {
         DatabaseConnection connection = databaseService.getConnection(id);
         return ApiResponse.success(toResult(connection));
     }
 
     @PostMapping
     @Operation(summary = "Create database connection", description = "Create a new database connection")
-    public ApiResponse<DatabaseConnectionResult> createConnection(@Valid @RequestBody DatabaseConnectionRequest request) {
+    public ApiResponse<DatabaseConnectionResult> createConnection(
+            @Validated(ValidationGroups.Create.class) @RequestBody DatabaseConnectionRequest request
+    ) {
         DatabaseConnection model = toModel(request);
         DatabaseConnection savedConnection = databaseService.createConnection(model);
         logger.info("Created database connection: {} (ID: {})", savedConnection.name(), savedConnection.id());
@@ -78,7 +83,10 @@ public class DatabaseController {
     @PutMapping("/{id}")
     @Operation(summary = "Update database connection", description = "Update an existing database connection")
     public ApiResponse<DatabaseConnectionResult> updateConnection(
-            @PathVariable Long id, @Valid @RequestBody DatabaseConnectionRequest request) {
+            @PathVariable Long id,
+            @Validated(ValidationGroups.Update.class) @RequestBody DatabaseConnectionRequest request
+    ) {
+        // 更新時はパスワードが空の場合、既存のパスワードを保持（DatabaseServiceで処理）
         DatabaseConnection model = toModel(request);
         DatabaseConnection updatedConnection = databaseService.updateConnection(id, model);
         logger.info("Updated database connection: {} (ID: {})", updatedConnection.name(), id);
@@ -87,7 +95,9 @@ public class DatabaseController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete database connection", description = "Delete a database connection")
-    public ApiResponse<Void> deleteConnection(@PathVariable Long id) {
+    public ApiResponse<Void> deleteConnection(
+            @PathVariable Long id
+    ) {
         databaseService.deleteConnection(id);
         logger.info("Deleted database connection ID: {}", id);
         return ApiResponse.success(null);
@@ -95,7 +105,9 @@ public class DatabaseController {
 
     @PostMapping("/{id}/test")
     @Operation(summary = "Test database connection", description = "Test connectivity for a specific database connection")
-    public ApiResponse<Map<String, Object>> testConnection(@PathVariable Long id) {
+    public ApiResponse<Map<String, Object>> testConnection(
+            @PathVariable Long id
+    ) {
         Map<String, Object> result = databaseService.testConnectionWithDetails(id);
         boolean isConnected = (Boolean) result.get("connected");
         logger.info("Connection test for ID {}: {}", id, isConnected ? "SUCCESS" : "FAILED");
@@ -104,7 +116,9 @@ public class DatabaseController {
 
     @PostMapping("/{id}/activate")
     @Operation(summary = "Activate database connection", description = "Activate a database connection")
-    public ApiResponse<DatabaseConnectionResult> activateConnection(@PathVariable Long id) {
+    public ApiResponse<DatabaseConnectionResult> activateConnection(
+            @PathVariable Long id
+    ) {
         DatabaseConnection connection = databaseService.activateConnection(id);
         logger.info("Activated database connection: {} (ID: {})", connection.name(), id);
         return ApiResponse.success(toResult(connection));
@@ -112,7 +126,9 @@ public class DatabaseController {
 
     @PostMapping("/{id}/deactivate")
     @Operation(summary = "Deactivate database connection", description = "Deactivate a database connection")
-    public ApiResponse<DatabaseConnectionResult> deactivateConnection(@PathVariable Long id) {
+    public ApiResponse<DatabaseConnectionResult> deactivateConnection(
+            @PathVariable Long id
+    ) {
         DatabaseConnection connection = databaseService.deactivateConnection(id);
         logger.info("Deactivated database connection: {} (ID: {})", connection.name(), id);
         return ApiResponse.success(toResult(connection));

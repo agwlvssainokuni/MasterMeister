@@ -17,37 +17,37 @@
 package cherry.mastermeister.controller.dto;
 
 import cherry.mastermeister.enums.DatabaseType;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record DatabaseConnectionRequest(
-        @NotBlank(message = "Name is required")
+        @NotBlank(message = "Name is required", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
         String name,
-        
-        @NotNull(message = "Database type is required")
+
+        @NotNull(message = "Database type is required", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
         DatabaseType dbType,
-        
-        @NotBlank(message = "Host is required")
+
+        @NotBlank(message = "Host is required", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
         String host,
-        
-        @NotNull(message = "Port is required")
-        @Min(value = 1, message = "Port must be greater than 0")
-        @Max(value = 65535, message = "Port must be less than 65536")
+
+        @NotNull(message = "Port is required", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
+        @Min(value = 1, message = "Port must be greater than 0", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
+        @Max(value = 65535, message = "Port must be less than 65536", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
         Integer port,
-        
-        @NotBlank(message = "Database name is required")
+
+        @NotBlank(message = "Database name is required", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
         String databaseName,
-        
-        @NotBlank(message = "Username is required")
+
+        @NotBlank(message = "Username is required", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
         String username,
-        
-        @NotBlank(message = "Password is required")
+
+        @NotBlank(message = "Password is required", groups = {ValidationGroups.Create.class})
         String password,
-        
+
         String connectionParams,
-        
+
         boolean active
 ) {
 }

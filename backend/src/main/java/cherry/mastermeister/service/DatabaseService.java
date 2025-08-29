@@ -180,6 +180,11 @@ public class DatabaseService {
         entity.setId(connectionId);
         entity.setCreatedAt(existingConnection.getCreatedAt());
 
+        // パスワードが空の場合は既存のパスワードを保持
+        if (model.password() == null || model.password().trim().isEmpty()) {
+            entity.setPassword(existingConnection.getPassword());
+        }
+
         closeDataSource(connectionId);
         DatabaseConnectionEntity updated = databaseConnectionRepository.save(entity);
         return toModel(updated);
