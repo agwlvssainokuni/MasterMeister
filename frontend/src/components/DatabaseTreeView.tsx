@@ -18,7 +18,6 @@ import React, {useCallback, useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {FaChevronDown, FaChevronRight, FaDatabase, FaFolder, FaFolderOpen, FaTable} from 'react-icons/fa'
 import {useNotification} from '../contexts/NotificationContext'
-import {databaseService} from '../services/databaseService'
 import {dataAccessService} from '../services/dataAccessService'
 import type {AccessibleTable, Database} from '../types/frontend'
 
@@ -69,7 +68,7 @@ export const DatabaseTreeView: React.FC<DatabaseTreeViewProps> = (
   const loadDatabases = useCallback(async () => {
     try {
       setLoading(true)
-      const dbList = await databaseService.getAllConnections()
+      const dbList = await dataAccessService.getDatabases()
       const databaseNodes: DatabaseNode[] = dbList
         .filter(db => db.active) // Only show active connections
         .map(db => ({

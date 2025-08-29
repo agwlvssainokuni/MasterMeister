@@ -51,9 +51,10 @@ export const API_ENDPOINTS = {
     REJECT_USER: (id: number) => `/admin/users/${id}/reject`
   },
   DATA_ACCESS: {
+    DATABASES: '/data/databases',
     ACCESSIBLE_TABLES: (connectionId: number) => `/data/${connectionId}/tables`,
     TABLE_METADATA: (connectionId: number, schemaName: string, tableName: string) =>
-      `/data/${connectionId}/tables/${schemaName}/${tableName}/metadata`,
+      `/data/${connectionId}/tables/${schemaName}/${tableName}`,
     TABLE_RECORDS: (connectionId: number, schemaName: string, tableName: string) =>
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
     RECORD_CREATE: (connectionId: number, schemaName: string, tableName: string) =>

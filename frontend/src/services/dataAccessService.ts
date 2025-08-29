@@ -19,6 +19,7 @@ import {API_ENDPOINTS} from '../config/config'
 import type {
   AccessibleTableResult,
   ApiResponse,
+  DatabaseResult,
   RecordCreateRequest,
   RecordCreateResult,
   RecordDeleteRequest,
@@ -31,6 +32,7 @@ import type {
 } from '../types/api'
 import type {
   AccessibleTable,
+  Database,
   RecordCreateData,
   RecordCreateResponse,
   RecordDeleteData,
@@ -43,6 +45,18 @@ import type {
 } from '../types/frontend'
 
 class DataAccessService {
+
+  async getDatabases(): Promise<Database[]> {
+    const response = await apiClient.get<ApiResponse<DatabaseResult[]>>(
+      API_ENDPOINTS.DATA_ACCESS.DATABASES
+    )
+
+    if (!response.data.ok || !response.data.data) {
+      throw new Error('Failed to fetch databases')
+    }
+
+    return response.data.data.map(this.convertToFrontendDatabase)
+  }
 
   async getAccessibleTables(connectionId: number): Promise<AccessibleTable[]> {
     const response = await apiClient.get<ApiResponse<AccessibleTableResult[]>>(
@@ -181,7 +195,19 @@ class DataAccessService {
       canDelete: apiTable.canDelete,
       canAdmin: apiTable.canAdmin,
       canModifyData: apiTable.canModifyData,
-      canPerformCrud: apiTable.canPerformCrud
+      canPerformCrud: apiTable.canPerformCrud,
+      columns: apiTable.columns.map(col => ({
+        columnName: col.columnName,
+        dataType: col.dataType,
+        columnSize: col.columnSize,
+        decimalDigits: col.decimalDigits,
+        nullable: col.nullable,
+        defaultValue: col.defaultValue,
+        comment: col.comment,
+        primaryKey: col.primaryKey,
+        autoIncrement: col.autoIncrement,
+        ordinalPosition: col.ordinalPosition
+      }))
     }
   }
 
@@ -270,6 +296,24 @@ class DataAccessService {
       deletedRecords: apiResult.deletedRecords,
       executionTimeMs: apiResult.executionTimeMs,
       query: apiResult.query
+    }
+  }
+
+  private convertToFrontendDatabase(apiDatabase: DatabaseResult): Database {
+    return {
+      id: apiDatabase.id,
+      name: apiDatabase.name,
+      dbType: apiDatabase.dbType,
+      host: apiDatabase.host,
+      port: apiDatabase.port,
+      databaseName: apiDatabase.databaseName,
+      username: apiDatabase.username,
+      connectionParams: apiDatabase.connectionParams || '',
+      active: apiDatabase.active,
+      lastTestedAt: apiDatabase.lastTestedAt ? new Date(apiDatabase.lastTestedAt) : undefined,
+      testResult: apiDatabase.testResult ?? undefined,
+      createdAt: new Date(apiDatabase.createdAt),
+      updatedAt: new Date(apiDatabase.updatedAt)
     }
   }
 }

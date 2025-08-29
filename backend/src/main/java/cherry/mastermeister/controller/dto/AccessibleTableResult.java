@@ -16,6 +16,7 @@
 
 package cherry.mastermeister.controller.dto;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,6 +35,7 @@ public record AccessibleTableResult(
         boolean canDelete,
         boolean canAdmin,
         boolean canModifyData,
-        boolean canPerformCrud
+        boolean canPerformCrud,
+        List<ColumnMetadataResult> columns
 ) {
 }

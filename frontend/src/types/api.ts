@@ -101,6 +101,7 @@ export interface AccessibleTableResult {
   canAdmin: boolean
   canModifyData: boolean
   canPerformCrud: boolean
+  columns: ColumnMetadataResult[]
 }
 
 export interface ColumnMetadataResult {
