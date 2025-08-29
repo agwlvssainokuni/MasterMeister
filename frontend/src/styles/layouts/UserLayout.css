@@ -145,8 +145,7 @@
   flex: 1;
   background: var(--color-background);
   padding: var(--spacing-md);
-  /* Header height: padding-top(16px) + padding-bottom(16px) + title-height(~32px) + navigation-gap(16px) = ~80px */
-  margin-top: calc(var(--spacing-md) * 2 + 32px + var(--spacing-md));
+  margin-top: 69px; /* .user-header の高さ */
 }
 
 .user-main .main-content {
