@@ -38,6 +38,7 @@
 
 /* ページスタイル */
 @import './styles/pages/UserManagementPage.css';
+@import './styles/pages/DatabaseManagementPage.css';
 
 @import './App.css';
 

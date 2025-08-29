@@ -1,0 +1,114 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* Database Management Page Styles */
+
+.database-connections-page {
+  /* ページ全体のコンテナ */
+}
+
+.database-connections-page .card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+}
+
+.database-connections-page .content-spacing {
+  margin-top: var(--spacing-lg);
+}
+
+/* Empty State Card */
+.database-connections-page .empty-state-card {
+  text-align: center;
+  padding: var(--spacing-xxl);
+}
+
+.database-connections-page .empty-state-icon {
+  font-size: var(--font-size-xxxl);
+  margin-bottom: var(--spacing-lg);
+}
+
+.database-connections-page .empty-state-title {
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.database-connections-page .empty-state-description {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* Card Header Layout */
+.database-connections-page .card-header-content {
+  /* カードヘッダーの内容は既存のcard-headerで管理 */
+}
+
+.database-connections-page .card-subtitle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.database-connections-page .status-display {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.database-connections-page .status-icon {
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: center;
+}
+
+.database-connections-page .status-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Card Body Details */
+.database-connections-page .card-details-grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.database-connections-page .detail-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.database-connections-page .detail-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+
+.database-connections-page .detail-value {
+  /* デフォルトのテキストスタイルを使用 */
+}
+
+.database-connections-page .detail-value-small {
+  font-size: var(--font-size-sm);
+}
+
+/* Card Footer */
+.database-connections-page .card-footer-timestamp {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: var(--line-height);
+}
+
+.database-connections-page .card-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}

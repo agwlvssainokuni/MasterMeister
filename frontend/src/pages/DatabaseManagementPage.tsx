@@ -221,21 +221,23 @@ export const DatabaseManagementPage: React.FC = () => {
         </div>
       </div>
 
-      {showForm ? (
-        <DatabaseFormView
-          connection={editingConnection}
-          onSubmit={handleFormSubmit}
-          onCancel={handleFormCancel}
-        />
-      ) : (
-        <DatabaseListView
-          connections={connections}
-          onEdit={handleEditConnection}
-          onDelete={handleDeleteConnection}
-          onTest={handleTestConnection}
-          onToggleActive={handleToggleActive}
-        />
-      )}
+      <div className="content-spacing">
+        {showForm ? (
+          <DatabaseFormView
+            connection={editingConnection}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+          />
+        ) : (
+          <DatabaseListView
+            connections={connections}
+            onEdit={handleEditConnection}
+            onDelete={handleDeleteConnection}
+            onTest={handleTestConnection}
+            onToggleActive={handleToggleActive}
+          />
+        )}
+      </div>
     </AdminLayout>
   )
 }

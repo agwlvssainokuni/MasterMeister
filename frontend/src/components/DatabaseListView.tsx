@@ -15,8 +15,9 @@
  */
 
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import type { Database } from '../types/frontend'
+import {useTranslation} from 'react-i18next'
+import {FaCheckCircle, FaClock, FaLink, FaPause, FaTimesCircle} from 'react-icons/fa'
+import type {Database} from '../types/frontend'
 
 interface DatabaseListViewProps {
   connections: Database[]
@@ -26,20 +27,29 @@ interface DatabaseListViewProps {
   onToggleActive: (connection: Database) => void
 }
 
-export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
-  connections,
-  onEdit,
-  onDelete,
-  onTest,
-  onToggleActive
-}) => {
-  const { t } = useTranslation()
+export const DatabaseListView: React.FC<DatabaseListViewProps> = (
+  {
+    connections,
+    onEdit,
+    onDelete,
+    onTest,
+    onToggleActive,
+  },
+) => {
+  const {t} = useTranslation()
 
   const getStatusIcon = (connection: Database) => {
-    if (!connection.active) return '⏸️'
-    if (connection.testResult === true) return '✅'
-    if (connection.testResult === false) return '❌'
-    return '⏳'
+    if (!connection.active) return <FaPause/>
+    if (connection.testResult === true) return <FaCheckCircle/>
+    if (connection.testResult === false) return <FaTimesCircle/>
+    return <FaClock/>
+  }
+
+  const getStatusClass = (connection: Database) => {
+    if (!connection.active) return 'status-warning'
+    if (connection.testResult === true) return 'status-success'
+    if (connection.testResult === false) return 'status-error'
+    return 'status-info'
   }
 
   const getStatusText = (connection: Database) => {
@@ -61,77 +71,105 @@ export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
 
   const getDatabaseTypeLabel = (dbType: string) => {
     switch (dbType) {
-      case 'MYSQL': return 'MySQL'
-      case 'MARIADB': return 'MariaDB'
-      case 'POSTGRESQL': return 'PostgreSQL'
-      case 'H2': return 'H2'
-      default: return dbType
+      case 'MYSQL':
+        return 'MySQL'
+      case 'MARIADB':
+        return 'MariaDB'
+      case 'POSTGRESQL':
+        return 'PostgreSQL'
+      case 'H2':
+        return 'H2'
+      default:
+        return dbType
     }
   }
 
   if (connections.length === 0) {
     return (
-      <div className="empty-state">
-        <div className="empty-icon">🔗</div>
-        <h3>{t('databases.noConnections')}</h3>
-        <p>{t('databases.noConnectionsDescription')}</p>
+      <div className="card">
+        <div className="card-body empty-state-card">
+          <div className="empty-state-icon"><FaLink/></div>
+          <h3 className="empty-state-title">{t('databases.noConnections')}</h3>
+          <p className="empty-state-description">
+            {t('databases.noConnectionsDescription')}
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="connection-list">
-      <div className="connection-grid">
-        {connections.map(connection => (
-          <div key={connection.id} className="connection-card">
-            <div className="connection-header">
-              <div className="connection-title">
-                <h3>{connection.name}</h3>
-                <span className="connection-type">
+    <div className="card-grid">
+      {connections.map(connection => (
+        <div key={connection.id} className={`card card-status ${getStatusClass(connection)}`}>
+          <div className="card-header">
+            <div>
+              <h3 className="card-title">{connection.name}</h3>
+              <div className="card-subtitle-row">
+                <p className="card-subtitle">
                   {getDatabaseTypeLabel(connection.dbType)}
-                </span>
-              </div>
-              <div className="connection-status">
-                <span className="status-icon">{getStatusIcon(connection)}</span>
-                <span className="status-text">{getStatusText(connection)}</span>
+                </p>
+                <div className="status-display">
+                  <span className="status-icon">{getStatusIcon(connection)}</span>
+                  <span className="status-text">
+                    {getStatusText(connection)}
+                  </span>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="connection-details">
+          <div className="card-body">
+            <div className="card-details-grid">
               <div className="detail-row">
-                <span className="detail-label">{t('databases.fields.host')}</span>
+                <span className="detail-label">
+                  {t('databases.fields.host')}
+                </span>
                 <span className="detail-value">{connection.host}:{connection.port}</span>
               </div>
               <div className="detail-row">
-                <span className="detail-label">{t('databases.fields.database')}</span>
+                <span className="detail-label">
+                  {t('databases.fields.database')}
+                </span>
                 <span className="detail-value">{connection.databaseName}</span>
               </div>
               <div className="detail-row">
-                <span className="detail-label">{t('databases.fields.username')}</span>
+                <span className="detail-label">
+                  {t('databases.fields.username')}
+                </span>
                 <span className="detail-value">{connection.username}</span>
               </div>
-              {connection.lastTestedAt && (
-                <div className="detail-row">
-                  <span className="detail-label">{t('databases.lastTested')}</span>
-                  <span className="detail-value">{formatDate(connection.lastTestedAt)}</span>
-                </div>
+              <div className="detail-row">
+                <span className="detail-label">
+                  {t('databases.lastTested')}
+                </span>
+                <span className="detail-value detail-value-small">
+                  {connection.lastTestedAt ? formatDate(connection.lastTestedAt) : t('databases.status.untested')}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card-footer">
+            <div className="card-footer-timestamp">
+              <div>{t('databases.created')}: {formatDate(connection.createdAt)}</div>
+              {connection.updatedAt && connection.updatedAt.getTime() !== connection.createdAt.getTime() && (
+                <div>{t('databases.updated')}: {formatDate(connection.updatedAt)}</div>
               )}
             </div>
-
-            <div className="connection-actions">
+            <div className="card-actions-grid">
               <button
                 className="button button-sm button-secondary"
                 onClick={() => onTest(connection)}
                 title={t('databases.actions.test')}
               >
-                🔍 {t('databases.actions.test')}
+                {t('databases.actions.test')}
               </button>
               <button
                 className={`button button-sm ${connection.active ? 'button-warning' : 'button-success'}`}
                 onClick={() => onToggleActive(connection)}
                 title={connection.active ? t('databases.actions.deactivate') : t('databases.actions.activate')}
               >
-                {connection.active ? '⏸️' : '▶️'} 
                 {connection.active ? t('databases.actions.deactivate') : t('databases.actions.activate')}
               </button>
               <button
@@ -139,30 +177,19 @@ export const DatabaseListView: React.FC<DatabaseListViewProps> = ({
                 onClick={() => onEdit(connection)}
                 title={t('databases.actions.edit')}
               >
-                ✏️ {t('databases.actions.edit')}
+                {t('databases.actions.edit')}
               </button>
               <button
                 className="button button-sm button-danger"
                 onClick={() => onDelete(connection)}
                 title={t('databases.actions.delete')}
               >
-                🗑️ {t('databases.actions.delete')}
+                {t('databases.actions.delete')}
               </button>
             </div>
-
-            <div className="connection-footer">
-              <span className="timestamp">
-                {t('databases.created')}: {formatDate(connection.createdAt)}
-              </span>
-              {connection.updatedAt && connection.updatedAt.getTime() !== connection.createdAt.getTime() && (
-                <span className="timestamp">
-                  {t('databases.updated')}: {formatDate(connection.updatedAt)}
-                </span>
-              )}
-            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   )
 }
