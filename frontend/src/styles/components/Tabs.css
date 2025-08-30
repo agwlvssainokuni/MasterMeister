@@ -63,7 +63,7 @@
 
 /* タブコンテンツ */
 .tab-content {
-  padding: var(--spacing-lg);
+  padding: 0;
 }
 
 .tab-panel {
@@ -72,6 +72,16 @@
 
 .tab-panel.active {
   display: block;
+}
+
+/* データタブ専用スタイル */
+.data-tab-content {
+  padding: var(--spacing-lg);
+}
+
+/* テーブルタブ用のスタイル */
+.table-tabs {
+  border-top: var(--border-width) solid var(--color-border);
 }
 
 /* レスポンシブ */

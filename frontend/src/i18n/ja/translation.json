@@ -202,7 +202,22 @@
     "previous": "前へ",
     "next": "次へ",
     "actions": "操作",
-    "clear": "クリア"
+    "clear": "クリア",
+    "yes": "はい",
+    "no": "いいえ"
+  },
+  "tabs": {
+    "data": "データ",
+    "metadata": "メタデータ"
+  },
+  "metadata": {
+    "columnName": "カラム名",
+    "dataType": "データ型",
+    "nullable": "NULL許可",
+    "defaultValue": "デフォルト値",
+    "primaryKey": "主キー",
+    "comment": "コメント",
+    "notNull": "NOT NULL"
   },
   "dataAccess": {
     "title": "データアクセス",

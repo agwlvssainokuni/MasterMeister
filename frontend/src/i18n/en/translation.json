@@ -202,7 +202,22 @@
     "previous": "Previous",
     "next": "Next",
     "actions": "Actions",
-    "clear": "Clear"
+    "clear": "Clear",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "tabs": {
+    "data": "Data",
+    "metadata": "Metadata"
+  },
+  "metadata": {
+    "columnName": "Column Name",
+    "dataType": "Data Type",
+    "nullable": "Nullable",
+    "defaultValue": "Default Value",
+    "primaryKey": "Primary Key",
+    "comment": "Comment",
+    "notNull": "NOT NULL"
   },
   "dataAccess": {
     "title": "Data Access",

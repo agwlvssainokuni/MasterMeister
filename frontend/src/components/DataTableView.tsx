@@ -16,17 +16,13 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {
-  FaKey,
-  FaEdit,
-  FaTrash,
-  FaSort,
-  FaSortUp,
-  FaSortDown
-} from 'react-icons/fa'
+import {FaEdit, FaKey, FaSort, FaSortDown, FaSortUp, FaTrash} from 'react-icons/fa'
 import {dataAccessService} from '../services/dataAccessService'
 import {ColumnFilterComponent} from './ColumnFilter'
 import {ConditionalPermission, PermissionGuard} from './PermissionGuard'
+import type {TabItem} from './Tabs'
+import {Tabs} from './Tabs'
+import {TableMetadataView} from './TableMetadataView'
 import type {
   AccessibleTable,
   ColumnFilter,
@@ -59,7 +55,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     onRecordSelect,
     onRecordEdit,
     onRecordDelete,
-    onRecordCreate
+    onRecordCreate,
   }
 ) => {
   const {t} = useTranslation()
@@ -71,6 +67,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
   const [sortOrders, setSortOrders] = useState<SortOrder[]>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFilter[]>([])
   const [selectedRecords, setSelectedRecords] = useState<Set<number>>(new Set())
+  const [activeTab, setActiveTab] = useState<string>('data')
 
   // Use refs to avoid infinite loops in useCallback dependencies
   const columnFiltersRef = useRef<ColumnFilter[]>([])
@@ -129,12 +126,12 @@ export const DataTableView: React.FC<DataTableViewProps> = (
   const [filterChangeCount, setFilterChangeCount] = useState(0)
   const prevColumnFiltersRef = useRef<ColumnFilter[]>([])
   const prevSortOrdersRef = useRef<SortOrder[]>([])
-  
+
   useEffect(() => {
     // Check if filters or sorts have actually changed
     const filtersChanged = JSON.stringify(columnFilters) !== JSON.stringify(prevColumnFiltersRef.current)
     const sortsChanged = JSON.stringify(sortOrders) !== JSON.stringify(prevSortOrdersRef.current)
-    
+
     if (filtersChanged || sortsChanged) {
       prevColumnFiltersRef.current = columnFilters
       prevSortOrdersRef.current = sortOrders
@@ -226,8 +223,8 @@ export const DataTableView: React.FC<DataTableViewProps> = (
 
   const getSortIcon = (columnName: string) => {
     const sortOrder = sortOrders.find(so => so.columnName === columnName)
-    if (!sortOrder) return <FaSort />
-    return sortOrder.direction === 'ASC' ? <FaSortUp /> : <FaSortDown />
+    if (!sortOrder) return <FaSort/>
+    return sortOrder.direction === 'ASC' ? <FaSortUp/> : <FaSortDown/>
   }
 
   const formatCellValue = (value: unknown, column: ColumnMetadata): string => {
@@ -286,6 +283,163 @@ export const DataTableView: React.FC<DataTableViewProps> = (
 
   const {records, accessibleColumns, totalRecords, totalPages, hasNextPage, hasPreviousPage} = queryData
 
+  // Create tab items
+  const tabItems: TabItem[] = [
+    {
+      id: 'data',
+      label: t('tabs.data'),
+      content: (
+        <div className="data-tab-content">
+          <div className="table-controls">
+            <div className="page-size-control">
+              <label>
+                {t('dataTable.pageSize')}:
+                <select value={pageSize} onChange={(e) => handlePageSizeChange(Number(e.target.value))}>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div className="table-wrapper">
+            <table className="data-table">
+              <thead>
+              <tr>
+                <th className="select-column">
+                  <input
+                    type="checkbox"
+                    checked={selectedRecords.size === records.length && records.length > 0}
+                    onChange={handleSelectAll}
+                  />
+                </th>
+                {accessibleColumns.map(column => (
+                  <th key={column.columnName} className="sortable">
+                    <div className="column-header">
+                      <div className="column-name-section" onClick={() => handleSort(column.columnName)}>
+                        <span className="column-name">{column.columnName}</span>
+                        <span className="sort-icon">{getSortIcon(column.columnName)}</span>
+                        {column.primaryKey && <span className="pk-icon"><FaKey/></span>}
+                      </div>
+                      <div className="column-filter-section">
+                        <ColumnFilterComponent
+                          column={column}
+                          currentFilter={getCurrentFilter(column.columnName)}
+                          onFilterChange={(filter) => handleFilterChange(column.columnName, filter)}
+                        />
+                      </div>
+                    </div>
+                    <div className="column-info">
+                      <span className="data-type">{column.dataType}</span>
+                      {!column.nullable && <span className="not-null">NOT NULL</span>}
+                    </div>
+                  </th>
+                ))}
+                <ConditionalPermission table={accessibleTable} requiredPermission="write">
+                  {(hasWritePermission) => (
+                    hasWritePermission || accessibleTable.canDelete ? (
+                      <th className="actions-column">{t('common.actions')}</th>
+                    ) : null
+                  )}
+                </ConditionalPermission>
+              </tr>
+              </thead>
+              <tbody>
+              {records.map((record, index) => (
+                <tr
+                  key={index}
+                  className={selectedRecords.has(index) ? 'selected' : ''}
+                >
+                  <td className="select-column">
+                    <input
+                      type="checkbox"
+                      checked={selectedRecords.has(index)}
+                      onChange={() => handleRecordSelect(index, record)}
+                    />
+                  </td>
+                  {accessibleColumns.map(column => (
+                    <td key={column.columnName} className="data-cell">
+                      {formatCellValue(record[column.columnName], column)}
+                    </td>
+                  ))}
+                  <ConditionalPermission table={accessibleTable} requiredPermission="write">
+                    {(hasWritePermission) => (
+                      hasWritePermission || accessibleTable.canDelete ? (
+                        <td className="actions-column">
+                          <div className="action-buttons">
+                            <PermissionGuard table={accessibleTable} requiredPermission="write">
+                              <button
+                                className="button button-sm button-secondary"
+                                onClick={() => onRecordEdit?.(record)}
+                                title={t('common.edit')}
+                              >
+                                <FaEdit/>
+                              </button>
+                            </PermissionGuard>
+                            <PermissionGuard table={accessibleTable} requiredPermission="delete">
+                              <button
+                                className="button button-sm button-danger"
+                                onClick={() => onRecordDelete?.(record)}
+                                title={t('common.delete')}
+                              >
+                                <FaTrash/>
+                              </button>
+                            </PermissionGuard>
+                          </div>
+                        </td>
+                      ) : null
+                    )}
+                  </ConditionalPermission>
+                </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="table-pagination">
+            <div className="pagination-info">
+              {t('dataTable.pageInfo', {
+                current: currentPage + 1,
+                total: totalPages,
+                totalRecords
+              })}
+            </div>
+            <div className="pagination-controls">
+              <button
+                className="button button-sm"
+                disabled={!hasPreviousPage}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                {t('common.previous')}
+              </button>
+              <span className="page-indicator">
+                {currentPage + 1} / {totalPages}
+              </span>
+              <button
+                className="button button-sm"
+                disabled={!hasNextPage}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                {t('common.next')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'metadata',
+      label: t('tabs.metadata'),
+      content: (
+        <TableMetadataView
+          columns={accessibleColumns}
+        />
+      )
+    }
+  ]
+
   return (
     <div className="data-table-container">
       <div className="table-header">
@@ -310,142 +464,12 @@ export const DataTableView: React.FC<DataTableViewProps> = (
         </div>
       </div>
 
-      <div className="table-controls">
-        <div className="page-size-control">
-          <label>
-            {t('dataTable.pageSize')}:
-            <select value={pageSize} onChange={(e) => handlePageSizeChange(Number(e.target.value))}>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </label>
-        </div>
-      </div>
-
-      <div className="table-wrapper">
-        <table className="data-table">
-          <thead>
-          <tr>
-            <th className="select-column">
-              <input
-                type="checkbox"
-                checked={selectedRecords.size === records.length && records.length > 0}
-                onChange={handleSelectAll}
-              />
-            </th>
-            {accessibleColumns.map(column => (
-              <th key={column.columnName} className="sortable">
-                <div className="column-header">
-                  <div className="column-name-section" onClick={() => handleSort(column.columnName)}>
-                    <span className="column-name">{column.columnName}</span>
-                    <span className="sort-icon">{getSortIcon(column.columnName)}</span>
-                    {column.primaryKey && <span className="pk-icon"><FaKey /></span>}
-                  </div>
-                  <div className="column-filter-section">
-                    <ColumnFilterComponent
-                      column={column}
-                      currentFilter={getCurrentFilter(column.columnName)}
-                      onFilterChange={(filter) => handleFilterChange(column.columnName, filter)}
-                    />
-                  </div>
-                </div>
-                <div className="column-info">
-                  <span className="data-type">{column.dataType}</span>
-                  {!column.nullable && <span className="not-null">NOT NULL</span>}
-                </div>
-              </th>
-            ))}
-            <ConditionalPermission table={accessibleTable} requiredPermission="write">
-              {(hasWritePermission) => (
-                hasWritePermission || accessibleTable.canDelete ? (
-                  <th className="actions-column">{t('common.actions')}</th>
-                ) : null
-              )}
-            </ConditionalPermission>
-          </tr>
-          </thead>
-          <tbody>
-          {records.map((record, index) => (
-            <tr
-              key={index}
-              className={selectedRecords.has(index) ? 'selected' : ''}
-            >
-              <td className="select-column">
-                <input
-                  type="checkbox"
-                  checked={selectedRecords.has(index)}
-                  onChange={() => handleRecordSelect(index, record)}
-                />
-              </td>
-              {accessibleColumns.map(column => (
-                <td key={column.columnName} className="data-cell">
-                  {formatCellValue(record[column.columnName], column)}
-                </td>
-              ))}
-              <ConditionalPermission table={accessibleTable} requiredPermission="write">
-                {(hasWritePermission) => (
-                  hasWritePermission || accessibleTable.canDelete ? (
-                    <td className="actions-column">
-                      <div className="action-buttons">
-                        <PermissionGuard table={accessibleTable} requiredPermission="write">
-                          <button
-                            className="button button-sm button-secondary"
-                            onClick={() => onRecordEdit?.(record)}
-                            title={t('common.edit')}
-                          >
-                            <FaEdit />
-                          </button>
-                        </PermissionGuard>
-                        <PermissionGuard table={accessibleTable} requiredPermission="delete">
-                          <button
-                            className="button button-sm button-danger"
-                            onClick={() => onRecordDelete?.(record)}
-                            title={t('common.delete')}
-                          >
-                            <FaTrash />
-                          </button>
-                        </PermissionGuard>
-                      </div>
-                    </td>
-                  ) : null
-                )}
-              </ConditionalPermission>
-            </tr>
-          ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="table-pagination">
-        <div className="pagination-info">
-          {t('dataTable.pageInfo', {
-            current: currentPage + 1,
-            total: totalPages,
-            totalRecords
-          })}
-        </div>
-        <div className="pagination-controls">
-          <button
-            className="button button-sm"
-            disabled={!hasPreviousPage}
-            onClick={() => handlePageChange(currentPage - 1)}
-          >
-            {t('common.previous')}
-          </button>
-          <span className="page-indicator">
-            {currentPage + 1} / {totalPages}
-          </span>
-          <button
-            className="button button-sm"
-            disabled={!hasNextPage}
-            onClick={() => handlePageChange(currentPage + 1)}
-          >
-            {t('common.next')}
-          </button>
-        </div>
-      </div>
+      <Tabs
+        items={tabItems}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        className="table-tabs"
+      />
     </div>
   )
 }

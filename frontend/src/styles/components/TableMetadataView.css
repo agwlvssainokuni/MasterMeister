@@ -1,0 +1,229 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* メタデータビューコンテナ */
+.metadata-view {
+  padding: var(--spacing-lg);
+}
+
+/* メタデータテーブル基本設定 */
+.metadata-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.metadata-table-header th {
+  background: var(--color-primary);
+  color: #ffffff;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  padding: var(--spacing-md);
+  border-right: var(--border-width) solid rgba(255, 255, 255, 0.2);
+}
+
+.metadata-table-header th:last-child {
+  border-right: none;
+}
+
+.metadata-table-body td {
+  padding: var(--spacing-md);
+  border-right: var(--border-width) solid var(--color-border);
+  vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.metadata-table-body td:last-child {
+  border-right: none;
+}
+
+/* 各列の幅を固定指定 */
+.column-name-header,
+.column-name-cell {
+  width: 20%; /* カラム名 */
+}
+
+.data-type-header,
+.data-type-cell {
+  width: 15%; /* データ型 */
+}
+
+.nullable-header,
+.nullable-cell {
+  width: 12%; /* NULL許可 */
+}
+
+.default-value-header,
+.default-value-cell {
+  width: 19%; /* デフォルト値 */
+}
+
+.primary-key-header,
+.primary-key-cell {
+  width: 10%; /* 主キー */
+}
+
+.comment-header,
+.comment-cell {
+  width: 24%; /* コメント */
+}
+
+/* カラム名セル */
+.column-name-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.column-name {
+  font-weight: var(--font-weight-medium);
+  font-family: 'Courier New', monospace;
+}
+
+/* データ型セル */
+.data-type {
+  background-color: var(--color-surface);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+}
+
+/* NULL許可セル */
+.nullable-cell {
+  text-align: center;
+}
+
+.nullable-badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.nullable-badge.nullable {
+  background-color: var(--color-success-lighter);
+  color: var(--color-success-dark);
+}
+
+.nullable-badge.not-nullable {
+  background-color: var(--color-warning-lighter);
+  color: var(--color-warning-dark);
+}
+
+/* デフォルト値セル */
+.default-value {
+  background-color: var(--color-surface);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.no-default {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* 主キーセル */
+.primary-key-cell {
+  text-align: center;
+}
+
+.pk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.pk-badge.is-pk {
+  background-color: var(--color-primary-lighter);
+  color: var(--color-primary-dark);
+}
+
+.pk-badge.not-pk {
+  color: var(--color-text-muted);
+}
+
+/* コメントセル */
+.comment-text {
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.no-comment {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* バッジ共通スタイル */
+.pk-badge svg,
+.not-null-badge svg {
+  font-size: var(--font-size-xs);
+}
+
+.not-null-badge {
+  color: var(--color-warning);
+  margin-left: var(--spacing-xs);
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .metadata-view {
+    padding: var(--spacing-md);
+  }
+
+  /* モバイルでは列幅を調整 */
+  .column-name-header,
+  .column-name-cell {
+    width: 25%; /* カラム名 */
+  }
+
+  .data-type-header,
+  .data-type-cell {
+    width: 15%; /* データ型 */
+  }
+
+  .nullable-header,
+  .nullable-cell {
+    width: 12%; /* NULL許可 */
+  }
+
+  .default-value-header,
+  .default-value-cell {
+    width: 19%; /* デフォルト値 */
+  }
+
+  .primary-key-header,
+  .primary-key-cell {
+    width: 8%; /* 主キー */
+  }
+
+  .comment-header,
+  .comment-cell {
+    width: 21%; /* コメント */
+  }
+
+  .metadata-table-header th,
+  .metadata-table-body td {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+}
