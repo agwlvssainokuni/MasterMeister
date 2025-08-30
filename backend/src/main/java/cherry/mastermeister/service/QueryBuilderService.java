@@ -16,8 +16,10 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.RecordFilter;
+import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -38,22 +40,22 @@ public class QueryBuilderService {
      */
     public QueryResult buildSelectQuery(String schemaName, String tableName,
                                         List<ColumnMetadata> columns, RecordFilter filter,
-                                        int page, int pageSize) {
+                                        int page, int pageSize, DatabaseType dbType) {
 
         StringBuilder query = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
 
         // SELECT clause
         String columnList = columns.stream()
-                .map(col -> escapeColumnName(col.columnName()))
+                .map(col -> SqlEscapeUtil.escapeColumnName(col.columnName(), dbType))
                 .collect(Collectors.joining(", "));
 
         query.append("SELECT ").append(columnList).append(" FROM ")
-                .append(buildTableName(schemaName, tableName));
+                .append(buildTableName(schemaName, tableName, dbType));
 
         // WHERE clause
         if (filter.hasFilters()) {
-            String whereClause = buildWhereClause(filter, parameters);
+            String whereClause = buildWhereClause(filter, parameters, dbType);
             if (!whereClause.isEmpty()) {
                 query.append(" WHERE ").append(whereClause);
             }
@@ -61,7 +63,7 @@ public class QueryBuilderService {
 
         // ORDER BY clause
         if (filter.hasSorting()) {
-            String orderByClause = buildOrderByClause(filter);
+            String orderByClause = buildOrderByClause(filter, dbType);
             query.append(" ORDER BY ").append(orderByClause);
         }
 
@@ -78,15 +80,15 @@ public class QueryBuilderService {
     /**
      * Build COUNT query for total records with same filters
      */
-    public QueryResult buildCountQuery(String schemaName, String tableName, RecordFilter filter) {
+    public QueryResult buildCountQuery(String schemaName, String tableName, RecordFilter filter, DatabaseType dbType) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
 
-        query.append("SELECT COUNT(*) FROM ").append(buildTableName(schemaName, tableName));
+        query.append("SELECT COUNT(*) FROM ").append(buildTableName(schemaName, tableName, dbType));
 
         // WHERE clause (same as SELECT query)
         if (filter.hasFilters()) {
-            String whereClause = buildWhereClause(filter, parameters);
+            String whereClause = buildWhereClause(filter, parameters, dbType);
             if (!whereClause.isEmpty()) {
                 query.append(" WHERE ").append(whereClause);
             }
@@ -98,14 +100,14 @@ public class QueryBuilderService {
     /**
      * Build WHERE clause from filter conditions
      */
-    private String buildWhereClause(RecordFilter filter, Map<String, Object> parameters) {
+    private String buildWhereClause(RecordFilter filter, Map<String, Object> parameters, DatabaseType dbType) {
         List<String> conditions = new ArrayList<>();
 
         // Column-specific filters
         if (filter.columnFilters() != null) {
             for (int i = 0; i < filter.columnFilters().size(); i++) {
                 RecordFilter.ColumnFilter columnFilter = filter.columnFilters().get(i);
-                String condition = buildColumnCondition(columnFilter, parameters, i);
+                String condition = buildColumnCondition(columnFilter, parameters, i, dbType);
                 if (condition != null && !condition.isEmpty()) {
                     conditions.add(condition);
                 }
@@ -124,8 +126,8 @@ public class QueryBuilderService {
      * Build condition for single column filter
      */
     private String buildColumnCondition(RecordFilter.ColumnFilter columnFilter,
-                                        Map<String, Object> parameters, int index) {
-        String columnName = escapeColumnName(columnFilter.columnName());
+                                        Map<String, Object> parameters, int index, DatabaseType dbType) {
+        String columnName = SqlEscapeUtil.escapeColumnName(columnFilter.columnName(), dbType);
         String paramName = "param" + index;
 
         switch (columnFilter.operator()) {
@@ -195,35 +197,22 @@ public class QueryBuilderService {
     /**
      * Build ORDER BY clause
      */
-    private String buildOrderByClause(RecordFilter filter) {
+    private String buildOrderByClause(RecordFilter filter, DatabaseType dbType) {
         return filter.sortOrders().stream()
-                .map(order -> escapeColumnName(order.columnName()) + " " + order.direction().name())
+                .map(order -> SqlEscapeUtil.escapeColumnName(order.columnName(), dbType) + " " + order.direction().name())
                 .collect(Collectors.joining(", "));
     }
 
     /**
      * Build full table name with schema
      */
-    private String buildTableName(String schemaName, String tableName) {
+    private String buildTableName(String schemaName, String tableName, DatabaseType dbType) {
         if (schemaName != null && !schemaName.isEmpty()) {
-            return escapeTableName(schemaName) + "." + escapeTableName(tableName);
+            return SqlEscapeUtil.escapeSchemaName(schemaName, dbType) + "." + SqlEscapeUtil.escapeTableName(tableName, dbType);
         }
-        return escapeTableName(tableName);
+        return SqlEscapeUtil.escapeTableName(tableName, dbType);
     }
 
-    /**
-     * Escape table name for SQL (basic implementation)
-     */
-    private String escapeTableName(String tableName) {
-        return "\"" + tableName.replace("\"", "\"\"") + "\"";
-    }
-
-    /**
-     * Escape column name for SQL (basic implementation)
-     */
-    private String escapeColumnName(String columnName) {
-        return "\"" + columnName.replace("\"", "\"\"") + "\"";
-    }
 
     /**
      * Result containing generated query and parameters

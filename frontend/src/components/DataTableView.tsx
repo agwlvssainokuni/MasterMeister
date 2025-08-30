@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, {useCallback, useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
 import {ColumnFilterComponent} from './ColumnFilter'
@@ -34,11 +34,11 @@ interface DataTableViewProps {
   schemaName: string
   tableName: string
   accessibleTable: AccessibleTable
+  reloadTrigger?: number
   onRecordSelect?: (record: TableRecord) => void
   onRecordEdit?: (record: TableRecord) => void
   onRecordDelete?: (record: TableRecord) => void
   onRecordCreate?: () => void
-  onDataReload?: () => void
 }
 
 export const DataTableView: React.FC<DataTableViewProps> = (
@@ -47,11 +47,11 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     schemaName,
     tableName,
     accessibleTable,
+    reloadTrigger,
     onRecordSelect,
     onRecordEdit,
     onRecordDelete,
-    onRecordCreate,
-    onDataReload
+    onRecordCreate
   }
 ) => {
   const {t} = useTranslation()
@@ -64,14 +64,27 @@ export const DataTableView: React.FC<DataTableViewProps> = (
   const [columnFilters, setColumnFilters] = useState<ColumnFilter[]>([])
   const [selectedRecords, setSelectedRecords] = useState<Set<number>>(new Set())
 
+  // Use refs to avoid infinite loops in useCallback dependencies
+  const columnFiltersRef = useRef<ColumnFilter[]>([])
+  const sortOrdersRef = useRef<SortOrder[]>([])
+
+  // Update refs when state changes
+  useEffect(() => {
+    columnFiltersRef.current = columnFilters
+  }, [columnFilters])
+
+  useEffect(() => {
+    sortOrdersRef.current = sortOrders
+  }, [sortOrders])
+
   const loadRecords = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
       const filter: RecordFilter = {
-        columnFilters,
-        sortOrders,
+        columnFilters: columnFiltersRef.current,
+        sortOrders: sortOrdersRef.current,
         customWhere: undefined
       }
 
@@ -91,18 +104,35 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     } finally {
       setLoading(false)
     }
-  }, [connectionId, schemaName, tableName, currentPage, pageSize, columnFilters, sortOrders])
+  }, [connectionId, schemaName, tableName, currentPage, pageSize])
 
   useEffect(() => {
     loadRecords()
   }, [loadRecords])
 
-  // Expose reload function to parent
+  // Reload when parent triggers reload via reloadTrigger prop
   useEffect(() => {
-    if (onDataReload) {
-      onDataReload()
+    if (reloadTrigger && reloadTrigger > 0) {
+      loadRecords()
     }
-  }, [onDataReload])
+  }, [reloadTrigger, loadRecords])
+
+  // Trigger reload when filters or sort orders change
+  const [filterChangeCount, setFilterChangeCount] = useState(0)
+  
+  useEffect(() => {
+    // Increment counter to trigger reload (skip initial render)
+    if (columnFilters.length > 0 || sortOrders.length > 0) {
+      setFilterChangeCount(prev => prev + 1)
+    }
+  }, [columnFilters, sortOrders])
+
+  useEffect(() => {
+    // Reload when filter change counter increases
+    if (filterChangeCount > 0) {
+      loadRecords()
+    }
+  }, [filterChangeCount, loadRecords])
 
   const handleSort = (columnName: string) => {
     setSortOrders(prev => {

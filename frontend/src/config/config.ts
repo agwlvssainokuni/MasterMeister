@@ -57,6 +57,8 @@ export const API_ENDPOINTS = {
       `/data/${connectionId}/tables/${schemaName}/${tableName}`,
     TABLE_RECORDS: (connectionId: number, schemaName: string, tableName: string) =>
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
+    TABLE_RECORDS_FILTER: (connectionId: number, schemaName: string, tableName: string) =>
+      `/data/${connectionId}/tables/${schemaName}/${tableName}/records/filter`,
     RECORD_CREATE: (connectionId: number, schemaName: string, tableName: string) =>
       `/data/${connectionId}/tables/${schemaName}/${tableName}/records`,
     RECORD_UPDATE: (connectionId: number, schemaName: string, tableName: string) =>

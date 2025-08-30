@@ -150,11 +150,11 @@ public class DataAccessController {
         return ApiResponse.success(dto);
     }
 
-    @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records/search")
-    @Operation(summary = "Search table records with filters", description = "Get filtered records from table with column-level permission filtering")
+    @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records/filter")
+    @Operation(summary = "Filter table records", description = "Get filtered records from table with column-level permission filtering")
     @RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId",
             schemaNameParam = "schemaName", tableNameParam = "tableName")
-    public ApiResponse<RecordQueryResult> searchTableRecords(
+    public ApiResponse<RecordQueryResult> filterTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -163,7 +163,7 @@ public class DataAccessController {
             @RequestBody(required = false) RecordFilterRequest filterRequest
     ) {
 
-        logger.info("Searching records for table {}.{} on connection: {}, page: {}, size: {}, filters: {}",
+        logger.info("Filtering records for table {}.{} on connection: {}, page: {}, size: {}, filters: {}",
                 schemaName, tableName, connectionId, page, pageSize,
                 filterRequest != null ? "present" : "none");
 

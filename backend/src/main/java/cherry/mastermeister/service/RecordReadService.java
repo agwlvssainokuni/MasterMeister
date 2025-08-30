@@ -16,6 +16,7 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.*;
 import cherry.mastermeister.util.PermissionUtils;
@@ -104,11 +105,15 @@ public class RecordReadService {
             DataSource dataSource = databaseService.getDataSource(connectionId);
             NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
+            // Get database type for proper SQL escaping
+            DatabaseConnection dbConnection = databaseService.getConnection(connectionId);
+            DatabaseType dbType = dbConnection.dbType();
+
             // Use QueryBuilderService for dynamic query generation
             QueryBuilderService.QueryResult selectQueryResult = queryBuilderService.buildSelectQuery(
-                    schemaName, tableName, accessibleColumns, filter, page, pageSize);
+                    schemaName, tableName, accessibleColumns, filter, page, pageSize, dbType);
             QueryBuilderService.QueryResult countQueryResult = queryBuilderService.buildCountQuery(
-                    schemaName, tableName, filter);
+                    schemaName, tableName, filter, dbType);
 
             logger.debug("Executing query: {}", selectQueryResult.query());
             logger.debug("Query parameters: {}", selectQueryResult.parameters());
@@ -159,40 +164,6 @@ public class RecordReadService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Build SELECT query with only accessible columns
-     */
-    private String buildSelectQuery(
-            String schemaName, String tableName, List<ColumnMetadata> columns, int page, int pageSize
-    ) {
-        String columnList = columns.stream()
-                .map(col -> escapeColumnName(col.columnName()))
-                .collect(Collectors.joining(", "));
-
-        String fullTableName = schemaName != null && !schemaName.isEmpty()
-                ? escapeTableName(schemaName) + "." + escapeTableName(tableName)
-                : escapeTableName(tableName);
-
-        StringBuilder query = new StringBuilder();
-        query.append("SELECT ").append(columnList).append(" FROM ").append(fullTableName);
-
-        // Add pagination (basic implementation - may need database-specific optimization)
-        int offset = page * pageSize;
-        query.append(" LIMIT ").append(pageSize).append(" OFFSET ").append(offset);
-
-        return query.toString();
-    }
-
-    /**
-     * Build COUNT query for total records
-     */
-    private String buildCountQuery(String schemaName, String tableName) {
-        String fullTableName = schemaName != null && !schemaName.isEmpty()
-                ? escapeTableName(schemaName) + "." + escapeTableName(tableName)
-                : escapeTableName(tableName);
-
-        return "SELECT COUNT(*) FROM " + fullTableName;
-    }
 
     /**
      * Map ResultSet to TableRecord with column permissions
@@ -231,21 +202,5 @@ public class RecordReadService {
     private RecordQueryResult createEmptyResult(int page, int pageSize, long executionTime) {
         return new RecordQueryResult(
                 List.of(), List.of(), 0L, page, pageSize, executionTime, "-- No accessible columns --");
-    }
-
-    /**
-     * Escape table name for SQL (basic implementation)
-     */
-    private String escapeTableName(String tableName) {
-        // Basic escaping - may need database-specific implementation
-        return "\"" + tableName.replace("\"", "\"\"") + "\"";
-    }
-
-    /**
-     * Escape column name for SQL (basic implementation)
-     */
-    private String escapeColumnName(String columnName) {
-        // Basic escaping - may need database-specific implementation
-        return "\"" + columnName.replace("\"", "\"\"") + "\"";
     }
 }

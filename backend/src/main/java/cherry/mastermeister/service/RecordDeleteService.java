@@ -16,11 +16,14 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
+import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordDeleteResult;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.util.PermissionUtils;
+import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -100,7 +103,7 @@ public class RecordDeleteService {
             boolean integrityChecked = false;
             if (!skipReferentialIntegrityCheck) {
                 List<String> integrityWarnings = checkReferentialIntegrity(
-                        dataSource, schemaName, tableName, validatedWhereConditions);
+                        connectionId, dataSource, schemaName, tableName, validatedWhereConditions);
                 warnings.addAll(integrityWarnings);
                 integrityChecked = true;
 
@@ -112,8 +115,12 @@ public class RecordDeleteService {
                 }
             }
 
+            // Get database type for proper SQL escaping
+            DatabaseConnection dbConnection = databaseService.getConnection(connectionId);
+            DatabaseType dbType = dbConnection.dbType();
+
             // Build and execute DELETE query
-            DeleteQueryResult deleteQuery = buildDeleteQuery(schemaName, tableName, validatedWhereConditions);
+            DeleteQueryResult deleteQuery = buildDeleteQuery(schemaName, tableName, validatedWhereConditions, dbType);
 
             logger.debug("Executing DELETE query: {}", deleteQuery.query());
             logger.debug("Query parameters: {}", deleteQuery.parameters());
@@ -224,7 +231,7 @@ public class RecordDeleteService {
      * Check referential integrity before deletion
      */
     private List<String> checkReferentialIntegrity(
-            DataSource dataSource, String schemaName, String tableName,
+            Long connectionId, DataSource dataSource, String schemaName, String tableName,
             Map<String, Object> whereConditions
     ) {
         List<String> warnings = new ArrayList<>();
@@ -243,7 +250,7 @@ public class RecordDeleteService {
             for (ForeignKeyReference reference : incomingReferences) {
                 // Build query to check for referencing records
                 String checkQuery = buildReferenceCheckQuery(
-                        reference, schemaName, tableName, whereConditions);
+                        connectionId, reference, schemaName, tableName, whereConditions);
 
                 MapSqlParameterSource parameterSource = new MapSqlParameterSource();
                 whereConditions.forEach(parameterSource::addValue);
@@ -305,24 +312,28 @@ public class RecordDeleteService {
      * Build query to check for referencing records
      */
     private String buildReferenceCheckQuery(
-            ForeignKeyReference reference, String targetSchema, String targetTable,
+            Long connectionId, ForeignKeyReference reference, String targetSchema, String targetTable,
             Map<String, Object> whereConditions
     ) {
         // This is a simplified implementation
         // In a real system, you would need to handle multiple column foreign keys properly
-        String referencingTable = buildTableName(reference.referencingSchema(), reference.referencingTable());
-        String targetTableName = buildTableName(targetSchema, targetTable);
+        // Get database type for proper SQL escaping
+        DatabaseConnection dbConnection = databaseService.getConnection(connectionId);
+        DatabaseType dbType = dbConnection.dbType();
+
+        String referencingTable = buildTableName(reference.referencingSchema(), reference.referencingTable(), dbType);
+        String targetTableName = buildTableName(targetSchema, targetTable, dbType);
 
         StringBuilder query = new StringBuilder();
         query.append("SELECT COUNT(*) FROM ").append(referencingTable)
-                .append(" WHERE ").append(escapeColumnName(reference.referencingColumnName()))
-                .append(" IN (SELECT ").append(escapeColumnName(reference.referencedColumnName()))
+                .append(" WHERE ").append(SqlEscapeUtil.escapeColumnName(reference.referencingColumnName(), dbType))
+                .append(" IN (SELECT ").append(SqlEscapeUtil.escapeColumnName(reference.referencedColumnName(), dbType))
                 .append(" FROM ").append(targetTableName)
                 .append(" WHERE ");
 
         // Add WHERE conditions from the deletion criteria
         List<String> conditions = whereConditions.keySet().stream()
-                .map(col -> escapeColumnName(col) + " = :" + col)
+                .map(col -> SqlEscapeUtil.escapeColumnName(col, dbType) + " = :" + col)
                 .collect(Collectors.toList());
 
         query.append(String.join(" AND ", conditions)).append(")");
@@ -334,13 +345,13 @@ public class RecordDeleteService {
      * Build DELETE query with parameterized values
      */
     private DeleteQueryResult buildDeleteQuery(
-            String schemaName, String tableName, Map<String, Object> whereConditions
+            String schemaName, String tableName, Map<String, Object> whereConditions, DatabaseType dbType
     ) {
-        String fullTableName = buildTableName(schemaName, tableName);
+        String fullTableName = buildTableName(schemaName, tableName, dbType);
 
         // Build WHERE clause
         List<String> whereClause = whereConditions.keySet().stream()
-                .map(col -> escapeColumnName(col) + " = :" + col)
+                .map(col -> SqlEscapeUtil.escapeColumnName(col, dbType) + " = :" + col)
                 .collect(Collectors.toList());
 
         String query = String.format(
@@ -358,26 +369,13 @@ public class RecordDeleteService {
     /**
      * Build full table name with schema
      */
-    private String buildTableName(String schemaName, String tableName) {
+    private String buildTableName(String schemaName, String tableName, DatabaseType dbType) {
         if (schemaName != null && !schemaName.isEmpty()) {
-            return escapeTableName(schemaName) + "." + escapeTableName(tableName);
+            return SqlEscapeUtil.escapeSchemaName(schemaName, dbType) + "." + SqlEscapeUtil.escapeTableName(tableName, dbType);
         }
-        return escapeTableName(tableName);
+        return SqlEscapeUtil.escapeTableName(tableName, dbType);
     }
 
-    /**
-     * Escape table name for SQL (basic implementation)
-     */
-    private String escapeTableName(String tableName) {
-        return "\"" + tableName.replace("\"", "\"\"") + "\"";
-    }
-
-    /**
-     * Escape column name for SQL (basic implementation)
-     */
-    private String escapeColumnName(String columnName) {
-        return "\"" + columnName.replace("\"", "\"\"") + "\"";
-    }
 
     /**
      * Result containing generated DELETE query and parameters

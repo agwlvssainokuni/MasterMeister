@@ -100,11 +100,14 @@ class DataAccessService {
       requestBody = this.convertToRecordFilterRequest(filter)
     }
 
-    const url = `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS(connectionId, schemaName, tableName)}?${params.toString()}`
-
     const response = requestBody
-      ? await apiClient.post<ApiResponse<RecordQueryResult>>(url, requestBody)
-      : await apiClient.get<ApiResponse<RecordQueryResult>>(url)
+      ? await apiClient.post<ApiResponse<RecordQueryResult>>(
+          `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS_FILTER(connectionId, schemaName, tableName)}?${params.toString()}`,
+          requestBody
+        )
+      : await apiClient.get<ApiResponse<RecordQueryResult>>(
+          `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS(connectionId, schemaName, tableName)}?${params.toString()}`
+        )
 
     if (!response.data.ok || !response.data.data) {
       throw new Error('Failed to fetch records')

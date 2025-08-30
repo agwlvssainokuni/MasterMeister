@@ -37,7 +37,7 @@ export const DataAccessPage: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [editMode, setEditMode] = useState<'create' | 'edit'>('create')
   const [selectedRecord, setSelectedRecord] = useState<TableRecord>()
-  const [dataTableKey, setDataTableKey] = useState(0) // For forcing DataTable reload
+  const [dataTableReloadTrigger, setDataTableReloadTrigger] = useState(0) // For triggering DataTable reload
 
   const handleDatabaseSelect = (database: Database) => {
     setSelectedDatabase(database)
@@ -82,7 +82,7 @@ export const DataAccessPage: React.FC = () => {
   }
 
   const handleDataReload = () => {
-    setDataTableKey(prev => prev + 1)
+    setDataTableReloadTrigger(prev => prev + 1)
   }
 
   const handleEditSuccess = (message: string) => {
@@ -90,7 +90,7 @@ export const DataAccessPage: React.FC = () => {
       type: 'success',
       message,
     })
-    handleDataReload() // Force DataTable reload
+    handleDataReload() // Trigger DataTable reload
   }
 
   const handleEditError = (error: string) => {
@@ -105,7 +105,7 @@ export const DataAccessPage: React.FC = () => {
       type: 'success',
       message,
     })
-    handleDataReload() // Force DataTable reload
+    handleDataReload() // Trigger DataTable reload
   }
 
   const handleDeleteError = (error: string) => {
@@ -132,16 +132,15 @@ export const DataAccessPage: React.FC = () => {
         <main className="data-content">
           {selectedTable && tableMetadata ? (
             <DataTableView
-              key={dataTableKey}
               connectionId={selectedTable.connectionId}
               schemaName={selectedTable.schemaName}
               tableName={selectedTable.tableName}
               accessibleTable={selectedTable}
+              reloadTrigger={dataTableReloadTrigger}
               onRecordSelect={(record) => console.log('Record selected:', record)}
               onRecordEdit={handleEditRecord}
               onRecordDelete={handleDeleteRecord}
               onRecordCreate={handleCreateRecord}
-              onDataReload={handleDataReload}
             />
           ) : selectedDatabase ? (
             <div className="empty-content">

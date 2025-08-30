@@ -16,11 +16,14 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
+import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordCreationResult;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.util.PermissionUtils;
+import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -91,7 +94,11 @@ public class RecordCreateService {
             DataSource dataSource = databaseService.getDataSource(connectionId);
             NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
-            InsertQueryResult insertQuery = buildInsertQuery(schemaName, tableName, validatedData);
+            // Get database type for proper SQL escaping
+            DatabaseConnection dbConnection = databaseService.getConnection(connectionId);
+            DatabaseType dbType = dbConnection.dbType();
+
+            InsertQueryResult insertQuery = buildInsertQuery(schemaName, tableName, validatedData, dbType);
 
             logger.debug("Executing INSERT query: {}", insertQuery.query());
             logger.debug("Query parameters: {}", insertQuery.parameters());
@@ -212,16 +219,16 @@ public class RecordCreateService {
      * Build INSERT query with parameterized values
      */
     private InsertQueryResult buildInsertQuery(
-            String schemaName, String tableName, Map<String, Object> data
+            String schemaName, String tableName, Map<String, Object> data, DatabaseType dbType
     ) {
-        String fullTableName = buildTableName(schemaName, tableName);
+        String fullTableName = buildTableName(schemaName, tableName, dbType);
 
         if (data.isEmpty()) {
             throw new IllegalArgumentException("No data provided for insert");
         }
 
         List<String> columns = data.keySet().stream()
-                .map(this::escapeColumnName)
+                .map(col -> SqlEscapeUtil.escapeColumnName(col, dbType))
                 .collect(Collectors.toList());
 
         List<String> parameterNames = data.keySet().stream()
@@ -267,26 +274,13 @@ public class RecordCreateService {
     /**
      * Build full table name with schema
      */
-    private String buildTableName(String schemaName, String tableName) {
+    private String buildTableName(String schemaName, String tableName, DatabaseType dbType) {
         if (schemaName != null && !schemaName.isEmpty()) {
-            return escapeTableName(schemaName) + "." + escapeTableName(tableName);
+            return SqlEscapeUtil.escapeSchemaName(schemaName, dbType) + "." + SqlEscapeUtil.escapeTableName(tableName, dbType);
         }
-        return escapeTableName(tableName);
+        return SqlEscapeUtil.escapeTableName(tableName, dbType);
     }
 
-    /**
-     * Escape table name for SQL (basic implementation)
-     */
-    private String escapeTableName(String tableName) {
-        return "\"" + tableName.replace("\"", "\"\"") + "\"";
-    }
-
-    /**
-     * Escape column name for SQL (basic implementation)
-     */
-    private String escapeColumnName(String columnName) {
-        return "\"" + columnName.replace("\"", "\"\"") + "\"";
-    }
 
     /**
      * Result containing generated INSERT query and parameters

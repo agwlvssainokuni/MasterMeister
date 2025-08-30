@@ -16,11 +16,14 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
+import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordUpdateResult;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.util.PermissionUtils;
+import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -102,8 +105,12 @@ public class RecordUpdateService {
             DataSource dataSource = databaseService.getDataSource(connectionId);
             NamedParameterJdbcTemplate namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
+            // Get database type for proper SQL escaping
+            DatabaseConnection dbConnection = databaseService.getConnection(connectionId);
+            DatabaseType dbType = dbConnection.dbType();
+
             UpdateQueryResult updateQuery = buildUpdateQuery(schemaName, tableName,
-                    validatedUpdateData, validatedWhereConditions);
+                    validatedUpdateData, validatedWhereConditions, dbType);
 
             logger.debug("Executing UPDATE query: {}", updateQuery.query());
             logger.debug("Query parameters: {}", updateQuery.parameters());
@@ -259,18 +266,18 @@ public class RecordUpdateService {
      */
     private UpdateQueryResult buildUpdateQuery(
             String schemaName, String tableName,
-            Map<String, Object> updateData, Map<String, Object> whereConditions
+            Map<String, Object> updateData, Map<String, Object> whereConditions, DatabaseType dbType
     ) {
-        String fullTableName = buildTableName(schemaName, tableName);
+        String fullTableName = buildTableName(schemaName, tableName, dbType);
 
         // Build SET clause
         List<String> setClause = updateData.keySet().stream()
-                .map(col -> escapeColumnName(col) + " = :update_" + col)
+                .map(col -> SqlEscapeUtil.escapeColumnName(col, dbType) + " = :update_" + col)
                 .collect(Collectors.toList());
 
         // Build WHERE clause
         List<String> whereClause = whereConditions.keySet().stream()
-                .map(col -> escapeColumnName(col) + " = :where_" + col)
+                .map(col -> SqlEscapeUtil.escapeColumnName(col, dbType) + " = :where_" + col)
                 .collect(Collectors.toList());
 
         String query = String.format(
@@ -294,25 +301,11 @@ public class RecordUpdateService {
     /**
      * Build full table name with schema
      */
-    private String buildTableName(String schemaName, String tableName) {
+    private String buildTableName(String schemaName, String tableName, DatabaseType dbType) {
         if (schemaName != null && !schemaName.isEmpty()) {
-            return escapeTableName(schemaName) + "." + escapeTableName(tableName);
+            return SqlEscapeUtil.escapeSchemaName(schemaName, dbType) + "." + SqlEscapeUtil.escapeTableName(tableName, dbType);
         }
-        return escapeTableName(tableName);
-    }
-
-    /**
-     * Escape table name for SQL (basic implementation)
-     */
-    private String escapeTableName(String tableName) {
-        return "\"" + tableName.replace("\"", "\"\"") + "\"";
-    }
-
-    /**
-     * Escape column name for SQL (basic implementation)
-     */
-    private String escapeColumnName(String columnName) {
-        return "\"" + columnName.replace("\"", "\"\"") + "\"";
+        return SqlEscapeUtil.escapeTableName(tableName, dbType);
     }
 
     /**
