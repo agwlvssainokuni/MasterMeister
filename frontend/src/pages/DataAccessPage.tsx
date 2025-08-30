@@ -16,6 +16,7 @@
 
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
+import {FaDatabase, FaChartBar, FaEdit} from 'react-icons/fa'
 import {useNotification} from '../contexts/NotificationContext'
 import {UserLayout} from './layouts/UserLayout'
 import {DatabaseTreeView} from '../components/DatabaseTreeView'
@@ -144,14 +145,14 @@ export const DataAccessPage: React.FC = () => {
             />
           ) : selectedDatabase ? (
             <div className="empty-content">
-              <div className="empty-icon">🗃️</div>
+              <div className="empty-icon"><FaDatabase size={48} /></div>
               <h3>{t('dataAccess.databaseSelected')}</h3>
               <p>{selectedDatabase.name} ({selectedDatabase.dbType})</p>
               <p className="empty-description">{t('dataAccess.selectTableFromTree')}</p>
             </div>
           ) : (
             <div className="empty-content">
-              <div className="empty-icon">📊</div>
+              <div className="empty-icon"><FaChartBar size={48} /></div>
               <h3>{t('dataAccess.selectDatabase')}</h3>
               <p>{t('dataAccess.selectDatabaseDescription')}</p>
             </div>
@@ -198,7 +199,7 @@ export const DataAccessPage: React.FC = () => {
             onClick={handleCreateRecord}
             title={t('dataTable.createRecord')}
           >
-            ✏️
+            <FaEdit />
           </button>
         </PermissionGuard>
       )}

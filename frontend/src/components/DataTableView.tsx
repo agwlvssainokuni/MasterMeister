@@ -16,6 +16,14 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
+import {
+  FaKey,
+  FaEdit,
+  FaTrash,
+  FaSort,
+  FaSortUp,
+  FaSortDown
+} from 'react-icons/fa'
 import {dataAccessService} from '../services/dataAccessService'
 import {ColumnFilterComponent} from './ColumnFilter'
 import {ConditionalPermission, PermissionGuard} from './PermissionGuard'
@@ -119,10 +127,17 @@ export const DataTableView: React.FC<DataTableViewProps> = (
 
   // Trigger reload when filters or sort orders change
   const [filterChangeCount, setFilterChangeCount] = useState(0)
+  const prevColumnFiltersRef = useRef<ColumnFilter[]>([])
+  const prevSortOrdersRef = useRef<SortOrder[]>([])
   
   useEffect(() => {
-    // Increment counter to trigger reload (skip initial render)
-    if (columnFilters.length > 0 || sortOrders.length > 0) {
+    // Check if filters or sorts have actually changed
+    const filtersChanged = JSON.stringify(columnFilters) !== JSON.stringify(prevColumnFiltersRef.current)
+    const sortsChanged = JSON.stringify(sortOrders) !== JSON.stringify(prevSortOrdersRef.current)
+    
+    if (filtersChanged || sortsChanged) {
+      prevColumnFiltersRef.current = columnFilters
+      prevSortOrdersRef.current = sortOrders
       setFilterChangeCount(prev => prev + 1)
     }
   }, [columnFilters, sortOrders])
@@ -211,8 +226,8 @@ export const DataTableView: React.FC<DataTableViewProps> = (
 
   const getSortIcon = (columnName: string) => {
     const sortOrder = sortOrders.find(so => so.columnName === columnName)
-    if (!sortOrder) return '↕️'
-    return sortOrder.direction === 'ASC' ? '↑' : '↓'
+    if (!sortOrder) return <FaSort />
+    return sortOrder.direction === 'ASC' ? <FaSortUp /> : <FaSortDown />
   }
 
   const formatCellValue = (value: unknown, column: ColumnMetadata): string => {
@@ -326,7 +341,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                   <div className="column-name-section" onClick={() => handleSort(column.columnName)}>
                     <span className="column-name">{column.columnName}</span>
                     <span className="sort-icon">{getSortIcon(column.columnName)}</span>
-                    {column.primaryKey && <span className="pk-icon">🔑</span>}
+                    {column.primaryKey && <span className="pk-icon"><FaKey /></span>}
                   </div>
                   <div className="column-filter-section">
                     <ColumnFilterComponent
@@ -380,7 +395,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                             onClick={() => onRecordEdit?.(record)}
                             title={t('common.edit')}
                           >
-                            ✏️
+                            <FaEdit />
                           </button>
                         </PermissionGuard>
                         <PermissionGuard table={accessibleTable} requiredPermission="delete">
@@ -389,7 +404,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                             onClick={() => onRecordDelete?.(record)}
                             title={t('common.delete')}
                           >
-                            🗑️
+                            <FaTrash />
                           </button>
                         </PermissionGuard>
                       </div>
