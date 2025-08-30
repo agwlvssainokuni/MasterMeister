@@ -31,8 +31,32 @@
 
 /* テーブルヘッダー */
 .table-header {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
   border-bottom: var(--border-width-thick) solid var(--color-border);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* DataTableView用のテーブルヘッダースタイル */
+.table-header .table-info h2 {
+  color: var(--color-text-primary); /* ダークテキスト */
+  margin: 0;
+  /* font-sizeは指定せず、デフォルトのh2サイズを維持 */
+  font-weight: var(--font-weight-semibold);
+}
+
+.table-header .table-stats span {
+  color: var(--color-text-secondary); /* セカンダリテキスト */
+  font-size: var(--font-size-sm);
+  margin-right: var(--spacing-md);
+}
+
+.table-header .table-stats .record-count,
+.table-header .table-stats .execution-time {
+  color: var(--color-text-secondary); /* セカンダリテキスト */
 }
 
 .table-header th {

@@ -94,13 +94,14 @@
 /* Table node - Selected state (darker) */
 .tree-node.selected.table-node {
   background: var(--color-primary);
-  color: var(--color-white);
+  color: #ffffff; /* 確実な白色指定 */
   border: 1px solid var(--color-primary);
   font-weight: var(--font-weight-medium);
 }
 
 .tree-node.selected.table-node:hover {
   background: var(--color-primary-dark);
+  color: #ffffff; /* ホバー時も白色を維持 */
 }
 
 /* Tree Node Toggle */
