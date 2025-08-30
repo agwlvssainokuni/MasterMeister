@@ -250,3 +250,34 @@
   font-size: var(--font-size-xs);
   color: var(--color-warning-light);
 }
+
+/* ページサイズコントロール */
+.page-size-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.page-size-control label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.page-size-control select {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-background);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+/* ページネーションコントロール */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
