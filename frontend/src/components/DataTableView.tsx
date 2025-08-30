@@ -299,19 +299,31 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                     ) : null
                   )}
                 </ConditionalPermission>
-                {accessibleColumns.map(column => (
-                  <th key={column.columnName} className="sortable" onClick={() => handleSort(column.columnName)}>
-                    <div className="simple-column-header">
-                      <span className="column-name">{column.columnName}</span>
-                      <span className="sort-icon">{getSortIcon(column.columnName)}</span>
-                      {column.primaryKey && <span className="pk-icon"><FaKey/></span>}
-                    </div>
-                    <div className="column-type-info">
-                      <span className="data-type">{column.dataType}</span>
-                      {!column.nullable && <span className="not-null">NOT NULL</span>}
-                    </div>
-                  </th>
-                ))}
+                {accessibleColumns.map(column => {
+                  const tooltipText = [
+                    column.dataType,
+                    !column.nullable ? 'NOT NULL' : null,
+                    column.primaryKey ? 'PRIMARY KEY' : null
+                  ].filter(Boolean).join(', ')
+                  
+                  const columnClass = column.primaryKey ? 'sortable pk-column' : 'sortable'
+                  
+                  return (
+                    <th key={column.columnName} className={columnClass} onClick={() => handleSort(column.columnName)}>
+                      <div className="simple-column-header">
+                        <span className="column-name">{column.columnName}</span>
+                        <span className="sort-icon">{getSortIcon(column.columnName)}</span>
+                        {column.primaryKey && <span className="pk-icon"><FaKey/></span>}
+                      </div>
+                      <div className="column-type-info" data-tooltip={tooltipText}>
+                        <div className="data-type">{column.dataType}</div>
+                        <div className="not-null">
+                          {!column.nullable ? 'NOT NULL' : ''}
+                        </div>
+                      </div>
+                    </th>
+                  )
+                })}
               </tr>
               </thead>
               <tbody className="data-table-body">
@@ -346,7 +358,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                     )}
                   </ConditionalPermission>
                   {accessibleColumns.map(column => (
-                    <td key={column.columnName} className="data-cell">
+                    <td key={column.columnName} className={column.primaryKey ? 'data-cell pk-column' : 'data-cell'}>
                       {formatCellValue(record[column.columnName], column)}
                     </td>
                   ))}

@@ -175,6 +175,58 @@
 }
 
 /* データテーブル専用スタイル */
+.data-tab-content .table-wrapper {
+  overflow-x: auto;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.data-table {
+  min-width: 100%;
+  position: relative;
+}
+
+/* 固定列設定 */
+.data-table .actions-column {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: var(--color-primary);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  width: calc(7rem - 14px);
+  min-width: calc(7rem - 14px);
+  max-width: calc(7rem - 14px);
+}
+
+.data-table-body .actions-column {
+  background: var(--color-background);
+  border-right: 2px solid var(--color-border);
+}
+
+/* PKカラムの固定設定 */
+.data-table .pk-column {
+  position: sticky;
+  left: calc(7rem - 14px); /* 操作列の幅分オフセット */
+  z-index: 9;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.data-table-header .pk-column {
+  background: var(--color-primary);
+}
+
+.data-table-body .pk-column {
+  background: inherit;
+  border-right: 2px solid var(--color-border);
+}
+
+.table-striped .data-table-body tr:nth-child(even) .pk-column {
+  background: var(--color-surface);
+}
+
+.table-striped .data-table-body tr:nth-child(odd) .pk-column {
+  background: var(--color-background);
+}
 .data-table-header th {
   background: var(--color-primary);
   color: #ffffff;
@@ -236,19 +288,53 @@
   font-size: var(--font-size-xs);
 }
 
-.column-type-info {
-  font-size: var(--font-size-xs);
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: var(--spacing-xs);
+.data-table-header .column-type-info {
+  font-size: 0.65rem !important;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
+  position: relative;
+  cursor: help;
 }
 
-.column-type-info .data-type {
-  margin-right: var(--spacing-sm);
+.data-table-header .column-type-info .data-type {
+  margin-right: var(--spacing-xs);
+  font-size: 0.65rem !important;
+  line-height: 1;
+  padding: 2px;
 }
 
-.column-type-info .not-null {
-  font-size: var(--font-size-xs);
+.data-table-header .column-type-info .not-null {
+  font-size: 0.65rem !important;
   color: var(--color-warning-light);
+  line-height: 1;
+  padding: 2px;
+  min-height: calc(0.65rem + 4.5px - 14px);
+}
+
+/* ツールチップ */
+.column-type-info::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-text-primary);
+  color: var(--color-background);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+  z-index: 1000;
+  margin-top: var(--spacing-xs);
+  box-shadow: var(--shadow-md);
+}
+
+.column-type-info:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ページサイズコントロール */
