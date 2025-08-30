@@ -248,7 +248,14 @@
     "createRecord": "Create Record",
     "pageSize": "Page Size",
     "pageInfo": "Page {{current}} of {{total}} ({{totalRecords}} records)",
-    "noData": "No data available"
+    "noData": "No data available",
+    "filters": {
+      "title": "Filters",
+      "active": "Active Filters",
+      "applyAll": "Apply Filters",
+      "clearAll": "Clear All",
+      "remove": "Remove"
+    }
   },
   "recordEdit": {
     "createTitle": "Create New Record - {{tableName}}",
@@ -288,7 +295,7 @@
       "like": "Contains",
       "notLike": "Does not contain",
       "greaterThan": "Greater than",
-      "lessThan": "Less than", 
+      "lessThan": "Less than",
       "greaterEquals": "Greater than or equal",
       "lessEquals": "Less than or equal",
       "between": "Between",
@@ -314,7 +321,7 @@
       "button": "Access Data"
     },
     "adminPanel": {
-      "title": "Admin Panel", 
+      "title": "Admin Panel",
       "description": "Manage users, permissions, and system configuration",
       "button": "Admin Panel"
     }
@@ -524,7 +531,7 @@
         "defaultDescription": "Bulk READ access granted to all tables"
       },
       "writeAll": {
-        "title": "Write All Tables", 
+        "title": "Write All Tables",
         "description": "Grant WRITE access to all tables for all users",
         "action": "Grant Write Access",
         "defaultDescription": "Bulk WRITE access granted to all tables"
@@ -538,7 +545,7 @@
     },
     "bulkSetup": {
       "permissionType": "Permission Type",
-      "scope": "Permission Scope", 
+      "scope": "Permission Scope",
       "userEmails": "User Email Addresses",
       "userEmailsPlaceholder": "user1@example.com, user2@example.com",
       "userEmailsHint": "Enter email addresses separated by commas, or leave empty for all active users",
@@ -555,7 +562,7 @@
     },
     "types": {
       "read": "Read",
-      "write": "Write", 
+      "write": "Write",
       "delete": "Delete"
     },
     "scopes": {

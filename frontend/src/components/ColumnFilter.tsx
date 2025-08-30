@@ -14,45 +14,33 @@
  * limitations under the License.
  */
 
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import type {ColumnFilter, ColumnMetadata} from '../types/frontend'
+import '../styles/components/ColumnFilter.css'
 
 interface ColumnFilterProps {
   column: ColumnMetadata
   currentFilter?: ColumnFilter
-  onFilterChange: (filter: ColumnFilter | null) => void
+  pendingFilter?: ColumnFilter
+  onPendingFilterChange: (filter: ColumnFilter | null) => void
+  onFilterClear: () => void
 }
 
 export const ColumnFilterComponent: React.FC<ColumnFilterProps> = (
   {
     column,
     currentFilter,
-    onFilterChange,
+    pendingFilter,
+    onPendingFilterChange,
+    onFilterClear,
   }
 ) => {
   const {t} = useTranslation()
-  const [isOpen, setIsOpen] = useState(false)
-  const [operator, setOperator] = useState<ColumnFilter['operator']>(currentFilter?.operator || 'EQUALS')
-  const [value, setValue] = useState<string>(currentFilter?.value?.toString() || '')
-  const [value2, setValue2] = useState<string>(currentFilter?.value2?.toString() || '')
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isOpen])
+  const filterToUse = pendingFilter || currentFilter
+  const [operator, setOperator] = useState<ColumnFilter['operator']>(filterToUse?.operator || 'EQUALS')
+  const [value, setValue] = useState<string>(filterToUse?.value?.toString() || '')
+  const [value2, setValue2] = useState<string>(filterToUse?.value2?.toString() || '')
 
   const getOperatorOptions = () => {
     const dataType = column.dataType.toLowerCase()
@@ -122,30 +110,6 @@ export const ColumnFilterComponent: React.FC<ColumnFilterProps> = (
     return operator === 'BETWEEN'
   }
 
-  const handleApplyFilter = () => {
-    if (!needsValue()) {
-      onFilterChange({
-        columnName: column.columnName,
-        operator,
-        value: undefined,
-        value2: undefined
-      })
-    } else if (value.trim() === '') {
-      onFilterChange(null)
-    } else {
-      const convertedValue = convertValue(value)
-      const convertedValue2 = needsSecondValue() && value2.trim() ? convertValue(value2) : undefined
-
-      onFilterChange({
-        columnName: column.columnName,
-        operator,
-        value: convertedValue,
-        value2: convertedValue2
-      })
-    }
-
-    setIsOpen(false)
-  }
 
   const convertValue = (val: string): string | number | boolean | string[] => {
     const dataType = column.dataType.toLowerCase()
@@ -170,109 +134,117 @@ export const ColumnFilterComponent: React.FC<ColumnFilterProps> = (
   }
 
   const handleClearFilter = () => {
-    onFilterChange(null)
+    onFilterClear()
     setValue('')
     setValue2('')
     setOperator('EQUALS')
-    setIsOpen(false)
+  }
+
+  const handleOperatorChange = (newOperator: ColumnFilter['operator']) => {
+    setOperator(newOperator)
+    updatePendingFilter(newOperator, value, value2)
+  }
+
+  const handleValueChange = (newValue: string) => {
+    setValue(newValue)
+    updatePendingFilter(operator, newValue, value2)
+  }
+
+  const handleValue2Change = (newValue2: string) => {
+    setValue2(newValue2)
+    updatePendingFilter(operator, value, newValue2)
+  }
+
+  const updatePendingFilter = (op: ColumnFilter['operator'], val: string, val2: string) => {
+    if (!needsValueForOperator(op)) {
+      onPendingFilterChange({
+        columnName: column.columnName,
+        operator: op,
+        value: undefined,
+        value2: undefined
+      })
+    } else if (val.trim() === '') {
+      onPendingFilterChange(null)
+    } else {
+      const convertedValue = convertValue(val)
+      const convertedValue2 = needsSecondValueForOperator(op) && val2.trim() ? convertValue(val2) : undefined
+
+      onPendingFilterChange({
+        columnName: column.columnName,
+        operator: op,
+        value: convertedValue,
+        value2: convertedValue2
+      })
+    }
+  }
+
+  const needsValueForOperator = (op: ColumnFilter['operator']) => {
+    return !['IS_NULL', 'IS_NOT_NULL'].includes(op)
+  }
+
+  const needsSecondValueForOperator = (op: ColumnFilter['operator']) => {
+    return op === 'BETWEEN'
   }
 
   const isFilterActive = currentFilter !== undefined && currentFilter !== null
 
   return (
-    <div className="column-filter" ref={dropdownRef}>
-      <button
-        className={`filter-button ${isFilterActive ? 'active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
-        title={t('filter.filterColumn')}
-      >
-        🔍
-      </button>
+    <div className="column-filter-inline">
+      <div className="filter-operator">
+        <select
+          value={operator}
+          onChange={(e) => handleOperatorChange(e.target.value as ColumnFilter['operator'])}
+          className="operator-select"
+        >
+          {getOperatorOptions().map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      {isOpen && (
-        <div className="filter-dropdown">
-          <div className="filter-content">
-            <div className="filter-header">
-              <span className="filter-title">{t('filter.filterBy', {column: column.columnName})}</span>
-              <button
-                className="filter-close"
-                onClick={() => setIsOpen(false)}
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="filter-body">
-              <div className="filter-field">
-                <label htmlFor={`operator-${column.columnName}`}>
-                  {t('filter.operator')}:
-                </label>
-                <select
-                  id={`operator-${column.columnName}`}
-                  value={operator}
-                  onChange={(e) => setOperator(e.target.value as ColumnFilter['operator'])}
-                >
-                  {getOperatorOptions().map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {needsValue() && (
-                <div className="filter-field">
-                  <label htmlFor={`value-${column.columnName}`}>
-                    {t('filter.value')}:
-                  </label>
-                  <input
-                    id={`value-${column.columnName}`}
-                    type={getInputType()}
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    placeholder={
-                      operator === 'LIKE' || operator === 'NOT_LIKE'
-                        ? t('filter.likePlaceholder')
-                        : operator === 'IN' || operator === 'NOT_IN'
-                          ? t('filter.inPlaceholder')
-                          : t('filter.valuePlaceholder')
-                    }
-                  />
-                </div>
-              )}
-
-              {needsSecondValue() && (
-                <div className="filter-field">
-                  <label htmlFor={`value2-${column.columnName}`}>
-                    {t('filter.value2')}:
-                  </label>
-                  <input
-                    id={`value2-${column.columnName}`}
-                    type={getInputType()}
-                    value={value2}
-                    onChange={(e) => setValue2(e.target.value)}
-                    placeholder={t('filter.valuePlaceholder')}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="filter-footer">
-              <button
-                className="button button-sm button-secondary"
-                onClick={handleClearFilter}
-              >
-                {t('filter.clear')}
-              </button>
-              <button
-                className="button button-sm button-primary"
-                onClick={handleApplyFilter}
-              >
-                {t('filter.apply')}
-              </button>
-            </div>
-          </div>
+      {needsValue() && (
+        <div className="filter-value">
+          <input
+            type={getInputType()}
+            value={value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            placeholder={
+              operator === 'LIKE' || operator === 'NOT_LIKE'
+                ? t('filter.likePlaceholder')
+                : operator === 'IN' || operator === 'NOT_IN'
+                  ? t('filter.inPlaceholder')
+                  : t('filter.valuePlaceholder')
+            }
+            className="value-input"
+          />
         </div>
+      )}
+
+      {needsSecondValue() && (
+        <>
+          <span className="filter-and-label">AND</span>
+          <div className="filter-value2">
+            <input
+              type={getInputType()}
+              value={value2}
+              onChange={(e) => handleValue2Change(e.target.value)}
+              placeholder={t('filter.valuePlaceholder')}
+              className="value-input"
+            />
+          </div>
+        </>
+      )}
+
+      {isFilterActive && (
+        <button
+          className="filter-clear-btn"
+          onClick={handleClearFilter}
+          title={t('filter.clear')}
+        >
+          ×
+        </button>
       )}
     </div>
   )

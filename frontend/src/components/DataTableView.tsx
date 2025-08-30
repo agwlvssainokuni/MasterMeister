@@ -18,11 +18,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {FaEdit, FaKey, FaSort, FaSortDown, FaSortUp, FaTrash} from 'react-icons/fa'
 import {dataAccessService} from '../services/dataAccessService'
-import {ColumnFilterComponent} from './ColumnFilter'
 import {ConditionalPermission, PermissionGuard} from './PermissionGuard'
 import type {TabItem} from './Tabs'
 import {Tabs} from './Tabs'
 import {TableMetadataView} from './TableMetadataView'
+import {TableFilterBarView} from './TableFilterBarView'
 import type {
   AccessibleTable,
   ColumnFilter,
@@ -39,7 +39,6 @@ interface DataTableViewProps {
   tableName: string
   accessibleTable: AccessibleTable
   reloadTrigger?: number
-  onRecordSelect?: (record: TableRecord) => void
   onRecordEdit?: (record: TableRecord) => void
   onRecordDelete?: (record: TableRecord) => void
   onRecordCreate?: () => void
@@ -52,7 +51,6 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     tableName,
     accessibleTable,
     reloadTrigger,
-    onRecordSelect,
     onRecordEdit,
     onRecordDelete,
     onRecordCreate,
@@ -66,7 +64,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
   const [pageSize, setPageSize] = useState(20)
   const [sortOrders, setSortOrders] = useState<SortOrder[]>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFilter[]>([])
-  const [selectedRecords, setSelectedRecords] = useState<Set<number>>(new Set())
+  const [pendingFilters, setPendingFilters] = useState<ColumnFilter[]>([])
   const [activeTab, setActiveTab] = useState<string>('data')
 
   // Use refs to avoid infinite loops in useCallback dependencies
@@ -167,17 +165,15 @@ export const DataTableView: React.FC<DataTableViewProps> = (
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
-    setSelectedRecords(new Set())
   }
 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize)
     setCurrentPage(0)
-    setSelectedRecords(new Set())
   }
 
-  const handleFilterChange = (columnName: string, filter: ColumnFilter | null) => {
-    setColumnFilters(prev => {
+  const handlePendingFilterChange = (columnName: string, filter: ColumnFilter | null) => {
+    setPendingFilters(prev => {
       if (filter === null) {
         return prev.filter(f => f.columnName !== columnName)
       } else {
@@ -189,37 +185,25 @@ export const DataTableView: React.FC<DataTableViewProps> = (
         }
       }
     })
-    setCurrentPage(0) // Reset to first page when filter changes
-    setSelectedRecords(new Set())
   }
 
-  const getCurrentFilter = (columnName: string): ColumnFilter | undefined => {
-    return columnFilters.find(f => f.columnName === columnName)
+  const handleFilterClear = (columnName: string) => {
+    setColumnFilters(prev => prev.filter(f => f.columnName !== columnName))
+    setPendingFilters(prev => prev.filter(f => f.columnName !== columnName))
+    setCurrentPage(0)
   }
 
-  const handleRecordSelect = (index: number, record: TableRecord) => {
-    const newSelected = new Set(selectedRecords)
-    if (newSelected.has(index)) {
-      newSelected.delete(index)
-    } else {
-      newSelected.add(index)
-    }
-    setSelectedRecords(newSelected)
-
-    if (onRecordSelect && newSelected.has(index)) {
-      onRecordSelect(record)
-    }
+  const handleApplyAllFilters = () => {
+    setColumnFilters(pendingFilters)
+    setCurrentPage(0)
   }
 
-  const handleSelectAll = () => {
-    if (!queryData) return
-
-    if (selectedRecords.size === queryData.records.length) {
-      setSelectedRecords(new Set())
-    } else {
-      setSelectedRecords(new Set(Array.from({length: queryData.records.length}, (_, i) => i)))
-    }
+  const handleClearAllFilters = () => {
+    setColumnFilters([])
+    setPendingFilters([])
+    setCurrentPage(0)
   }
+
 
   const getSortIcon = (columnName: string) => {
     const sortOrder = sortOrders.find(so => so.columnName === columnName)
@@ -305,38 +289,9 @@ export const DataTableView: React.FC<DataTableViewProps> = (
           </div>
 
           <div className="table-wrapper">
-            <table className="data-table">
-              <thead>
+            <table className="data-table table-striped">
+              <thead className="data-table-header">
               <tr>
-                <th className="select-column">
-                  <input
-                    type="checkbox"
-                    checked={selectedRecords.size === records.length && records.length > 0}
-                    onChange={handleSelectAll}
-                  />
-                </th>
-                {accessibleColumns.map(column => (
-                  <th key={column.columnName} className="sortable">
-                    <div className="column-header">
-                      <div className="column-name-section" onClick={() => handleSort(column.columnName)}>
-                        <span className="column-name">{column.columnName}</span>
-                        <span className="sort-icon">{getSortIcon(column.columnName)}</span>
-                        {column.primaryKey && <span className="pk-icon"><FaKey/></span>}
-                      </div>
-                      <div className="column-filter-section">
-                        <ColumnFilterComponent
-                          column={column}
-                          currentFilter={getCurrentFilter(column.columnName)}
-                          onFilterChange={(filter) => handleFilterChange(column.columnName, filter)}
-                        />
-                      </div>
-                    </div>
-                    <div className="column-info">
-                      <span className="data-type">{column.dataType}</span>
-                      {!column.nullable && <span className="not-null">NOT NULL</span>}
-                    </div>
-                  </th>
-                ))}
                 <ConditionalPermission table={accessibleTable} requiredPermission="write">
                   {(hasWritePermission) => (
                     hasWritePermission || accessibleTable.canDelete ? (
@@ -344,26 +299,24 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                     ) : null
                   )}
                 </ConditionalPermission>
+                {accessibleColumns.map(column => (
+                  <th key={column.columnName} className="sortable" onClick={() => handleSort(column.columnName)}>
+                    <div className="simple-column-header">
+                      <span className="column-name">{column.columnName}</span>
+                      <span className="sort-icon">{getSortIcon(column.columnName)}</span>
+                      {column.primaryKey && <span className="pk-icon"><FaKey/></span>}
+                    </div>
+                    <div className="column-type-info">
+                      <span className="data-type">{column.dataType}</span>
+                      {!column.nullable && <span className="not-null">NOT NULL</span>}
+                    </div>
+                  </th>
+                ))}
               </tr>
               </thead>
-              <tbody>
+              <tbody className="data-table-body">
               {records.map((record, index) => (
-                <tr
-                  key={index}
-                  className={selectedRecords.has(index) ? 'selected' : ''}
-                >
-                  <td className="select-column">
-                    <input
-                      type="checkbox"
-                      checked={selectedRecords.has(index)}
-                      onChange={() => handleRecordSelect(index, record)}
-                    />
-                  </td>
-                  {accessibleColumns.map(column => (
-                    <td key={column.columnName} className="data-cell">
-                      {formatCellValue(record[column.columnName], column)}
-                    </td>
-                  ))}
+                <tr key={index}>
                   <ConditionalPermission table={accessibleTable} requiredPermission="write">
                     {(hasWritePermission) => (
                       hasWritePermission || accessibleTable.canDelete ? (
@@ -375,7 +328,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                                 onClick={() => onRecordEdit?.(record)}
                                 title={t('common.edit')}
                               >
-                                <FaEdit/>
+                                <FaEdit />
                               </button>
                             </PermissionGuard>
                             <PermissionGuard table={accessibleTable} requiredPermission="delete">
@@ -384,7 +337,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                                 onClick={() => onRecordDelete?.(record)}
                                 title={t('common.delete')}
                               >
-                                <FaTrash/>
+                                <FaTrash />
                               </button>
                             </PermissionGuard>
                           </div>
@@ -392,6 +345,11 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                       ) : null
                     )}
                   </ConditionalPermission>
+                  {accessibleColumns.map(column => (
+                    <td key={column.columnName} className="data-cell">
+                      {formatCellValue(record[column.columnName], column)}
+                    </td>
+                  ))}
                 </tr>
               ))}
               </tbody>
@@ -426,6 +384,16 @@ export const DataTableView: React.FC<DataTableViewProps> = (
               </button>
             </div>
           </div>
+
+          <TableFilterBarView
+            columns={accessibleColumns}
+            activeFilters={columnFilters}
+            pendingFilters={pendingFilters}
+            onFilterChange={handlePendingFilterChange}
+            onFilterClear={handleFilterClear}
+            onClearAllFilters={handleClearAllFilters}
+            onApplyAllFilters={handleApplyAllFilters}
+          />
         </div>
       )
     },

@@ -32,6 +32,7 @@
 @import './styles/components/Notification.css';
 @import './styles/components/DatabaseTreeView.css';
 @import './styles/components/TableMetadataView.css';
+@import './styles/components/TableFilterBarView.css';
 
 /* レイアウトスタイル */
 @import './styles/layouts/AuthLayout.css';

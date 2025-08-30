@@ -138,7 +138,6 @@ export const DataAccessPage: React.FC = () => {
               tableName={selectedTable.tableName}
               accessibleTable={selectedTable}
               reloadTrigger={dataTableReloadTrigger}
-              onRecordSelect={(record) => console.log('Record selected:', record)}
               onRecordEdit={handleEditRecord}
               onRecordDelete={handleDeleteRecord}
               onRecordCreate={handleCreateRecord}

@@ -1,0 +1,187 @@
+/*
+ * Copyright 2025 agwlvssainokuni
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* フィルターバーコンテナ */
+.table-filter-bar {
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+/* フィルターバーヘッダー */
+.filter-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.filter-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.filter-bar-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* アクティブフィルター表示 */
+.active-filters {
+  background: var(--color-background);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.active-filters-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-right: var(--spacing-sm);
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+/* フィルターチップ */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--color-primary-lighter);
+  color: var(--color-primary-dark);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  border: var(--border-width) solid var(--color-primary-light);
+}
+
+.filter-chip-column {
+  font-weight: var(--font-weight-medium);
+}
+
+.filter-chip-operator {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.filter-chip-value {
+  font-family: 'Courier New', monospace;
+}
+
+.filter-chip-remove {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  transition: background var(--transition-normal);
+}
+
+.filter-chip-remove:hover {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+/* フィルターコントロール */
+.filter-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--spacing-md);
+}
+
+.filter-control-item {
+  background: var(--color-background);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xs);
+}
+
+.filter-control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.filter-control-header .column-name {
+  font-weight: var(--font-weight-medium);
+  font-family: 'Courier New', monospace;
+  color: var(--color-text-primary);
+}
+
+.column-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.pk-badge,
+.not-null-badge {
+  background: var(--color-warning-lighter);
+  color: var(--color-warning-dark);
+  padding: 1px var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.pk-badge {
+  background: var(--color-primary-lighter);
+  color: var(--color-primary-dark);
+}
+
+.filter-control-input {
+  width: 100%;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .filter-controls-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .filter-bar-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+  }
+
+  .filter-chips {
+    justify-content: flex-start;
+  }
+
+  .filter-chip {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs);
+  }
+}

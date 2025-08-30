@@ -248,7 +248,14 @@
     "createRecord": "レコード作成",
     "pageSize": "ページサイズ",
     "pageInfo": "{{total}}ページ中{{current}}ページ（{{totalRecords}}件）",
-    "noData": "データがありません"
+    "noData": "データがありません",
+    "filters": {
+      "title": "フィルター",
+      "active": "適用中のフィルター",
+      "applyAll": "フィルター適用",
+      "clearAll": "すべてクリア",
+      "remove": "削除"
+    }
   },
   "recordEdit": {
     "createTitle": "新規レコード作成 - {{tableName}}",
@@ -526,7 +533,7 @@
       "writeAll": {
         "title": "全テーブル書き込み",
         "description": "全ユーザーに全テーブルの書き込み権限を付与",
-        "action": "書き込み権限付与", 
+        "action": "書き込み権限付与",
         "defaultDescription": "全テーブルに一括書き込み権限を付与"
       },
       "readOnly": {
@@ -539,7 +546,7 @@
     "bulkSetup": {
       "permissionType": "権限種別",
       "scope": "権限範囲",
-      "userEmails": "ユーザーメールアドレス", 
+      "userEmails": "ユーザーメールアドレス",
       "userEmailsPlaceholder": "user1@example.com, user2@example.com",
       "userEmailsHint": "メールアドレスをカンマ区切りで入力、または空欄で全アクティブユーザー対象",
       "description": "説明",
@@ -549,7 +556,7 @@
       "result": "実行結果",
       "defaultDescription": {
         "read": "一括読み取り権限を適用",
-        "write": "一括書き込み権限を適用", 
+        "write": "一括書き込み権限を適用",
         "delete": "一括削除権限を適用"
       }
     },
