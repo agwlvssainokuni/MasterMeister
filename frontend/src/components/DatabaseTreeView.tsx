@@ -95,17 +95,19 @@ export const DatabaseTreeView: React.FC<DatabaseTreeViewProps> = (
 
   const loadSchemas = async (databaseNode: DatabaseNode) => {
     try {
-      // For now, we'll use a placeholder schema loading
-      // In real implementation, this would call a schema API
-      const schemas: SchemaNode[] = [
-        {
-          type: 'schema' as const,
-          connectionId: databaseNode.database.id,
-          schemaName: 'public', // Default schema name
-          expanded: false,
-          tables: []
-        }
-      ]
+      // Get all accessible tables to extract unique schema names
+      const tableList = await dataAccessService.getAccessibleTables(databaseNode.database.id)
+      
+      // Extract unique schema names from tables
+      const schemaNames = [...new Set(tableList.map(table => table.schemaName))]
+      
+      const schemas: SchemaNode[] = schemaNames.map(schemaName => ({
+        type: 'schema' as const,
+        connectionId: databaseNode.database.id,
+        schemaName,
+        expanded: false,
+        tables: []
+      }))
 
       const updatedDatabases = databases.map(db =>
         db.database.id === databaseNode.database.id
@@ -125,7 +127,11 @@ export const DatabaseTreeView: React.FC<DatabaseTreeViewProps> = (
   const loadTables = async (schemaNode: SchemaNode) => {
     try {
       const tableList = await dataAccessService.getAccessibleTables(schemaNode.connectionId)
-      const tableNodes: TableNode[] = tableList.map(table => ({
+      
+      // Filter tables by schema name
+      const schemaFilteredTables = tableList.filter(table => table.schemaName === schemaNode.schemaName)
+      
+      const tableNodes: TableNode[] = schemaFilteredTables.map(table => ({
         type: 'table' as const,
         table
       }))
@@ -173,6 +179,14 @@ export const DatabaseTreeView: React.FC<DatabaseTreeViewProps> = (
   }
 
   const handleTableClick = (table: AccessibleTable) => {
+    // When a table is selected, also select the corresponding database
+    const correspondingDatabase = databases.find(dbNode => 
+      dbNode.database.id === table.connectionId
+    )?.database
+    
+    if (correspondingDatabase) {
+      onDatabaseSelect?.(correspondingDatabase)
+    }
     onTableSelect?.(table)
   }
 

@@ -19,6 +19,9 @@
   --color-primary: #646cff;
   --color-primary-hover: #535bf2;
   --color-primary-light: #747bff;
+  --color-primary-lighter: rgba(100, 108, 255, 0.1);
+  --color-primary-dark: #535bf2;
+  --color-primary-rgb: 100, 108, 255;
 
   --color-secondary: #f9f9f9;
   --color-secondary-dark: #1a1a1a;
