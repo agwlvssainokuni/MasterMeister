@@ -45,6 +45,44 @@
   font-size: var(--font-size-md);
 }
 
+/* ユーザーテーブルヘッダー専用スタイル */
+.users-table-header th {
+  background: var(--color-primary);
+  color: #ffffff;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  padding: var(--spacing-md);
+  border-right: var(--border-width) solid rgba(255, 255, 255, 0.2);
+}
+
+.users-table-header th:last-child {
+  border-right: none;
+}
+
+/* ユーザーテーブルボディ専用スタイル */
+.users-table-body td {
+  padding: var(--spacing-md);
+  border-right: var(--border-width) solid var(--color-border);
+  vertical-align: middle;
+}
+
+.users-table-body td:last-child {
+  border-right: none;
+}
+
+/* ユーザーテーブル用ストライプ効果 */
+.table-striped .users-table-body tr:nth-child(even) {
+  background-color: var(--color-surface);
+}
+
+.table-striped .users-table-body tr:nth-child(odd) {
+  background-color: var(--color-background);
+}
+
+.table-striped .users-table-body tr:hover {
+  background-color: var(--color-border) !important;
+}
+
 .user-management-page .table-header th.table-cell-center {
   text-align: center;
 }

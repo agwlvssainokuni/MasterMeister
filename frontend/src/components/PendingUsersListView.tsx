@@ -147,14 +147,14 @@ export const PendingUsersListView = () => {
   return (
     <div className="admin-users-table">
       <table className="table table-striped">
-        <thead className="table-header">
+        <thead className="users-table-header">
         <tr>
           <th className="table-cell-center">{t('admin.users.table.email')}</th>
           <th className="table-cell-center" style={{width: '12rem'}}>{t('admin.users.table.registeredAt')}</th>
           <th className="table-cell-center" style={{width: '12rem'}}>{t('admin.users.table.actions')}</th>
         </tr>
         </thead>
-        <tbody className="table-body">
+        <tbody className="users-table-body">
         {users.map(user => (
           <tr key={user.id}>
             <td>{user.email}</td>
