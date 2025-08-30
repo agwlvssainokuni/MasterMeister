@@ -33,7 +33,7 @@ export const TableMetadataView: React.FC<TableMetadataViewProps> = (
   return (
     <div className="metadata-view">
       <div className="table-container">
-        <table className="table metadata-table">
+        <table className="table metadata-table table-striped">
           <thead className="metadata-table-header">
           <tr>
             <th className="column-name-header">{t('metadata.columnName')}</th>

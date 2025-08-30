@@ -30,7 +30,7 @@
   color: #ffffff;
   font-weight: var(--font-weight-semibold);
   text-align: left;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border-right: var(--border-width) solid rgba(255, 255, 255, 0.2);
 }
 
@@ -39,7 +39,7 @@
 }
 
 .metadata-table-body td {
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border-right: var(--border-width) solid var(--color-border);
   vertical-align: top;
   word-wrap: break-word;
@@ -182,6 +182,19 @@
 .not-null-badge {
   color: var(--color-warning);
   margin-left: var(--spacing-xs);
+}
+
+/* メタデータテーブル用ストライプ効果 */
+.table-striped .metadata-table-body tr:nth-child(even) {
+  background-color: var(--color-surface);
+}
+
+.table-striped .metadata-table-body tr:nth-child(odd) {
+  background-color: var(--color-background);
+}
+
+.table-striped .metadata-table-body tr:hover {
+  background-color: var(--color-border) !important;
 }
 
 /* レスポンシブ */
