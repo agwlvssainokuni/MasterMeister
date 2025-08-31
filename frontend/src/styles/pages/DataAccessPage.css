@@ -184,6 +184,8 @@
 .data-table {
   min-width: 100%;
   position: relative;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 /* 固定列設定 */
@@ -192,14 +194,14 @@
   left: 0;
   z-index: 10;
   background: var(--color-primary);
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  border-right: 2px solid var(--color-border);
   width: calc(7rem - 14px);
   min-width: calc(7rem - 14px);
   max-width: calc(7rem - 14px);
 }
 
 .data-table-body .actions-column {
-  background: var(--color-background);
+  background: inherit;
   border-right: 2px solid var(--color-border);
 }
 
@@ -208,7 +210,7 @@
   position: sticky;
   left: calc(7rem - 14px); /* 操作列の幅分オフセット */
   z-index: 9;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  border-right: 2px solid var(--color-border);
 }
 
 .data-table-header .pk-column {
@@ -227,6 +229,7 @@
 .table-striped .data-table-body tr:nth-child(odd) .pk-column {
   background: var(--color-background);
 }
+
 .data-table-header th {
   background: var(--color-primary);
   color: #ffffff;
@@ -262,6 +265,10 @@
 }
 
 .table-striped .data-table-body tr:hover {
+  background-color: var(--color-border) !important;
+}
+
+.table-striped .data-table-body tr:hover .pk-column {
   background-color: var(--color-border) !important;
 }
 
