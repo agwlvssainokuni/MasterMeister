@@ -300,8 +300,12 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Compact column type/constraint display with tooltips
   - [x] Unified styling across all table components
 
-#### 4.4 MVP Integration & Testing
+#### 4.4 MVP Integration & Testing ⏳ IN PROGRESS
 - [ ] End-to-end testing of MVP workflow
+  - [ ] User registration → Admin approval → Login flow
+  - [ ] Database connection setup and schema import
+  - [ ] Permission configuration and access control verification
+  - [ ] Table/record browsing with filtering and sorting
 - [ ] Performance testing with development datasets
 - [ ] Security validation and audit log verification
 - [ ] Documentation for MVP usage
@@ -310,13 +314,14 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
 
 ---
 
-### Phase 5: Enhanced Data Operations (Weeks 9-11)
+### Phase 5: Enhanced Data Operations (Weeks 9-11) 🔄 READY TO START
 
-#### 5.1 Record Editing (Frontend UX Implementation)
-- [ ] Implement in-place record editing (Frontend inline editing UI)
-- [ ] Create unified CRUD API with transaction management (Frontend integration with Phase 4.2 APIs)
-- [ ] Build record creation/deletion features (Frontend UI with Phase 4.2 APIs)
-- [ ] Add data validation and error handling (Frontend validation and error display)
+#### 5.1 Record Editing (Frontend UX Implementation) ⏳ NEXT PRIORITY
+- [ ] Implement record creation modal/form (Frontend UI with existing Backend APIs)
+- [ ] Implement record editing modal/form (Frontend UI with existing Backend APIs)  
+- [ ] Implement record deletion confirmation (Frontend UI with existing Backend APIs)
+- [ ] Add frontend data validation and error handling
+- [ ] Integrate with existing CRUD APIs (Phase 4.2 Backend APIs ready)
 
 #### 5.2 Advanced Filtering & Query Input
 - [ ] SQL WHERE clause manual input
@@ -448,8 +453,8 @@ MasterMeister/
 
 *This roadmap prioritizes early MVP delivery with incremental feature expansion. All phases are designed for single-developer implementation with realistic timelines.*
 
-**Last Updated**: August 2025  
-**Version**: 1.2  
-**Next Review**: End of Phase 3  
-**Target MVP Delivery**: Week 8  
-**Current Progress**: Phase 3 完了 - Data Access & Display 段階へ
+**Last Updated**: August 31, 2025  
+**Version**: 1.3  
+**Next Review**: Phase 4.4 MVP Testing Complete  
+**Target MVP Delivery**: Week 8 (Near Completion)  
+**Current Progress**: Phase 4.3 完了 - MVP Testing段階へ

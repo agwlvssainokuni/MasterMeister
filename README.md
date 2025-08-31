@@ -12,10 +12,12 @@ MasterMeister is a web-based application designed to provide a secure, user-frie
 - **User Management**: Registration workflow with admin approval
 - **Multi-Database Support**: Connect to MySQL, MariaDB, PostgreSQL, and H2 databases
 - **Access Control**: Granular table and column-level permissions
-- **Data Maintenance**: View, edit, create, and delete records with transaction support
-- **Visual Query Builder**: Intuitive interface for building complex SQL queries
-- **Query Management**: Save, share, and execute parameterized queries
+- **Data Display**: View tables and records with advanced filtering, sorting, and pagination
+- **Data Maintenance**: Record creation, editing, and deletion with transaction support (planned)
+- **Visual Query Builder**: Intuitive interface for building complex SQL queries (planned)
+- **Query Management**: Save, share, and execute parameterized queries (planned)
 - **Audit Logging**: Comprehensive tracking of user activities and data operations
+- **Responsive UI**: Tabbed interface with horizontal scrolling and fixed columns
 
 ### Security Features
 - JWT-based authentication
