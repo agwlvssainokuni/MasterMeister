@@ -17,14 +17,13 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.ApiResponse;
-import cherry.mastermeister.controller.dto.BulkPermissionRequest;
-import cherry.mastermeister.controller.dto.BulkPermissionResult;
 import cherry.mastermeister.enums.DuplicateHandling;
 import cherry.mastermeister.service.PermissionBulkService;
 import cherry.mastermeister.service.PermissionYamlService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -33,7 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import jakarta.validation.Valid;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -60,8 +58,8 @@ public class PermissionController {
             @PathVariable Long connectionId,
             @Valid @RequestBody cherry.mastermeister.controller.dto.BulkPermissionRequest request
     ) {
-        logger.info("Starting bulk permission grant for connection ID: {}, type: {}, scope: {}", 
-                   connectionId, request.permissionType(), request.scope());
+        logger.info("Starting bulk permission grant for connection ID: {}, type: {}, scope: {}",
+                connectionId, request.permissionType(), request.scope());
 
         // Convert DTO to Model
         cherry.mastermeister.model.BulkPermissionRequest modelRequest = new cherry.mastermeister.model.BulkPermissionRequest(
@@ -85,8 +83,8 @@ public class PermissionController {
                 modelResult.errors()
         );
 
-        logger.info("Bulk permission grant completed: {} permissions created, {} errors", 
-                   dtoResult.createdPermissions(), dtoResult.errors().size());
+        logger.info("Bulk permission grant completed: {} permissions created, {} errors",
+                dtoResult.createdPermissions(), dtoResult.errors().size());
 
         return ApiResponse.success(dtoResult);
     }
