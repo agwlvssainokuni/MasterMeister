@@ -112,6 +112,10 @@
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
+.tree-node.selected.table-node .tree-icon {
+  color: #ffffff !important;
+}
+
 /* Tree Node Toggle */
 .tree-node-toggle {
   display: flex;

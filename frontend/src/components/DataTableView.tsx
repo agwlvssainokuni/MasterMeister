@@ -305,15 +305,15 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                     !column.nullable ? 'NOT NULL' : null,
                     column.primaryKey ? 'PRIMARY KEY' : null
                   ].filter(Boolean).join(', ')
-                  
+
                   const columnClass = column.primaryKey ? 'sortable pk-column' : 'sortable'
-                  
+
                   return (
                     <th key={column.columnName} className={columnClass} onClick={() => handleSort(column.columnName)}>
                       <div className="simple-column-header">
                         <span className="column-name">{column.columnName}</span>
-                        <span className="sort-icon">{getSortIcon(column.columnName)}</span>
                         {column.primaryKey && <span className="pk-icon"><FaKey/></span>}
+                        <span className="sort-icon">{getSortIcon(column.columnName)}</span>
                       </div>
                       <div className="column-type-info" data-tooltip={tooltipText}>
                         <div className="data-type">{column.dataType}</div>
@@ -340,7 +340,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                                 onClick={() => onRecordEdit?.(record)}
                                 title={t('common.edit')}
                               >
-                                <FaEdit />
+                                <FaEdit/>
                               </button>
                             </PermissionGuard>
                             <PermissionGuard table={accessibleTable} requiredPermission="delete">
@@ -349,7 +349,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                                 onClick={() => onRecordDelete?.(record)}
                                 title={t('common.delete')}
                               >
-                                <FaTrash />
+                                <FaTrash/>
                               </button>
                             </PermissionGuard>
                           </div>

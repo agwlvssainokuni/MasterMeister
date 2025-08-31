@@ -286,7 +286,7 @@
 }
 
 .simple-column-header .sort-icon {
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.8);
   font-size: var(--font-size-sm);
 }
 
@@ -308,6 +308,7 @@
   font-size: 0.65rem !important;
   line-height: 1;
   padding: 2px;
+  min-height: 15px;
 }
 
 .data-table-header .column-type-info .not-null {
@@ -315,7 +316,7 @@
   color: var(--color-warning-light);
   line-height: 1;
   padding: 2px;
-  min-height: calc(0.65rem + 4.5px - 14px);
+  min-height: 15px;
 }
 
 /* ツールチップ */
