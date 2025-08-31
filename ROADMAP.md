@@ -300,17 +300,17 @@ Development roadmap for a Master Data Maintenance Single Page Application (SPA) 
   - [x] Compact column type/constraint display with tooltips
   - [x] Unified styling across all table components
 
-#### 4.4 MVP Integration & Testing ⏳ IN PROGRESS
-- [ ] End-to-end testing of MVP workflow
+#### 4.4 MVP Integration & Testing ⏳ DOCUMENTATION READY
+- [ ] End-to-end testing of MVP workflow (Manual: docs/MVP_TEST_E2E.md)
   - [ ] User registration → Admin approval → Login flow
   - [ ] Database connection setup and schema import
   - [ ] Permission configuration and access control verification
   - [ ] Table/record browsing with filtering and sorting
-- [ ] Performance testing with development datasets
-- [ ] Security validation and audit log verification
-- [ ] Documentation for MVP usage
+- [ ] Basic stability testing (Manual: docs/MVP_TEST_STABILITY.md)
+- [ ] Security validation and audit log verification (Manual: docs/MVP_TEST_SECURITY.md)
+- [x] Documentation for MVP usage (Complete: docs/MVP_USER_MANUAL.md)
 
-**MVP Delivery**: ✅ NEAR COMPLETION - Core functionality operational, testing phase remaining
+**MVP Delivery**: ✅ TESTING READY - Core functionality operational, comprehensive test documentation prepared
 
 ---
 
@@ -454,7 +454,7 @@ MasterMeister/
 *This roadmap prioritizes early MVP delivery with incremental feature expansion. All phases are designed for single-developer implementation with realistic timelines.*
 
 **Last Updated**: August 31, 2025  
-**Version**: 1.3  
-**Next Review**: Phase 4.4 MVP Testing Complete  
-**Target MVP Delivery**: Week 8 (Near Completion)  
-**Current Progress**: Phase 4.3 完了 - MVP Testing段階へ
+**Version**: 1.4  
+**Next Review**: Phase 4.4 MVP Testing Execution Complete  
+**Target MVP Delivery**: Week 8 (Testing Ready)  
+**Current Progress**: Phase 4.4 Test Documentation Ready - Manual Testing Execution Phase
