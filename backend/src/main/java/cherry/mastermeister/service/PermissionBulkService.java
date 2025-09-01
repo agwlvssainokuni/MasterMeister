@@ -105,7 +105,8 @@ public class PermissionBulkService {
                         // Check if permission already exists
                         Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findActivePermission(
                                 user.getId(), connectionId, PermissionScope.TABLE, request.permissionType(),
-                                table.schema(), table.tableName(), null);
+                                table.schema(), table.tableName(), null
+                        );
                         boolean exists = existingPermission.isPresent();
 
                         if (exists) {

@@ -18,7 +18,7 @@ package cherry.mastermeister.util;
 
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.UserPermission;
-import cherry.mastermeister.service.PermissionAuthService;
+import cherry.mastermeister.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class SqlPermissionFilter {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final PermissionAuthService permissionAuthService;
+    private final PermissionService permissionService;
 
     private static final Pattern TABLE_PATTERN = Pattern.compile(
             "(?i)\\b(?:FROM|JOIN|UPDATE|INSERT\\s+INTO|DELETE\\s+FROM)\\s+(?:([\\w.]+)\\.)?(\\w+)",
@@ -46,8 +46,8 @@ public class SqlPermissionFilter {
             Pattern.CASE_INSENSITIVE
     );
 
-    public SqlPermissionFilter(PermissionAuthService permissionAuthService) {
-        this.permissionAuthService = permissionAuthService;
+    public SqlPermissionFilter(PermissionService permissionService) {
+        this.permissionService = permissionService;
     }
 
     /**
@@ -56,11 +56,11 @@ public class SqlPermissionFilter {
     public SqlValidationResult validateSqlQuery(String sql, Long userId, Long connectionId) {
         logger.debug("Validating SQL query for user: {}, connection: {}", userId, connectionId);
 
-        if (permissionAuthService.isCurrentUserAdmin()) {
+        if (permissionService.isCurrentUserAdmin()) {
             return SqlValidationResult.allowed("Administrator access");
         }
 
-        List<UserPermission> userPermissions = permissionAuthService.getUserPermissions(userId, connectionId);
+        List<UserPermission> userPermissions = permissionService.getUserPermissions(userId, connectionId);
 
         // Extract tables and columns from SQL
         Set<String> referencedTables = extractTablesFromSql(sql);

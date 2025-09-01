@@ -24,7 +24,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,59 +31,49 @@ import java.util.Optional;
 public interface UserPermissionRepository extends JpaRepository<UserPermissionEntity, Long> {
 
     List<UserPermissionEntity> findByUserIdAndConnectionIdOrderByScopeAscSchemaNameAscTableNameAscColumnNameAsc(
-            Long userId, Long connectionId);
-
-    List<UserPermissionEntity> findByUserIdAndConnectionIdAndScope(
-            Long userId, Long connectionId, PermissionScope scope);
-
-    @Query("SELECT p FROM UserPermissionEntity p WHERE p.user.id = :userId AND p.connectionId = :connectionId " +
-           "AND p.scope = :scope AND p.permissionType = :permissionType " +
-           "AND (:schemaName IS NULL OR p.schemaName = :schemaName) " +
-           "AND (:tableName IS NULL OR p.tableName = :tableName) " +
-           "AND (:columnName IS NULL OR p.columnName = :columnName) " +
-           "AND p.granted = true " +
-           "AND p.grantedAt <= CURRENT_TIMESTAMP " +
-           "AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)")
-    Optional<UserPermissionEntity> findActivePermission(
-            Long userId, Long connectionId, PermissionScope scope, PermissionType permissionType,
-            String schemaName, String tableName, String columnName);
-
-    @Query("SELECT p FROM UserPermissionEntity p WHERE p.user.id = :userId AND p.connectionId = :connectionId " +
-           "AND p.granted = true " +
-           "AND p.grantedAt <= CURRENT_TIMESTAMP " +
-           "AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP) " +
-           "ORDER BY p.scope ASC, p.schemaName ASC, p.tableName ASC, p.columnName ASC")
-    List<UserPermissionEntity> findActivePermissionsByUser(Long userId, Long connectionId);
-
-    @Query("SELECT p FROM UserPermissionEntity p WHERE p.connectionId = :connectionId " +
-           "AND p.scope = :scope " +
-           "AND (:schemaName IS NULL OR p.schemaName = :schemaName) " +
-           "AND (:tableName IS NULL OR p.tableName = :tableName)")
-    List<UserPermissionEntity> findByConnectionAndScope(
-            Long connectionId, PermissionScope scope, String schemaName, String tableName);
-
-    @Query("SELECT COUNT(p) FROM UserPermissionEntity p WHERE p.user.id = :userId AND p.connectionId = :connectionId " +
-           "AND p.granted = true " +
-           "AND p.grantedAt <= CURRENT_TIMESTAMP " +
-           "AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)")
-    long countActivePermissionsByUser(Long userId, Long connectionId);
-
-    @Modifying
-    @Query("UPDATE UserPermissionEntity p SET p.granted = false WHERE p.user.id = :userId AND p.connectionId = :connectionId")
-    int revokeAllPermissionsByUser(Long userId, Long connectionId);
-
-    @Modifying
-    @Query("DELETE FROM UserPermissionEntity p WHERE p.connectionId = :connectionId")
-    int deleteByConnectionId(Long connectionId);
-
-    @Query("SELECT p FROM UserPermissionEntity p WHERE p.expiresAt IS NOT NULL AND p.expiresAt <= :now AND p.granted = true")
-    List<UserPermissionEntity> findExpiredPermissions(LocalDateTime now);
-
-    @Modifying
-    @Query("UPDATE UserPermissionEntity p SET p.granted = false WHERE p.expiresAt IS NOT NULL AND p.expiresAt <= :now AND p.granted = true")
-    int expireOutdatedPermissions(LocalDateTime now);
+            Long userId, Long connectionId
+    );
 
     Optional<UserPermissionEntity> findByUserIdAndConnectionIdAndScopeAndPermissionTypeAndSchemaNameAndTableNameAndColumnName(
-            Long userId, Long connectionId, PermissionScope scope, PermissionType permissionType,
-            String schemaName, String tableName, String columnName);
+            Long userId, Long connectionId, PermissionScope scope,
+            PermissionType permissionType,
+            String schemaName, String tableName, String columnName
+    );
+
+    @Query("""
+            SELECT p FROM UserPermissionEntity p
+            WHERE
+                p.user.id = :userId AND p.connectionId = :connectionId
+                AND p.scope = :scope AND p.permissionType = :permissionType
+                AND ((:schemaName IS NULL AND p.schemaName IS NULL) OR p.schemaName = :schemaName)
+                AND ((:tableName  IS NULL AND p.tableName  IS NULL) OR p.tableName  = :tableName)
+                AND ((:columnName IS NULL AND p.columnName IS NULL) OR p.columnName = :columnName)
+                AND p.grantedAt <= CURRENT_TIMESTAMP
+                AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)
+            """)
+    Optional<UserPermissionEntity> findActivePermission(
+            Long userId, Long connectionId, PermissionScope scope,
+            PermissionType permissionType,
+            String schemaName, String tableName, String columnName
+    );
+
+    @Query("""
+            SELECT p FROM UserPermissionEntity p
+            WHERE
+                p.user.id = :userId AND p.connectionId = :connectionId
+                AND p.grantedAt <= CURRENT_TIMESTAMP
+                AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)
+                ORDER BY p.scope ASC, p.schemaName ASC, p.tableName ASC, p.columnName ASC
+            """)
+    List<UserPermissionEntity> findActivePermissionsByUser(
+            Long userId, Long connectionId
+    );
+
+    @Modifying
+    @Query("""
+            DELETE FROM UserPermissionEntity p
+            WHERE
+                p.connectionId = :connectionId
+            """)
+    int deleteByConnectionId(Long connectionId);
 }

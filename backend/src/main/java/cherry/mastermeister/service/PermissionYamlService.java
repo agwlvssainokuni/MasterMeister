@@ -30,15 +30,14 @@ import cherry.mastermeister.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -57,7 +56,7 @@ public class PermissionYamlService {
     private final UserRepository userRepository;
     private final UserPermissionRepository userPermissionRepository;
     private final ObjectMapper yamlMapper;
-    
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -315,7 +314,7 @@ public class PermissionYamlService {
                         userId, connectionId, scope, permissionType,
                         permData.schemaName(), permData.tableName(), permData.columnName()
                 );
-        
+
         if (existing.isPresent()) {
             switch (options.duplicateHandling()) {
                 case SKIP -> {
@@ -333,8 +332,8 @@ public class PermissionYamlService {
                     return ImportPermissionResult.updated("Permission updated successfully");
                 }
                 case ERROR -> {
-                    throw new IllegalArgumentException("Duplicate permission found: " + 
-                        permData.scope() + ":" + permData.permissionType() + " for user " + userId);
+                    throw new IllegalArgumentException("Duplicate permission found: " +
+                            permData.scope() + ":" + permData.permissionType() + " for user " + userId);
                 }
             }
         }
@@ -405,15 +404,15 @@ public class PermissionYamlService {
         public static ImportOptions defaultOptions() {
             return new ImportOptions(true, true, false, DuplicateHandling.OVERWRITE);
         }
-        
+
         public static ImportOptions errorOnDuplicateOptions() {
             return new ImportOptions(true, true, false, DuplicateHandling.ERROR);
         }
-        
+
         public static ImportOptions skipOnDuplicateOptions() {
             return new ImportOptions(true, true, false, DuplicateHandling.SKIP);
         }
-        
+
         public static ImportOptions overwriteOnDuplicateOptions() {
             return new ImportOptions(true, true, false, DuplicateHandling.OVERWRITE);
         }
@@ -428,30 +427,30 @@ public class PermissionYamlService {
     ) {
         public enum ResultType {
             IMPORTED,
-            SKIPPED, 
+            SKIPPED,
             UPDATED
         }
-        
+
         public boolean wasSkipped() {
             return type == ResultType.SKIPPED;
         }
-        
+
         public boolean wasUpdated() {
             return type == ResultType.UPDATED;
         }
-        
+
         public boolean wasImported() {
             return type == ResultType.IMPORTED;
         }
-        
+
         public static ImportPermissionResult skipped(String message) {
             return new ImportPermissionResult(ResultType.SKIPPED, message);
         }
-        
+
         public static ImportPermissionResult imported(String message) {
             return new ImportPermissionResult(ResultType.IMPORTED, message);
         }
-        
+
         public static ImportPermissionResult updated(String message) {
             return new ImportPermissionResult(ResultType.UPDATED, message);
         }

@@ -19,7 +19,7 @@ package cherry.mastermeister.aspect;
 import cherry.mastermeister.annotation.RequirePermission;
 import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.model.PermissionCheckResult;
-import cherry.mastermeister.service.PermissionAuthService;
+import cherry.mastermeister.service.PermissionService;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -39,12 +39,12 @@ import java.util.Map;
 public class PermissionAspect {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final PermissionAuthService permissionAuthService;
+    private final PermissionService permissionService;
 
     public PermissionAspect(
-            PermissionAuthService permissionAuthService
+            PermissionService permissionService
     ) {
-        this.permissionAuthService = permissionAuthService;
+        this.permissionService = permissionService;
     }
 
     @Before("@annotation(cherry.mastermeister.annotation.RequirePermission) || " +
@@ -72,7 +72,7 @@ public class PermissionAspect {
             throw new PermissionDeniedException("Connection ID required for permission check", null);
         }
 
-        PermissionCheckResult result = permissionAuthService.checkPermission(
+        PermissionCheckResult result = permissionService.checkPermission(
                 connectionId, annotation.value(), schemaName, tableName, columnName);
 
         if (!result.granted()) {

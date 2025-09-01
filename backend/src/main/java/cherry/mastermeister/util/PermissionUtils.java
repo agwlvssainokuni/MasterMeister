@@ -19,7 +19,7 @@ package cherry.mastermeister.util;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.model.PermissionCheckResult;
-import cherry.mastermeister.service.PermissionAuthService;
+import cherry.mastermeister.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,19 +31,28 @@ import java.util.function.Supplier;
 public class PermissionUtils {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final PermissionAuthService permissionAuthService;
+    private final PermissionService permissionService;
 
-    public PermissionUtils(PermissionAuthService permissionAuthService) {
-        this.permissionAuthService = permissionAuthService;
+    public PermissionUtils(
+            PermissionService permissionService
+    ) {
+        this.permissionService = permissionService;
     }
 
     /**
      * Check permission and throw exception if denied
      */
-    public void requirePermission(Long connectionId, PermissionType permissionType,
-                                  String schemaName, String tableName, String columnName) {
-        PermissionCheckResult result = permissionAuthService.checkPermission(
-                connectionId, permissionType, schemaName, tableName, columnName);
+    public void requirePermission(
+            Long connectionId,
+            PermissionType permissionType,
+            String schemaName,
+            String tableName,
+            String columnName
+    ) {
+        PermissionCheckResult result = permissionService.checkPermission(
+                connectionId, permissionType,
+                schemaName, tableName, columnName
+        );
 
         if (!result.granted()) {
             throw new PermissionDeniedException("Access denied", result);
@@ -53,39 +62,63 @@ public class PermissionUtils {
     /**
      * Check connection-level permission
      */
-    public void requireConnectionPermission(Long connectionId, PermissionType permissionType) {
-        requirePermission(connectionId, permissionType, null, null, null);
+    public void requireConnectionPermission(
+            Long connectionId,
+            PermissionType permissionType
+    ) {
+        requirePermission(
+                connectionId, permissionType,
+                null, null, null
+        );
     }
 
     /**
      * Check schema-level permission
      */
-    public void requireSchemaPermission(Long connectionId, PermissionType permissionType, String schemaName) {
-        requirePermission(connectionId, permissionType, schemaName, null, null);
+    public void requireSchemaPermission(
+            Long connectionId, PermissionType permissionType,
+            String schemaName
+    ) {
+        requirePermission(
+                connectionId, permissionType,
+                schemaName, null, null
+        );
     }
 
     /**
      * Check table-level permission
      */
-    public void requireTablePermission(Long connectionId, PermissionType permissionType,
-                                       String schemaName, String tableName) {
-        requirePermission(connectionId, permissionType, schemaName, tableName, null);
+    public void requireTablePermission(
+            Long connectionId, PermissionType permissionType,
+            String schemaName, String tableName
+    ) {
+        requirePermission(
+                connectionId, permissionType,
+                schemaName, tableName, null
+        );
     }
 
     /**
      * Check column-level permission
      */
-    public void requireColumnPermission(Long connectionId, PermissionType permissionType,
-                                        String schemaName, String tableName, String columnName) {
-        requirePermission(connectionId, permissionType, schemaName, tableName, columnName);
+    public void requireColumnPermission(
+            Long connectionId, PermissionType permissionType,
+            String schemaName, String tableName, String columnName
+    ) {
+        requirePermission(
+                connectionId, permissionType,
+                schemaName, tableName, columnName
+        );
     }
 
     /**
      * Check if user has permission without throwing exception
      */
-    public boolean hasPermission(Long connectionId, PermissionType permissionType,
-                                 String schemaName, String tableName, String columnName) {
-        PermissionCheckResult result = permissionAuthService.checkPermission(
+    public boolean hasPermission(
+            Long connectionId, PermissionType permissionType,
+            String schemaName, String tableName, String columnName
+    ) {
+        PermissionCheckResult result = permissionService.checkPermission(
                 connectionId, permissionType, schemaName, tableName, columnName);
         return result.granted();
     }
@@ -185,7 +218,7 @@ public class PermissionUtils {
      * Check if current user is admin
      */
     public boolean isCurrentUserAdmin() {
-        return permissionAuthService.isCurrentUserAdmin();
+        return permissionService.isCurrentUserAdmin();
     }
 
     /**

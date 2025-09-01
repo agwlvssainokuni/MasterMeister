@@ -22,11 +22,10 @@ import cherry.mastermeister.entity.UserPermissionEntity;
 import cherry.mastermeister.enums.*;
 import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.model.PermissionCheckResult;
-import cherry.mastermeister.model.PermissionRequest;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import cherry.mastermeister.repository.UserPermissionRepository;
 import cherry.mastermeister.repository.UserRepository;
-import cherry.mastermeister.service.PermissionAuthService;
+import cherry.mastermeister.service.PermissionService;
 import cherry.mastermeister.util.SqlPermissionFilter;
 import cherry.mastermeister.util.SqlPermissionFilter.SqlValidationResult;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PermissionValidationIntegrationTest {
 
     @Autowired
-    private PermissionAuthService permissionAuthService;
+    private PermissionService permissionService;
 
     @Autowired
     private SqlPermissionFilter sqlPermissionFilter;
@@ -127,40 +126,34 @@ public class PermissionValidationIntegrationTest {
         createPermission(normalUser, PermissionScope.TABLE, PermissionType.WRITE, "PUBLIC", "users", null, true); // Override
 
         // Test CONNECTION level permission (should work)
-        PermissionCheckResult connectionResult = permissionAuthService.checkPermission(
-                PermissionRequest.connection(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.READ
-                ));
+        PermissionCheckResult connectionResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.READ,
+                null, null, null
+        );
         assertTrue(connectionResult.granted());
 
         // Test SCHEMA level WRITE denied
-        PermissionCheckResult schemaDenied = permissionAuthService.checkPermission(
-                PermissionRequest.schema(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC"
-                )
+        PermissionCheckResult schemaDenied = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", null, null
         );
         assertFalse(schemaDenied.granted());
 
         // Test TABLE level WRITE override (should work despite schema denial)
-        PermissionCheckResult tableAllowed = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC", "users"
-                )
+        PermissionCheckResult tableAllowed = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", "users", null
         );
         assertTrue(tableAllowed.granted());
 
         // Test TABLE level WRITE for different table (should be denied by schema rule)
-        PermissionCheckResult tableDenied = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC", "products"
-                )
+        PermissionCheckResult tableDenied = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", "products", null
         );
         assertFalse(tableDenied.granted());
     }
@@ -173,42 +166,34 @@ public class PermissionValidationIntegrationTest {
         createPermission(normalUser, PermissionScope.COLUMN, PermissionType.WRITE, "PUBLIC", "users", "name", true); // Allow name write
 
         // Table level READ should work
-        PermissionCheckResult tableReadResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.READ,
-                        "PUBLIC", "users"
-                )
+        PermissionCheckResult tableReadResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.READ,
+                "PUBLIC", "users", null
         );
         assertTrue(tableReadResult.granted());
 
         // Column level email WRITE should be denied
-        PermissionCheckResult emailWriteResult = permissionAuthService.checkPermission(
-                PermissionRequest.column(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC", "users", "email"
-                )
+        PermissionCheckResult emailWriteResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", "users", "email"
         );
         assertFalse(emailWriteResult.granted());
 
         // Column level name WRITE should be allowed
-        PermissionCheckResult nameWriteResult = permissionAuthService.checkPermission(
-                PermissionRequest.column(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC", "users", "name"
-                )
+        PermissionCheckResult nameWriteResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", "users", "name"
         );
         assertTrue(nameWriteResult.granted());
 
         // Column without specific permission should inherit table permission (none for WRITE)
-        PermissionCheckResult idWriteResult = permissionAuthService.checkPermission(
-                PermissionRequest.column(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC", "users", "id"
-                )
+        PermissionCheckResult idWriteResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", "users", "id"
         );
         assertFalse(idWriteResult.granted());
     }
@@ -216,37 +201,31 @@ public class PermissionValidationIntegrationTest {
     @Test
     void testAdminUserFullAccess() {
         // Admin user should have full access without explicit permissions
-        PermissionCheckResult adminReadResult = permissionAuthService.checkPermission(
-                PermissionRequest.connection(
-                        adminUser.getId(), adminUser.getEmail(), testConnection.getId(),
-                        PermissionType.READ
-                )
+        PermissionCheckResult adminReadResult = permissionService.checkPermission(
+                adminUser.getId(), testConnection.getId(),
+                PermissionType.READ,
+                null, null, null
         );
         assertTrue(adminReadResult.granted());
 
-        PermissionCheckResult adminWriteResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        adminUser.getId(), adminUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC", "users"
-                )
+        PermissionCheckResult adminWriteResult = permissionService.checkPermission(
+                adminUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", "users", null
         );
         assertTrue(adminWriteResult.granted());
 
-        PermissionCheckResult adminDeleteResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        adminUser.getId(), adminUser.getEmail(), testConnection.getId(),
-                        PermissionType.DELETE,
-                        "PUBLIC", "logs"
-                )
+        PermissionCheckResult adminDeleteResult = permissionService.checkPermission(
+                adminUser.getId(), testConnection.getId(),
+                PermissionType.DELETE,
+                "PUBLIC", "logs", null
         );
         assertTrue(adminDeleteResult.granted());
 
-        PermissionCheckResult adminResult = permissionAuthService.checkPermission(
-                PermissionRequest.connection(
-                        adminUser.getId(), adminUser.getEmail(), testConnection.getId(),
-                        PermissionType.ADMIN
-                )
+        PermissionCheckResult adminResult = permissionService.checkPermission(
+                adminUser.getId(), testConnection.getId(),
+                PermissionType.ADMIN,
+                null, null, null
         );
         assertTrue(adminResult.granted());
     }
@@ -259,12 +238,10 @@ public class PermissionValidationIntegrationTest {
                 "PUBLIC", "users", null, true, pastDate);
 
         // Expired permission should not grant access
-        PermissionCheckResult expiredResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.READ,
-                        "PUBLIC", "users"
-                )
+        PermissionCheckResult expiredResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.READ,
+                "PUBLIC", "users", null
         );
         assertFalse(expiredResult.granted());
     }
@@ -287,12 +264,10 @@ public class PermissionValidationIntegrationTest {
         userPermissionRepository.save(permission);
 
         // Future permission should not grant access yet
-        PermissionCheckResult futureResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.READ,
-                        "PUBLIC", "users"
-                )
+        PermissionCheckResult futureResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.READ,
+                "PUBLIC", "users", null
         );
         assertFalse(futureResult.granted());
     }
@@ -434,80 +409,74 @@ public class PermissionValidationIntegrationTest {
         createPermission(normalUser, PermissionScope.COLUMN, PermissionType.WRITE, "PUBLIC", "users", "password", false); // Deny password write
 
         // Test global read (should work everywhere)
-        PermissionCheckResult tableReadResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.READ,
-                        "PUBLIC", "users"
-                )
+        PermissionCheckResult tableReadResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.READ,
+                "PUBLIC", "users", null
         );
         assertTrue(tableReadResult.granted());
-        PermissionCheckResult privateSettingsReadResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.READ,
-                        "PRIVATE", "settings"
-                )
+        PermissionCheckResult privateSettingsReadResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.READ,
+                "PRIVATE", "settings", null
         );
         assertTrue(privateSettingsReadResult.granted());
 
         // Test private schema write denial with exception
-        PermissionCheckResult privateSecretsWriteResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PRIVATE", "secrets"
-                )
+        PermissionCheckResult privateSecretsWriteResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PRIVATE", "secrets", null
         );
         assertFalse(privateSecretsWriteResult.granted());
-        PermissionCheckResult userSettingsWriteResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PRIVATE", "user_settings"
-                )
+        PermissionCheckResult userSettingsWriteResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PRIVATE", "user_settings", null
         );
         assertTrue(userSettingsWriteResult.granted());
 
         // Test specific table delete denial
-        PermissionCheckResult auditLogDeleteResult = permissionAuthService.checkPermission(
-                PermissionRequest.table(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.DELETE,
-                        "PUBLIC", "audit_log"
-                )
+        PermissionCheckResult auditLogDeleteResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.DELETE,
+                "PUBLIC", "audit_log", null
         );
         assertFalse(auditLogDeleteResult.granted());
 
         // Test column-specific write denial
-        PermissionCheckResult passwordWriteResult = permissionAuthService.checkPermission(
-                PermissionRequest.column(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC", "users", "password"
-                )
+        PermissionCheckResult passwordWriteResult = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", "users", "password"
         );
         assertFalse(passwordWriteResult.granted());
 
         // But other columns should inherit table permissions (which inherit from connection read, but no connection write)
-        PermissionCheckResult nameWriteResult2 = permissionAuthService.checkPermission(
-                PermissionRequest.column(
-                        normalUser.getId(), normalUser.getEmail(), testConnection.getId(),
-                        PermissionType.WRITE,
-                        "PUBLIC", "users", "name"
-                )
+        PermissionCheckResult nameWriteResult2 = permissionService.checkPermission(
+                normalUser.getId(), testConnection.getId(),
+                PermissionType.WRITE,
+                "PUBLIC", "users", "name"
         );
         assertFalse(nameWriteResult2.granted());
     }
 
-    private void createPermission(UserEntity user, PermissionScope scope, PermissionType permissionType,
-                                  String schemaName, String tableName, String columnName, boolean granted) {
-        createPermissionWithExpiry(user, scope, permissionType, schemaName, tableName, columnName, granted, null);
+    private void createPermission(
+            UserEntity user, PermissionScope scope, PermissionType permissionType,
+            String schemaName, String tableName, String columnName, boolean granted
+    ) {
+        createPermissionWithExpiry(
+                user, scope, permissionType,
+                schemaName, tableName, columnName,
+                granted, null
+        );
     }
 
-    private void createPermissionWithExpiry(UserEntity user, PermissionScope scope, PermissionType permissionType,
-                                            String schemaName, String tableName, String columnName,
-                                            boolean granted, LocalDateTime expiresAt) {
+    private void createPermissionWithExpiry(
+            UserEntity user, PermissionScope scope, PermissionType permissionType,
+            String schemaName, String tableName, String columnName,
+            boolean granted, LocalDateTime expiresAt
+    ) {
         UserPermissionEntity permission = new UserPermissionEntity();
         permission.setUser(user);
         permission.setConnectionId(testConnection.getId());

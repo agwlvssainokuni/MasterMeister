@@ -47,7 +47,7 @@ public class DataAccessController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DataAccessService dataAccessService;
-    private final PermissionAuthService permissionAuthService;
+    private final PermissionService permissionService;
     private final RecordReadService recordReadService;
     private final RecordCreateService recordCreateService;
     private final RecordUpdateService recordUpdateService;
@@ -57,7 +57,7 @@ public class DataAccessController {
 
     public DataAccessController(
             DataAccessService dataAccessService,
-            PermissionAuthService permissionAuthService,
+            PermissionService permissionService,
             RecordReadService recordReadService,
             RecordCreateService recordCreateService,
             RecordUpdateService recordUpdateService,
@@ -66,7 +66,7 @@ public class DataAccessController {
             DatabaseService databaseService
     ) {
         this.dataAccessService = dataAccessService;
-        this.permissionAuthService = permissionAuthService;
+        this.permissionService = permissionService;
         this.recordReadService = recordReadService;
         this.recordCreateService = recordCreateService;
         this.recordUpdateService = recordUpdateService;
@@ -330,7 +330,7 @@ public class DataAccessController {
             TableMetadata tableInfo, Long connectionId, boolean includeColumns
     ) {
         // Get user's permissions for this table
-        Set<PermissionType> permissions = permissionAuthService.getUserTablePermissions(
+        Set<PermissionType> permissions = permissionService.getTablePermissions(
                 connectionId, tableInfo.schema(), tableInfo.tableName());
 
         // Convert permissions to string set
