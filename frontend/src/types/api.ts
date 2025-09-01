@@ -101,6 +101,40 @@ export interface AccessibleTableResult {
   canAdmin: boolean
   canModifyData: boolean
   canPerformCrud: boolean
+  columns: AccessibleColumnResult[]
+}
+
+export interface AccessibleColumnResult {
+  columnName: string
+  dataType: string
+  columnSize?: number
+  decimalDigits?: number
+  nullable: boolean
+  defaultValue?: string
+  comment?: string
+  primaryKey: boolean
+  autoIncrement: boolean
+  ordinalPosition: number
+  permissions: string[]
+  canRead: boolean
+  canWrite: boolean
+  canDelete: boolean
+  canAdmin: boolean
+}
+
+export interface SchemaMetadataResult {
+  connectionId: number
+  databaseName: string
+  schemas: string[]
+  tables: TableMetadataResult[]
+  lastUpdatedAt: string
+}
+
+export interface TableMetadataResult {
+  schema: string
+  tableName: string
+  tableType: string
+  comment?: string
   columns: ColumnMetadataResult[]
 }
 
@@ -115,14 +149,6 @@ export interface ColumnMetadataResult {
   primaryKey: boolean
   autoIncrement: boolean
   ordinalPosition: number
-}
-
-export interface TableMetadataResult {
-  schema: string
-  tableName: string
-  tableType: string
-  comment?: string
-  columns: ColumnMetadataResult[]
 }
 
 export interface RecordQueryResult {
@@ -282,14 +308,6 @@ export interface BulkPermissionResult {
   createdPermissions: number
   skippedExisting: number
   errors: string[]
-}
-
-export interface SchemaMetadataResult {
-  connectionId: number
-  databaseName: string
-  schemas: string[]
-  tables: TableMetadataResult[]
-  lastUpdatedAt: string
 }
 
 export interface SchemaUpdateLogResult {

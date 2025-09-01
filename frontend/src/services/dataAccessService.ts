@@ -17,6 +17,7 @@
 import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
 import type {
+  AccessibleColumnResult,
   AccessibleTableResult,
   ApiResponse,
   DatabaseResult,
@@ -31,6 +32,7 @@ import type {
   TableMetadataResult
 } from '../types/api'
 import type {
+  AccessibleColumn,
   AccessibleTable,
   Database,
   RecordCreateData,
@@ -199,18 +201,27 @@ class DataAccessService {
       canAdmin: apiTable.canAdmin,
       canModifyData: apiTable.canModifyData,
       canPerformCrud: apiTable.canPerformCrud,
-      columns: apiTable.columns.map(col => ({
-        columnName: col.columnName,
-        dataType: col.dataType,
-        columnSize: col.columnSize,
-        decimalDigits: col.decimalDigits,
-        nullable: col.nullable,
-        defaultValue: col.defaultValue,
-        comment: col.comment,
-        primaryKey: col.primaryKey,
-        autoIncrement: col.autoIncrement,
-        ordinalPosition: col.ordinalPosition
-      }))
+      columns: apiTable.columns.map(this.convertToAccessibleColumn)
+    }
+  }
+
+  private convertToAccessibleColumn = (apiColumn: AccessibleColumnResult): AccessibleColumn => {
+    return {
+      columnName: apiColumn.columnName,
+      dataType: apiColumn.dataType,
+      columnSize: apiColumn.columnSize,
+      decimalDigits: apiColumn.decimalDigits,
+      nullable: apiColumn.nullable,
+      defaultValue: apiColumn.defaultValue,
+      comment: apiColumn.comment,
+      primaryKey: apiColumn.primaryKey,
+      autoIncrement: apiColumn.autoIncrement,
+      ordinalPosition: apiColumn.ordinalPosition,
+      permissions: apiColumn.permissions,
+      canRead: apiColumn.canRead,
+      canWrite: apiColumn.canWrite,
+      canDelete: apiColumn.canDelete,
+      canAdmin: apiColumn.canAdmin
     }
   }
 

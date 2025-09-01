@@ -324,6 +324,40 @@ public class DataAccessController {
     }
 
     /**
+     * Convert ColumnMetadata to AccessibleColumnResult with permission information
+     */
+    private AccessibleColumnResult convertToAccessibleColumnResult(
+            ColumnMetadata column, Long connectionId, String schemaName, String tableName
+    ) {
+        // Get user's permissions for this column
+        Set<PermissionType> permissions = permissionService.getColumnPermissions(
+                connectionId, schemaName, tableName, column.columnName());
+
+        // Convert permissions to string set
+        Set<String> permissionStrings = permissions.stream()
+                .map(Enum::name)
+                .collect(Collectors.toSet());
+
+        return new AccessibleColumnResult(
+                column.columnName(),
+                column.dataType(),
+                column.columnSize(),
+                column.decimalDigits(),
+                column.nullable(),
+                column.defaultValue(),
+                column.comment(),
+                column.primaryKey(),
+                column.autoIncrement(),
+                column.ordinalPosition(),
+                permissionStrings,
+                permissions.contains(PermissionType.READ),
+                permissions.contains(PermissionType.WRITE),
+                permissions.contains(PermissionType.DELETE),
+                permissions.contains(PermissionType.ADMIN)
+        );
+    }
+
+    /**
      * Convert TableInfo to AccessibleTableDto with permission information
      */
     private AccessibleTableResult convertToAccessibleTableDto(
@@ -343,10 +377,10 @@ public class DataAccessController {
                 ? tableInfo.schema() + "." + tableInfo.tableName()
                 : tableInfo.tableName();
 
-        // Convert column metadata only if requested
-        List<ColumnMetadataResult> columnResults = includeColumns
+        // Convert column metadata with permission information only if requested
+        List<AccessibleColumnResult> columnResults = includeColumns
                 ? tableInfo.columns().stream()
-                .map(this::convertToColumnMetadataResult)
+                .map(column -> convertToAccessibleColumnResult(column, connectionId, tableInfo.schema(), tableInfo.tableName()))
                 .collect(Collectors.toList())
                 : List.of(); // Empty list for performance when not needed
 

@@ -84,6 +84,40 @@ export interface AccessibleTable {
   canAdmin: boolean
   canModifyData: boolean
   canPerformCrud: boolean
+  columns: AccessibleColumn[]
+}
+
+export interface AccessibleColumn {
+  columnName: string
+  dataType: string
+  columnSize?: number
+  decimalDigits?: number
+  nullable: boolean
+  defaultValue?: string
+  comment?: string
+  primaryKey: boolean
+  autoIncrement: boolean
+  ordinalPosition: number
+  permissions: string[]
+  canRead: boolean
+  canWrite: boolean
+  canDelete: boolean
+  canAdmin: boolean
+}
+
+export interface SchemaMetadata {
+  connectionId: number
+  databaseName: string
+  schemas: string[]
+  tables: TableMetadata[]
+  lastUpdatedAt: Date
+}
+
+export interface TableMetadata {
+  schema: string
+  tableName: string
+  tableType: string
+  comment?: string
   columns: ColumnMetadata[]
 }
 
@@ -98,14 +132,6 @@ export interface ColumnMetadata {
   primaryKey: boolean
   autoIncrement: boolean
   ordinalPosition: number
-}
-
-export interface TableMetadata {
-  schema: string
-  tableName: string
-  tableType: string
-  comment?: string
-  columns: ColumnMetadata[]
 }
 
 export interface TableRecord {
@@ -266,14 +292,6 @@ export interface ConnectionTestResult {
 
 // Schema Management Types (Frontend)
 export type SchemaUpdateOperation = 'READ_SCHEMA' | 'REFRESH_SCHEMA' | 'IMPORT_SCHEMA' | 'EXPORT_SCHEMA'
-
-export interface SchemaMetadata {
-  connectionId: number
-  databaseName: string
-  schemas: string[]
-  tables: TableMetadata[]
-  lastUpdatedAt: Date
-}
 
 export interface SchemaUpdateLog {
   id: number

@@ -311,6 +311,52 @@ public class PermissionService {
     }
 
     /**
+     * Get all permission types that current user has for a specific column
+     */
+    @Transactional(readOnly = true)
+    public Set<PermissionType> getColumnPermissions(
+            Long connectionId,
+            String schemaName, String tableName, String columnName
+    ) {
+        Long currentUserId = getCurrentUserId();
+        if (currentUserId == null) {
+            return EnumSet.noneOf(PermissionType.class);
+        }
+
+        return getColumnPermissions(currentUserId, connectionId, schemaName, tableName, columnName);
+    }
+
+    /**
+     * Get all permission types that specified user has for a specific column
+     */
+    @Transactional(readOnly = true)
+    public Set<PermissionType> getColumnPermissions(
+            Long userId, Long connectionId,
+            String schemaName, String tableName, String columnName
+    ) {
+        // Check if user is admin
+        if (isUserAdmin(userId)) {
+            return EnumSet.allOf(PermissionType.class);
+        }
+
+        Set<PermissionType> permissions = EnumSet.noneOf(PermissionType.class);
+
+        // Check each permission type
+        for (PermissionType permissionType : PermissionType.values()) {
+            PermissionCheckResult result = checkHierarchicalPermissions(
+                    userId, connectionId,
+                    permissionType,
+                    schemaName, tableName, columnName
+            );
+            if (result.granted()) {
+                permissions.add(permissionType);
+            }
+        }
+
+        return permissions;
+    }
+
+    /**
      * Get current user ID from security context
      */
     private Long getCurrentUserId() {
