@@ -90,21 +90,19 @@ public class DataAccessController {
     }
 
     @GetMapping("/{connectionId}/tables")
-    @Operation(summary = "Get accessible tables", description = "Get tables accessible to current user with READ permission")
-    //@RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId")
+    @Operation(summary = "Get all tables with permission info", description = "Get all table metadata with user permission information for each table")
     public ApiResponse<List<AccessibleTableResult>> getAccessibleTables(
-            @PathVariable Long connectionId,
-            @RequestParam(defaultValue = "READ") String permissionType
+            @PathVariable Long connectionId
     ) {
 
-        logger.info("Getting accessible tables for connection: {} with permission: {}", connectionId, permissionType);
+        logger.info("Getting all tables with permission info for connection: {}", connectionId);
 
-        PermissionType permission = PermissionType.valueOf(permissionType.toUpperCase());
-        List<TableMetadata> tables = dataAccessService.getAccessibleTables(connectionId, permission);
+        // Get all tables with permission information (metadata should be visible to all)
+        List<AccessibleTable> tables = dataAccessService.getAllAvailableTables(connectionId);
 
         // Convert to DTOs with permission information (without column details for performance)
         List<AccessibleTableResult> accessibleTables = tables.stream()
-                .map(table -> convertToAccessibleTableDto(table, connectionId, false))
+                .map(table -> convertAccessibleTableToDto(table, false))
                 .collect(Collectors.toList());
 
         return ApiResponse.success(accessibleTables);
@@ -112,8 +110,6 @@ public class DataAccessController {
 
     @GetMapping("/{connectionId}/tables/{schemaName}/{tableName}")
     @Operation(summary = "Get table information", description = "Get detailed information for a specific table")
-    //@RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId",
-    //        schemaNameParam = "schemaName", tableNameParam = "tableName")
     public ApiResponse<AccessibleTableResult> getTableInfo(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
@@ -122,10 +118,11 @@ public class DataAccessController {
 
         logger.info("Getting table info for {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        TableMetadata tableInfo = dataAccessService.getTableMetadata(connectionId, schemaName, tableName);
-        AccessibleTableResult accessibleTable = convertToAccessibleTableDto(tableInfo, connectionId, true);
+        AccessibleTable accessibleTable = dataAccessService.getAccessibleTableWithColumns(
+                connectionId, schemaName, tableName);
+        AccessibleTableResult result = convertAccessibleTableToDto(accessibleTable, true);
 
-        return ApiResponse.success(accessibleTable);
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
@@ -358,6 +355,52 @@ public class DataAccessController {
     }
 
     /**
+     * Convert AccessibleTable to AccessibleTableResult DTO
+     */
+    private AccessibleTableResult convertAccessibleTableToDto(
+            AccessibleTable accessibleTable, boolean includeColumns
+    ) {
+        // Convert permissions to string set
+        Set<String> permissionStrings = accessibleTable.permissions().stream()
+                .map(Enum::name)
+                .collect(Collectors.toSet());
+
+        // Use columns from AccessibleTable if available, or fetch if requested
+        List<AccessibleColumnResult> columnResults;
+        if (includeColumns) {
+            if (accessibleTable.columns() != null) {
+                // Convert AccessibleColumn to AccessibleColumnResult
+                columnResults = accessibleTable.columns().stream()
+                        .map(this::convertAccessibleColumnToResult)
+                        .collect(Collectors.toList());
+            } else {
+                // Fetch columns if not included in AccessibleTable
+                columnResults = getColumnsWithPermissions(accessibleTable.connectionId(),
+                        accessibleTable.schemaName(), accessibleTable.tableName());
+            }
+        } else {
+            columnResults = List.of(); // Empty list for performance when not needed
+        }
+
+        return new AccessibleTableResult(
+                accessibleTable.connectionId(),
+                accessibleTable.schemaName(),
+                accessibleTable.tableName(),
+                accessibleTable.getFullTableName(),
+                accessibleTable.tableType(),
+                accessibleTable.comment(),
+                permissionStrings,
+                accessibleTable.hasReadPermission(),
+                accessibleTable.hasWritePermission(),
+                accessibleTable.hasDeletePermission(),
+                accessibleTable.hasAdminPermission(),
+                accessibleTable.canModifyData(),
+                accessibleTable.canPerformCrud(),
+                columnResults
+        );
+    }
+
+    /**
      * Convert TableInfo to AccessibleTableDto with permission information
      */
     private AccessibleTableResult convertToAccessibleTableDto(
@@ -423,6 +466,49 @@ public class DataAccessController {
                 connection.testResult(),
                 connection.createdAt(),
                 connection.updatedAt()
+        );
+    }
+
+    /**
+     * Get columns with permission information for AccessibleTable conversion
+     */
+    private List<AccessibleColumnResult> getColumnsWithPermissions(
+            Long connectionId, String schemaName, String tableName
+    ) {
+        // Get accessible table with column information
+        AccessibleTable accessibleTable = dataAccessService.getAccessibleTableWithColumns(
+                connectionId, schemaName, tableName);
+
+        return accessibleTable.columns().stream()
+                .map(this::convertAccessibleColumnToResult)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Convert AccessibleColumn to AccessibleColumnResult
+     */
+    private AccessibleColumnResult convertAccessibleColumnToResult(AccessibleColumn column) {
+        // Convert permissions to string set
+        Set<String> permissionStrings = column.permissions().stream()
+                .map(Enum::name)
+                .collect(Collectors.toSet());
+
+        return new AccessibleColumnResult(
+                column.columnName(),
+                column.dataType(),
+                column.columnSize(),
+                column.decimalDigits(),
+                column.nullable(),
+                column.defaultValue(),
+                column.comment(),
+                column.primaryKey(),
+                column.autoIncrement(),
+                column.ordinalPosition(),
+                permissionStrings,
+                column.hasReadPermission(),
+                column.hasWritePermission(),
+                column.hasDeletePermission(),
+                column.hasAdminPermission()
         );
     }
 }

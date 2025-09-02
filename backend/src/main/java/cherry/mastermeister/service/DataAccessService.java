@@ -16,94 +16,140 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.entity.SchemaMetadataEntity;
+import cherry.mastermeister.entity.TableMetadataEntity;
 import cherry.mastermeister.enums.PermissionType;
-import cherry.mastermeister.model.TableMetadata;
-import cherry.mastermeister.util.PermissionUtils;
+import cherry.mastermeister.exception.DatabaseNotFoundException;
+import cherry.mastermeister.exception.TableNotFoundException;
+import cherry.mastermeister.model.AccessibleColumn;
+import cherry.mastermeister.model.AccessibleTable;
+import cherry.mastermeister.repository.SchemaMetadataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class DataAccessService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final SchemaMetadataService schemaMetadataService;
-    private final PermissionUtils permissionUtils;
+    private final SchemaMetadataRepository schemaMetadataRepository;
+    private final PermissionService permissionService;
 
     public DataAccessService(
-            SchemaMetadataService schemaMetadataService,
-            PermissionUtils permissionUtils
+            SchemaMetadataRepository schemaMetadataRepository,
+            PermissionService permissionService
     ) {
-        this.schemaMetadataService = schemaMetadataService;
-        this.permissionUtils = permissionUtils;
+        this.schemaMetadataRepository = schemaMetadataRepository;
+        this.permissionService = permissionService;
     }
 
     /**
-     * Get accessible tables with specific permission type
+     * Get all available tables for a connection with permission information
+     * Used for metadata display where all table information should be visible
      */
-    public List<TableMetadata> getAccessibleTables(
-            Long connectionId,
-            PermissionType permissionType
+    public List<AccessibleTable> getAllAvailableTables(
+            Long connectionId
     ) {
-        logger.info("Retrieving accessible tables for connection: {} with permission: {}",
-                connectionId, permissionType);
+        logger.info("Retrieving all available tables for connection: {}", connectionId);
 
-        // Require at least connection-level permission for the specified type
-        permissionUtils.requireConnectionPermission(connectionId, permissionType);
+        // Get schema metadata directly from repository
+        SchemaMetadataEntity schemaEntity = schemaMetadataRepository.findByConnectionId(connectionId)
+                .orElseThrow(() -> new DatabaseNotFoundException("Schema metadata not found for connection: " + connectionId));
 
-        // Get all tables for the connection
-        List<TableMetadata> allTables = schemaMetadataService.getTablesForConnection(connectionId);
+        List<AccessibleTable> accessibleTables = schemaEntity.getTables().stream()
+                .map(tableEntity -> convertToAccessibleTable(tableEntity, connectionId, false))
+                .collect(Collectors.toList());
 
-        // Filter tables based on specified permission
-        List<TableMetadata> accessibleTables = permissionUtils.filterByTablePermission(
-                allTables, connectionId, permissionType,
-                new PermissionUtils.TableExtractor<TableMetadata>() {
-                    @Override
-                    public String getSchemaName(TableMetadata table) {
-                        return table.schema();
-                    }
-
-                    @Override
-                    public String getTableName(TableMetadata table) {
-                        return table.tableName();
-                    }
-                }
-        );
-
-        logger.info("Found {} accessible tables out of {} total tables for {} permission",
-                accessibleTables.size(), allTables.size(), permissionType);
-
+        logger.info("Found {} total accessible tables for connection: {}", accessibleTables.size(), connectionId);
         return accessibleTables;
     }
 
     /**
-     * Check if user has access to specific table
+     * Get accessible table with detailed column permission information
      */
-    public boolean hasTableAccess(
-            Long connectionId,
-            String schemaName, String tableName,
-            PermissionType permissionType
-    ) {
-        return permissionUtils.hasTablePermission(connectionId, permissionType, schemaName, tableName);
-    }
-
-    /**
-     * Get table info with permission check
-     */
-    public TableMetadata getTableMetadata(
+    public AccessibleTable getAccessibleTableWithColumns(
             Long connectionId,
             String schemaName, String tableName
     ) {
-        logger.debug("Getting table info for {}.{} on connection {}", schemaName, tableName, connectionId);
+        logger.debug("Getting accessible table with columns for {}.{} on connection {}",
+                schemaName, tableName, connectionId);
 
-        // Check READ permission for the table
-        permissionUtils.requireTablePermission(connectionId, PermissionType.READ, schemaName, tableName);
+        // Get table entity from repository
+        SchemaMetadataEntity schemaEntity = schemaMetadataRepository.findByConnectionId(connectionId)
+                .orElseThrow(() -> new DatabaseNotFoundException("Schema metadata not found for connection: " + connectionId));
 
-        // Get table information
-        return schemaMetadataService.getTableMetadata(connectionId, schemaName, tableName);
+        TableMetadataEntity tableEntity = schemaEntity.getTables().stream()
+                .filter(table -> schemaName.equals(table.getSchema()) && tableName.equals(table.getTableName()))
+                .findFirst()
+                .orElseThrow(() -> new TableNotFoundException("Table not found: " + schemaName + "." + tableName));
+
+        // Convert directly to AccessibleTable with columns
+        return convertToAccessibleTable(tableEntity, connectionId, true);
+    }
+
+    /**
+     * Convert TableMetadataEntity to AccessibleTable directly
+     */
+    private AccessibleTable convertToAccessibleTable(
+            TableMetadataEntity tableEntity,
+            Long connectionId,
+            boolean includeColumns
+    ) {
+        // Get table permissions
+        Set<PermissionType> tablePermissions = permissionService.getTablePermissions(
+                connectionId,
+                tableEntity.getSchema(), tableEntity.getTableName()
+        );
+
+        // Convert columns if requested
+        List<AccessibleColumn> accessibleColumns = null;
+        if (includeColumns) {
+            accessibleColumns = tableEntity.getColumns().stream()
+                    .map(columnEntity -> {
+                        Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
+                                connectionId,
+                                tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()
+                        );
+
+                        return new AccessibleColumn(
+                                columnEntity.getColumnName(),
+                                columnEntity.getDataType(),
+                                columnEntity.getColumnSize(),
+                                columnEntity.getDecimalDigits(),
+                                columnEntity.getNullable(),
+                                columnEntity.getDefaultValue(),
+                                columnEntity.getComment(),
+                                columnEntity.getPrimaryKey(),
+                                columnEntity.getAutoIncrement(),
+                                columnEntity.getOrdinalPosition(),
+                                columnPermissions,
+                                columnPermissions.contains(PermissionType.READ),
+                                columnPermissions.contains(PermissionType.WRITE),
+                                columnPermissions.contains(PermissionType.DELETE),
+                                columnPermissions.contains(PermissionType.ADMIN)
+                        );
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        return new AccessibleTable(
+                connectionId,
+                tableEntity.getSchema(),
+                tableEntity.getTableName(),
+                tableEntity.getTableType(),
+                tableEntity.getComment(),
+                tablePermissions,
+                tablePermissions.contains(PermissionType.READ),
+                tablePermissions.contains(PermissionType.WRITE),
+                tablePermissions.contains(PermissionType.DELETE),
+                tablePermissions.contains(PermissionType.ADMIN),
+                accessibleColumns
+        );
     }
 }

@@ -18,6 +18,7 @@ package cherry.mastermeister.model;
 
 import cherry.mastermeister.enums.PermissionType;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,10 +34,14 @@ public record AccessibleTable(
         boolean hasReadPermission,
         boolean hasWritePermission,
         boolean hasDeletePermission,
-        boolean hasAdminPermission
+        boolean hasAdminPermission,
+        List<AccessibleColumn> columns
 ) {
     /**
      * Create AccessibleTable with calculated permission flags
+     */
+    /**
+     * Create AccessibleTable without column details (for list view)
      */
     public static AccessibleTable of(TableMetadata tableInfo, Long connectionId, Set<PermissionType> permissions) {
         return new AccessibleTable(
@@ -49,7 +54,28 @@ public record AccessibleTable(
                 permissions.contains(PermissionType.READ),
                 permissions.contains(PermissionType.WRITE),
                 permissions.contains(PermissionType.DELETE),
-                permissions.contains(PermissionType.ADMIN)
+                permissions.contains(PermissionType.ADMIN),
+                null // No column details for list view
+        );
+    }
+
+    /**
+     * Create AccessibleTable with column details (for detail view)
+     */
+    public static AccessibleTable withColumns(TableMetadata tableInfo, Long connectionId, 
+            Set<PermissionType> permissions, List<AccessibleColumn> columns) {
+        return new AccessibleTable(
+                connectionId,
+                tableInfo.schema(),
+                tableInfo.tableName(),
+                tableInfo.tableType(),
+                tableInfo.comment(),
+                permissions,
+                permissions.contains(PermissionType.READ),
+                permissions.contains(PermissionType.WRITE),
+                permissions.contains(PermissionType.DELETE),
+                permissions.contains(PermissionType.ADMIN),
+                columns
         );
     }
 

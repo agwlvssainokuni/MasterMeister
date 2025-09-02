@@ -64,6 +64,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(List.of(ex.getMessage())));
     }
 
+    @ExceptionHandler(TableNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleTableNotFoundException(
+            TableNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(List.of(ex.getMessage())));
+    }
+
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<Object>> handleUserAlreadyExistsException(
             UserAlreadyExistsException ex) {
