@@ -91,6 +91,36 @@ public class PermissionService {
     }
 
     /**
+     * Check permission with current authenticated user
+     */
+    @Transactional(readOnly = true)
+    public PermissionCheckResult checkPermission(
+            Long connectionId,
+            PermissionType permissionType,
+            String schemaName, String tableName, String columnName
+    ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            return PermissionCheckResult.denied("No authenticated user");
+        }
+
+        String userEmail = auth.getName();
+        Long userId = userRepository.findByEmail(userEmail)
+                .map(UserEntity::getId)
+                .orElse(null);
+
+        if (userId == null) {
+            return PermissionCheckResult.denied("User not found");
+        }
+
+        return checkPermission(
+                userId, connectionId,
+                permissionType,
+                schemaName, tableName, columnName
+        );
+    }
+
+    /**
      * Check if user has permission for the requested operation
      */
     @Transactional(readOnly = true)
@@ -123,36 +153,6 @@ public class PermissionService {
         }
 
         return result;
-    }
-
-    /**
-     * Check permission with current authenticated user
-     */
-    @Transactional(readOnly = true)
-    public PermissionCheckResult checkPermission(
-            Long connectionId,
-            PermissionType permissionType,
-            String schemaName, String tableName, String columnName
-    ) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
-            return PermissionCheckResult.denied("No authenticated user");
-        }
-
-        String userEmail = auth.getName();
-        Long userId = userRepository.findByEmail(userEmail)
-                .map(UserEntity::getId)
-                .orElse(null);
-
-        if (userId == null) {
-            return PermissionCheckResult.denied("User not found");
-        }
-
-        return checkPermission(
-                userId, connectionId,
-                permissionType,
-                schemaName, tableName, columnName
-        );
     }
 
     /**
