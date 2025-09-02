@@ -24,7 +24,6 @@ import cherry.mastermeister.exception.DatabaseNotFoundException;
 import cherry.mastermeister.exception.TableNotFoundException;
 import cherry.mastermeister.model.*;
 import cherry.mastermeister.repository.SchemaMetadataRepository;
-import cherry.mastermeister.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +49,6 @@ public class RecordReadService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
     private final SchemaMetadataRepository schemaMetadataRepository;
-    private final PermissionUtils permissionUtils;
     private final PermissionService permissionService;
     private final AuditLogService auditLogService;
     private final QueryBuilderService queryBuilderService;
@@ -61,33 +59,25 @@ public class RecordReadService {
     public RecordReadService(
             DatabaseService databaseService,
             SchemaMetadataRepository schemaMetadataRepository,
-            PermissionUtils permissionUtils,
             PermissionService permissionService,
             AuditLogService auditLogService,
             QueryBuilderService queryBuilderService
     ) {
         this.databaseService = databaseService;
         this.schemaMetadataRepository = schemaMetadataRepository;
-        this.permissionUtils = permissionUtils;
         this.permissionService = permissionService;
         this.auditLogService = auditLogService;
         this.queryBuilderService = queryBuilderService;
     }
 
     /**
-     * Get records from table with column-level permission filtering
-     */
-    public RecordQueryResult getRecords(
-            Long connectionId, String schemaName, String tableName, int page, int pageSize
-    ) {
-        return getRecords(connectionId, schemaName, tableName, RecordFilter.empty(), page, pageSize);
-    }
-
-    /**
      * Get records from table with filtering and column-level permission filtering
      */
     public RecordQueryResult getRecords(
-            Long connectionId, String schemaName, String tableName, RecordFilter filter, int page, int pageSize
+            Long connectionId,
+            String schemaName, String tableName,
+            RecordFilter filter,
+            int page, int pageSize
     ) {
         logger.info("Getting records for table {}.{} on connection: {}, page: {}, size: {}",
                 schemaName, tableName, connectionId, page, pageSize);
@@ -95,7 +85,13 @@ public class RecordReadService {
         long startTime = System.currentTimeMillis();
 
         // Check READ permission for the table
-        permissionUtils.requireTablePermission(connectionId, PermissionType.READ, schemaName, tableName);
+        Set<PermissionType> tablePermissions = permissionService.getTablePermissions(
+                connectionId,
+                schemaName, tableName
+        );
+        if (!tablePermissions.contains(PermissionType.READ)) {
+            throw new IllegalArgumentException("READ permission required for table " + schemaName + "." + tableName);
+        }
 
         try {
             // Get table entity directly from repository
@@ -162,7 +158,10 @@ public class RecordReadService {
     /**
      * Get table entity from repository
      */
-    private TableMetadataEntity getTableEntity(Long connectionId, String schemaName, String tableName) {
+    private TableMetadataEntity getTableEntity(
+            Long connectionId,
+            String schemaName, String tableName
+    ) {
         SchemaMetadataEntity schemaEntity = schemaMetadataRepository.findByConnectionId(connectionId)
                 .orElseThrow(() -> new DatabaseNotFoundException("Schema metadata not found for connection: " + connectionId));
 
@@ -176,15 +175,22 @@ public class RecordReadService {
      * Get accessible columns with permission information
      */
     private List<AccessibleColumn> getAccessibleColumns(
-            Long connectionId, TableMetadataEntity tableEntity
+            Long connectionId,
+            TableMetadataEntity tableEntity
     ) {
         return tableEntity.getColumns().stream()
-                .filter(columnEntity -> permissionUtils.hasColumnPermission(
-                        connectionId, PermissionType.READ,
-                        tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()))
+                .filter(columnEntity -> {
+                    Set<PermissionType> permissions = permissionService.getColumnPermissions(
+                            connectionId,
+                            tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()
+                    );
+                    return permissions.contains(PermissionType.READ);
+                })
                 .map(columnEntity -> {
                     Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
-                            connectionId, tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName());
+                            connectionId,
+                            tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()
+                    );
 
                     return new AccessibleColumn(
                             columnEntity.getColumnName(),
@@ -244,6 +250,10 @@ public class RecordReadService {
      */
     private RecordQueryResult createEmptyResult(int page, int pageSize, long executionTime) {
         return new RecordQueryResult(
-                List.of(), List.of(), 0L, page, pageSize, executionTime, "-- No accessible columns --");
+                List.of(), List.of(),
+                0L, page, pageSize,
+                executionTime,
+                "-- No accessible columns --"
+        );
     }
 }

@@ -156,6 +156,7 @@ public class DataAccessController {
         cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
                 connectionId,
                 schemaName, tableName,
+                RecordFilter.empty(),
                 page, pageSize
         );
 
@@ -334,7 +335,7 @@ public class DataAccessController {
     ) {
         // Convert records to readable data only
         List<Map<String, Object>> records = model.records().stream()
-                .map(record -> record.getReadableData())
+                .map(TableRecord::getReadableData)
                 .collect(Collectors.toList());
 
         // Convert column metadata

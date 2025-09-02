@@ -18,7 +18,6 @@ package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.model.AccessibleColumn;
-import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.RecordFilter;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
@@ -39,9 +38,13 @@ public class QueryBuilderService {
     /**
      * Build SELECT query with filtering, sorting, and pagination
      */
-    public QueryResult buildSelectQuery(String schemaName, String tableName,
-                                        List<AccessibleColumn> columns, RecordFilter filter,
-                                        int page, int pageSize, DatabaseType dbType) {
+    public QueryResult buildSelectQuery(
+            String schemaName, String tableName,
+            List<AccessibleColumn> columns,
+            RecordFilter filter,
+            int page, int pageSize,
+            DatabaseType dbType
+    ) {
 
         StringBuilder query = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
@@ -81,7 +84,11 @@ public class QueryBuilderService {
     /**
      * Build COUNT query for total records with same filters
      */
-    public QueryResult buildCountQuery(String schemaName, String tableName, RecordFilter filter, DatabaseType dbType) {
+    public QueryResult buildCountQuery(
+            String schemaName, String tableName,
+            RecordFilter filter,
+            DatabaseType dbType
+    ) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
 
@@ -101,7 +108,11 @@ public class QueryBuilderService {
     /**
      * Build WHERE clause from filter conditions
      */
-    private String buildWhereClause(RecordFilter filter, Map<String, Object> parameters, DatabaseType dbType) {
+    private String buildWhereClause(
+            RecordFilter filter,
+            Map<String, Object> parameters,
+            DatabaseType dbType
+    ) {
         List<String> conditions = new ArrayList<>();
 
         // Column-specific filters
@@ -126,8 +137,12 @@ public class QueryBuilderService {
     /**
      * Build condition for single column filter
      */
-    private String buildColumnCondition(RecordFilter.ColumnFilter columnFilter,
-                                        Map<String, Object> parameters, int index, DatabaseType dbType) {
+    private String buildColumnCondition(
+            RecordFilter.ColumnFilter columnFilter,
+            Map<String, Object> parameters,
+            int index,
+            DatabaseType dbType
+    ) {
         String columnName = SqlEscapeUtil.escapeColumnName(columnFilter.columnName(), dbType);
         String paramName = "param" + index;
 
@@ -198,7 +213,10 @@ public class QueryBuilderService {
     /**
      * Build ORDER BY clause
      */
-    private String buildOrderByClause(RecordFilter filter, DatabaseType dbType) {
+    private String buildOrderByClause(
+            RecordFilter filter,
+            DatabaseType dbType
+    ) {
         return filter.sortOrders().stream()
                 .map(order -> SqlEscapeUtil.escapeColumnName(order.columnName(), dbType) + " " + order.direction().name())
                 .collect(Collectors.joining(", "));
@@ -207,7 +225,10 @@ public class QueryBuilderService {
     /**
      * Build full table name with schema
      */
-    private String buildTableName(String schemaName, String tableName, DatabaseType dbType) {
+    private String buildTableName(
+            String schemaName, String tableName,
+            DatabaseType dbType
+    ) {
         if (schemaName != null && !schemaName.isEmpty()) {
             return SqlEscapeUtil.escapeSchemaName(schemaName, dbType) + "." + SqlEscapeUtil.escapeTableName(tableName, dbType);
         }
