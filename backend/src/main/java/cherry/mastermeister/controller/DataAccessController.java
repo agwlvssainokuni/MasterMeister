@@ -18,7 +18,9 @@ package cherry.mastermeister.controller;
 
 import cherry.mastermeister.annotation.RequirePermission;
 import cherry.mastermeister.controller.dto.*;
+import cherry.mastermeister.controller.dto.RecordDeleteResult;
 import cherry.mastermeister.controller.dto.RecordQueryResult;
+import cherry.mastermeister.controller.dto.RecordUpdateResult;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.*;
 import cherry.mastermeister.service.*;
@@ -47,7 +49,6 @@ public class DataAccessController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DataAccessService dataAccessService;
-    private final PermissionService permissionService;
     private final RecordReadService recordReadService;
     private final RecordCreateService recordCreateService;
     private final RecordUpdateService recordUpdateService;
@@ -57,7 +58,6 @@ public class DataAccessController {
 
     public DataAccessController(
             DataAccessService dataAccessService,
-            PermissionService permissionService,
             RecordReadService recordReadService,
             RecordCreateService recordCreateService,
             RecordUpdateService recordUpdateService,
@@ -66,7 +66,6 @@ public class DataAccessController {
             DatabaseService databaseService
     ) {
         this.dataAccessService = dataAccessService;
-        this.permissionService = permissionService;
         this.recordReadService = recordReadService;
         this.recordCreateService = recordCreateService;
         this.recordUpdateService = recordUpdateService;
@@ -76,7 +75,10 @@ public class DataAccessController {
     }
 
     @GetMapping("/databases")
-    @Operation(summary = "Get available databases", description = "Get list of active database connections available to the user")
+    @Operation(
+            summary = "Get available databases",
+            description = "Get list of active database connections available to the user"
+    )
     public ApiResponse<List<DatabaseConnectionResult>> getAvailableDatabases() {
         logger.info("Getting available databases for current user");
 
@@ -90,7 +92,10 @@ public class DataAccessController {
     }
 
     @GetMapping("/{connectionId}/tables")
-    @Operation(summary = "Get all tables with permission info", description = "Get all table metadata with user permission information for each table")
+    @Operation(
+            summary = "Get all tables with permission info",
+            description = "Get all table metadata with user permission information for each table"
+    )
     public ApiResponse<List<AccessibleTableResult>> getAccessibleTables(
             @PathVariable Long connectionId
     ) {
@@ -109,7 +114,10 @@ public class DataAccessController {
     }
 
     @GetMapping("/{connectionId}/tables/{schemaName}/{tableName}")
-    @Operation(summary = "Get table information", description = "Get detailed information for a specific table")
+    @Operation(
+            summary = "Get table information",
+            description = "Get detailed information for a specific table"
+    )
     public ApiResponse<AccessibleTableResult> getTableInfo(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
@@ -126,9 +134,14 @@ public class DataAccessController {
     }
 
     @GetMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
-    @Operation(summary = "Get table records", description = "Get records from table with column-level permission filtering")
-    @RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName")
+    @Operation(
+            summary = "Get table records",
+            description = "Get records from table with column-level permission filtering"
+    )
+    @RequirePermission(
+            value = PermissionType.READ, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName"
+    )
     public ApiResponse<RecordQueryResult> getTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
@@ -141,16 +154,24 @@ public class DataAccessController {
                 schemaName, tableName, connectionId, page, pageSize);
 
         cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
-                connectionId, schemaName, tableName, page, pageSize);
+                connectionId,
+                schemaName, tableName,
+                page, pageSize
+        );
 
         RecordQueryResult dto = convertToRecordQueryResultDto(result);
         return ApiResponse.success(dto);
     }
 
     @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records/filter")
-    @Operation(summary = "Filter table records", description = "Get filtered records from table with column-level permission filtering")
-    @RequirePermission(value = PermissionType.READ, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName")
+    @Operation(
+            summary = "Filter table records",
+            description = "Get filtered records from table with column-level permission filtering"
+    )
+    @RequirePermission(
+            value = PermissionType.READ, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName"
+    )
     public ApiResponse<RecordQueryResult> filterTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
@@ -167,16 +188,25 @@ public class DataAccessController {
         RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
 
         cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
-                connectionId, schemaName, tableName, filter, page, pageSize);
+                connectionId,
+                schemaName, tableName,
+                filter,
+                page, pageSize
+        );
 
         RecordQueryResult dto = convertToRecordQueryResultDto(result);
         return ApiResponse.success(dto);
     }
 
     @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
-    @Operation(summary = "Create table record", description = "Create a new record in table with column-level permission validation")
-    @RequirePermission(value = PermissionType.WRITE, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName")
+    @Operation(
+            summary = "Create table record",
+            description = "Create a new record in table with column-level permission validation"
+    )
+    @RequirePermission(
+            value = PermissionType.WRITE, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName"
+    )
     public ResponseEntity<ApiResponse<RecordCreateResult>> createTableRecord(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
@@ -187,17 +217,25 @@ public class DataAccessController {
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         RecordCreationResult result = recordCreateService.createRecord(
-                connectionId, schemaName, tableName, request.data());
+                connectionId,
+                schemaName, tableName,
+                request.data()
+        );
 
         RecordCreateResult dto = convertToRecordCreateResult(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(dto));
     }
 
     @PutMapping("/{connectionId}/tables/{schemaName}/{tableName}/records")
-    @Operation(summary = "Update table records", description = "Update records in table with column-level permission validation and transaction management")
-    @RequirePermission(value = PermissionType.WRITE, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName")
-    public ApiResponse<cherry.mastermeister.controller.dto.RecordUpdateResult> updateTableRecords(
+    @Operation(
+            summary = "Update table records",
+            description = "Update records in table with column-level permission validation and transaction management"
+    )
+    @RequirePermission(
+            value = PermissionType.WRITE, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName"
+    )
+    public ApiResponse<RecordUpdateResult> updateTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -207,17 +245,26 @@ public class DataAccessController {
         logger.info("Updating records in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         cherry.mastermeister.model.RecordUpdateResult result = recordUpdateService.updateRecord(
-                connectionId, schemaName, tableName, request.data(), request.whereConditions());
+                connectionId,
+                schemaName, tableName,
+                request.data(),
+                request.whereConditions()
+        );
 
-        cherry.mastermeister.controller.dto.RecordUpdateResult dto = convertToRecordUpdateResult(result);
+        RecordUpdateResult dto = convertToRecordUpdateResult(result);
         return ApiResponse.success(dto);
     }
 
     @PostMapping("/{connectionId}/tables/{schemaName}/{tableName}/records:delete")
-    @Operation(summary = "Delete table records", description = "Delete records from table with referential integrity checks and column-level permission validation")
-    @RequirePermission(value = PermissionType.DELETE, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName")
-    public ApiResponse<cherry.mastermeister.controller.dto.RecordDeleteResult> deleteTableRecords(
+    @Operation(
+            summary = "Delete table records",
+            description = "Delete records from table with referential integrity checks and column-level permission validation"
+    )
+    @RequirePermission(
+            value = PermissionType.DELETE, connectionIdParam = "connectionId",
+            schemaNameParam = "schemaName", tableNameParam = "tableName"
+    )
+    public ApiResponse<RecordDeleteResult> deleteTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -227,18 +274,23 @@ public class DataAccessController {
         logger.info("Deleting records from table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         cherry.mastermeister.model.RecordDeleteResult result = recordDeleteService.deleteRecord(
-                connectionId, schemaName, tableName, request.whereConditions(),
-                request.skipReferentialIntegrityCheck());
+                connectionId,
+                schemaName, tableName,
+                request.whereConditions(),
+                request.skipReferentialIntegrityCheck()
+        );
 
-        cherry.mastermeister.controller.dto.RecordDeleteResult dto = convertToRecordDeleteResult(result);
+        RecordDeleteResult dto = convertToRecordDeleteResult(result);
         return ApiResponse.success(dto);
     }
 
     /**
      * Convert model RecordDeleteResult to DTO
      */
-    private cherry.mastermeister.controller.dto.RecordDeleteResult convertToRecordDeleteResult(cherry.mastermeister.model.RecordDeleteResult model) {
-        return new cherry.mastermeister.controller.dto.RecordDeleteResult(
+    private RecordDeleteResult convertToRecordDeleteResult(
+            cherry.mastermeister.model.RecordDeleteResult model
+    ) {
+        return new RecordDeleteResult(
                 model.deletedRecordCount(),
                 model.executionTimeMs(),
                 model.query(),
@@ -250,8 +302,10 @@ public class DataAccessController {
     /**
      * Convert model RecordUpdateResult to DTO
      */
-    private cherry.mastermeister.controller.dto.RecordUpdateResult convertToRecordUpdateResult(cherry.mastermeister.model.RecordUpdateResult model) {
-        return new cherry.mastermeister.controller.dto.RecordUpdateResult(
+    private RecordUpdateResult convertToRecordUpdateResult(
+            cherry.mastermeister.model.RecordUpdateResult model
+    ) {
+        return new RecordUpdateResult(
                 model.updatedRecordCount(),
                 model.executionTimeMs(),
                 model.query()
@@ -261,7 +315,9 @@ public class DataAccessController {
     /**
      * Convert model RecordCreationResult to DTO
      */
-    private RecordCreateResult convertToRecordCreateResult(RecordCreationResult model) {
+    private RecordCreateResult convertToRecordCreateResult(
+            RecordCreationResult model
+    ) {
         return new RecordCreateResult(
                 model.createdRecord(),
                 model.columnTypes(),
@@ -320,39 +376,6 @@ public class DataAccessController {
         );
     }
 
-    /**
-     * Convert ColumnMetadata to AccessibleColumnResult with permission information
-     */
-    private AccessibleColumnResult convertToAccessibleColumnResult(
-            ColumnMetadata column, Long connectionId, String schemaName, String tableName
-    ) {
-        // Get user's permissions for this column
-        Set<PermissionType> permissions = permissionService.getColumnPermissions(
-                connectionId, schemaName, tableName, column.columnName());
-
-        // Convert permissions to string set
-        Set<String> permissionStrings = permissions.stream()
-                .map(Enum::name)
-                .collect(Collectors.toSet());
-
-        return new AccessibleColumnResult(
-                column.columnName(),
-                column.dataType(),
-                column.columnSize(),
-                column.decimalDigits(),
-                column.nullable(),
-                column.defaultValue(),
-                column.comment(),
-                column.primaryKey(),
-                column.autoIncrement(),
-                column.ordinalPosition(),
-                permissionStrings,
-                permissions.contains(PermissionType.READ),
-                permissions.contains(PermissionType.WRITE),
-                permissions.contains(PermissionType.DELETE),
-                permissions.contains(PermissionType.ADMIN)
-        );
-    }
 
     /**
      * Convert AccessibleTable to AccessibleTableResult DTO
@@ -400,51 +423,6 @@ public class DataAccessController {
         );
     }
 
-    /**
-     * Convert TableInfo to AccessibleTableDto with permission information
-     */
-    private AccessibleTableResult convertToAccessibleTableDto(
-            TableMetadata tableInfo, Long connectionId, boolean includeColumns
-    ) {
-        // Get user's permissions for this table
-        Set<PermissionType> permissions = permissionService.getTablePermissions(
-                connectionId, tableInfo.schema(), tableInfo.tableName());
-
-        // Convert permissions to string set
-        Set<String> permissionStrings = permissions.stream()
-                .map(Enum::name)
-                .collect(Collectors.toSet());
-
-        // Create full table name
-        String fullTableName = tableInfo.schema() != null && !tableInfo.schema().isEmpty()
-                ? tableInfo.schema() + "." + tableInfo.tableName()
-                : tableInfo.tableName();
-
-        // Convert column metadata with permission information only if requested
-        List<AccessibleColumnResult> columnResults = includeColumns
-                ? tableInfo.columns().stream()
-                .map(column -> convertToAccessibleColumnResult(column, connectionId, tableInfo.schema(), tableInfo.tableName()))
-                .collect(Collectors.toList())
-                : List.of(); // Empty list for performance when not needed
-
-        return new AccessibleTableResult(
-                connectionId,
-                tableInfo.schema(),
-                tableInfo.tableName(),
-                fullTableName,
-                tableInfo.tableType(),
-                tableInfo.comment(),
-                permissionStrings,
-                permissions.contains(PermissionType.READ),
-                permissions.contains(PermissionType.WRITE),
-                permissions.contains(PermissionType.DELETE),
-                permissions.contains(PermissionType.ADMIN),
-                permissions.contains(PermissionType.READ) && permissions.contains(PermissionType.WRITE),
-                permissions.contains(PermissionType.READ) && permissions.contains(PermissionType.WRITE)
-                        && permissions.contains(PermissionType.DELETE),
-                columnResults
-        );
-    }
 
     /**
      * Convert DatabaseConnection model to DatabaseConnectionResult DTO
