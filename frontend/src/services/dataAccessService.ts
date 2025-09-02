@@ -249,18 +249,7 @@ class DataAccessService {
   private convertToRecordQueryData(apiData: RecordQueryResult): RecordQueryData {
     return {
       records: apiData.records,
-      accessibleColumns: apiData.accessibleColumns.map(col => ({
-        columnName: col.columnName,
-        dataType: col.dataType,
-        columnSize: col.columnSize,
-        decimalDigits: col.decimalDigits,
-        nullable: col.nullable,
-        defaultValue: col.defaultValue,
-        comment: col.comment,
-        primaryKey: col.primaryKey,
-        autoIncrement: col.autoIncrement,
-        ordinalPosition: col.ordinalPosition
-      })),
+      accessibleColumns: apiData.accessibleColumns.map(this.convertToAccessibleColumn),
       totalRecords: apiData.totalRecords,
       currentPage: apiData.currentPage,
       pageSize: apiData.pageSize,

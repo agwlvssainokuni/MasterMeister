@@ -338,8 +338,8 @@ public class DataAccessController {
                 .collect(Collectors.toList());
 
         // Convert column metadata
-        List<ColumnMetadataResult> columns = model.accessibleColumns().stream()
-                .map(this::convertToColumnMetadataResult)
+        List<AccessibleColumnResult> columns = model.accessibleColumns().stream()
+                .map(this::convertAccessibleColumnToResult)
                 .collect(Collectors.toList());
 
         return new RecordQueryResult(

@@ -140,7 +140,7 @@ export interface TableRecord {
 
 export interface RecordQueryData {
   records: TableRecord[]
-  accessibleColumns: ColumnMetadata[]
+  accessibleColumns: AccessibleColumn[]
   totalRecords: number
   currentPage: number
   pageSize: number

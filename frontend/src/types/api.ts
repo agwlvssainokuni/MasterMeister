@@ -153,7 +153,7 @@ export interface ColumnMetadataResult {
 
 export interface RecordQueryResult {
   records: Record<string, unknown>[]
-  accessibleColumns: ColumnMetadataResult[]
+  accessibleColumns: AccessibleColumnResult[]
   totalRecords: number
   currentPage: number
   pageSize: number

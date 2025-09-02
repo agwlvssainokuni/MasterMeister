@@ -23,7 +23,7 @@ import java.util.List;
  */
 public record RecordQueryResult(
         List<TableRecord> records,
-        List<ColumnMetadata> accessibleColumns,
+        List<AccessibleColumn> accessibleColumns,
         long totalRecords,
         int currentPage,
         int pageSize,

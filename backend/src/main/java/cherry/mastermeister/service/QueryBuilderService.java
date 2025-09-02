@@ -17,6 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
+import cherry.mastermeister.model.AccessibleColumn;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.RecordFilter;
 import cherry.mastermeister.util.SqlEscapeUtil;
@@ -39,7 +40,7 @@ public class QueryBuilderService {
      * Build SELECT query with filtering, sorting, and pagination
      */
     public QueryResult buildSelectQuery(String schemaName, String tableName,
-                                        List<ColumnMetadata> columns, RecordFilter filter,
+                                        List<AccessibleColumn> columns, RecordFilter filter,
                                         int page, int pageSize, DatabaseType dbType) {
 
         StringBuilder query = new StringBuilder();

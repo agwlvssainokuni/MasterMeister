@@ -16,9 +16,14 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.entity.SchemaMetadataEntity;
+import cherry.mastermeister.entity.TableMetadataEntity;
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
+import cherry.mastermeister.exception.DatabaseNotFoundException;
+import cherry.mastermeister.exception.TableNotFoundException;
 import cherry.mastermeister.model.*;
+import cherry.mastermeister.repository.SchemaMetadataRepository;
 import cherry.mastermeister.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +40,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,8 +49,9 @@ public class RecordReadService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
-    private final SchemaMetadataService schemaMetadataService;
+    private final SchemaMetadataRepository schemaMetadataRepository;
     private final PermissionUtils permissionUtils;
+    private final PermissionService permissionService;
     private final AuditLogService auditLogService;
     private final QueryBuilderService queryBuilderService;
 
@@ -53,14 +60,16 @@ public class RecordReadService {
 
     public RecordReadService(
             DatabaseService databaseService,
-            SchemaMetadataService schemaMetadataService,
+            SchemaMetadataRepository schemaMetadataRepository,
             PermissionUtils permissionUtils,
+            PermissionService permissionService,
             AuditLogService auditLogService,
             QueryBuilderService queryBuilderService
     ) {
         this.databaseService = databaseService;
-        this.schemaMetadataService = schemaMetadataService;
+        this.schemaMetadataRepository = schemaMetadataRepository;
         this.permissionUtils = permissionUtils;
+        this.permissionService = permissionService;
         this.auditLogService = auditLogService;
         this.queryBuilderService = queryBuilderService;
     }
@@ -89,12 +98,11 @@ public class RecordReadService {
         permissionUtils.requireTablePermission(connectionId, PermissionType.READ, schemaName, tableName);
 
         try {
-            // Get table metadata
-            TableMetadata tableMetadata = schemaMetadataService.getTableMetadata(
-                    connectionId, schemaName, tableName);
+            // Get table entity directly from repository
+            TableMetadataEntity tableEntity = getTableEntity(connectionId, schemaName, tableName);
 
             // Get accessible columns with permissions
-            List<ColumnMetadata> accessibleColumns = getAccessibleColumns(connectionId, tableMetadata);
+            List<AccessibleColumn> accessibleColumns = getAccessibleColumns(connectionId, tableEntity);
 
             if (accessibleColumns.isEmpty()) {
                 logger.warn("No accessible columns found for table {}.{}", schemaName, tableName);
@@ -152,15 +160,50 @@ public class RecordReadService {
     }
 
     /**
-     * Get accessible columns based on user permissions
+     * Get table entity from repository
      */
-    private List<ColumnMetadata> getAccessibleColumns(
-            Long connectionId, TableMetadata tableMetadata
+    private TableMetadataEntity getTableEntity(Long connectionId, String schemaName, String tableName) {
+        SchemaMetadataEntity schemaEntity = schemaMetadataRepository.findByConnectionId(connectionId)
+                .orElseThrow(() -> new DatabaseNotFoundException("Schema metadata not found for connection: " + connectionId));
+
+        return schemaEntity.getTables().stream()
+                .filter(table -> schemaName.equals(table.getSchema()) && tableName.equals(table.getTableName()))
+                .findFirst()
+                .orElseThrow(() -> new TableNotFoundException("Table not found: " + schemaName + "." + tableName));
+    }
+
+    /**
+     * Get accessible columns with permission information
+     */
+    private List<AccessibleColumn> getAccessibleColumns(
+            Long connectionId, TableMetadataEntity tableEntity
     ) {
-        return tableMetadata.columns().stream()
-                .filter(column -> permissionUtils.hasColumnPermission(
+        return tableEntity.getColumns().stream()
+                .filter(columnEntity -> permissionUtils.hasColumnPermission(
                         connectionId, PermissionType.READ,
-                        tableMetadata.schema(), tableMetadata.tableName(), column.columnName()))
+                        tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()))
+                .map(columnEntity -> {
+                    Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
+                            connectionId, tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName());
+
+                    return new AccessibleColumn(
+                            columnEntity.getColumnName(),
+                            columnEntity.getDataType(),
+                            columnEntity.getColumnSize(),
+                            columnEntity.getDecimalDigits(),
+                            columnEntity.getNullable(),
+                            columnEntity.getDefaultValue(),
+                            columnEntity.getComment(),
+                            columnEntity.getPrimaryKey(),
+                            columnEntity.getAutoIncrement(),
+                            columnEntity.getOrdinalPosition(),
+                            columnPermissions,
+                            columnPermissions.contains(PermissionType.READ),
+                            columnPermissions.contains(PermissionType.WRITE),
+                            columnPermissions.contains(PermissionType.DELETE),
+                            columnPermissions.contains(PermissionType.ADMIN)
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -169,7 +212,7 @@ public class RecordReadService {
      * Map ResultSet to TableRecord with column permissions
      */
     private TableRecord mapResultSetToRecord(
-            ResultSet rs, List<ColumnMetadata> accessibleColumns,
+            ResultSet rs, List<AccessibleColumn> accessibleColumns,
             Long connectionId, String schemaName, String tableName
     ) throws SQLException {
 

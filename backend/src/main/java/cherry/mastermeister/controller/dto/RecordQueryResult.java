@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public record RecordQueryResult(
         List<Map<String, Object>> records,
-        List<ColumnMetadataResult> accessibleColumns,
+        List<AccessibleColumnResult> accessibleColumns,
         long totalRecords,
         int currentPage,
         int pageSize,
