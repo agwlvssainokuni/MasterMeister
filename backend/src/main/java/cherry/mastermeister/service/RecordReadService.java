@@ -50,24 +50,24 @@ public class RecordReadService {
     private final DatabaseService databaseService;
     private final SchemaMetadataRepository schemaMetadataRepository;
     private final PermissionService permissionService;
-    private final AuditLogService auditLogService;
     private final QueryBuilderService queryBuilderService;
-
-    @Value("${mm.app.data-access.large-dataset-threshold:100}")
-    private int largeDatasetThreshold;
+    private final AuditLogService auditLogService;
+    private final int largeDatasetThreshold;
 
     public RecordReadService(
             DatabaseService databaseService,
             SchemaMetadataRepository schemaMetadataRepository,
             PermissionService permissionService,
+            QueryBuilderService queryBuilderService,
             AuditLogService auditLogService,
-            QueryBuilderService queryBuilderService
+            @Value("${mm.app.data-access.large-dataset-threshold:100}") int largeDatasetThreshold
     ) {
         this.databaseService = databaseService;
         this.schemaMetadataRepository = schemaMetadataRepository;
         this.permissionService = permissionService;
-        this.auditLogService = auditLogService;
         this.queryBuilderService = queryBuilderService;
+        this.auditLogService = auditLogService;
+        this.largeDatasetThreshold = largeDatasetThreshold;
     }
 
     /**
@@ -178,15 +178,14 @@ public class RecordReadService {
             Long connectionId,
             TableMetadataEntity tableEntity
     ) {
+        // Pre-calculate table permissions to avoid repeated calls
+        Set<PermissionType> tablePermissions = permissionService.getTablePermissions(
+                connectionId, tableEntity.getSchema(), tableEntity.getTableName()
+        );
+
         return tableEntity.getColumns().stream()
-                .filter(columnEntity -> {
-                    Set<PermissionType> permissions = permissionService.getColumnPermissions(
-                            connectionId,
-                            tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()
-                    );
-                    return permissions.contains(PermissionType.READ);
-                })
                 .map(columnEntity -> {
+                    // Check if we need column-specific permissions or can use table permissions
                     Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
                             connectionId,
                             tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()
@@ -210,6 +209,7 @@ public class RecordReadService {
                             columnPermissions.contains(PermissionType.ADMIN)
                     );
                 })
+                .filter(AccessibleColumn::hasReadPermission)
                 .collect(Collectors.toList());
     }
 
