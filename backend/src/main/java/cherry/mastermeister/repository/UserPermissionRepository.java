@@ -76,4 +76,21 @@ public interface UserPermissionRepository extends JpaRepository<UserPermissionEn
                 p.connectionId = :connectionId
             """)
     int deleteByConnectionId(Long connectionId);
+
+    /**
+     * Check if user has any granted column-level permission for specific table
+     */
+    @Query("""
+            SELECT COUNT(p) > 0 FROM UserPermissionEntity p
+            WHERE p.user.id = :userId AND p.connectionId = :connectionId
+                AND p.scope = 'COLUMN' AND p.permissionType = :permissionType
+                AND p.schemaName = :schemaName AND p.tableName = :tableName
+                AND p.granted = true
+                AND p.grantedAt <= CURRENT_TIMESTAMP
+                AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)
+            """)
+    boolean hasGrantedColumnPermission(
+            Long userId, Long connectionId, PermissionType permissionType,
+            String schemaName, String tableName
+    );
 }
