@@ -16,7 +16,6 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.entity.SchemaMetadataEntity;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.entity.UserPermissionEntity;
 import cherry.mastermeister.enums.PermissionScope;
@@ -24,7 +23,7 @@ import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.enums.UserRole;
 import cherry.mastermeister.model.PermissionCheckResult;
 import cherry.mastermeister.model.UserPermission;
-import cherry.mastermeister.repository.SchemaMetadataRepository;
+import cherry.mastermeister.repository.TableMetadataRepository;
 import cherry.mastermeister.repository.UserPermissionRepository;
 import cherry.mastermeister.repository.UserRepository;
 import org.slf4j.Logger;
@@ -49,16 +48,16 @@ public class PermissionService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final UserPermissionRepository userPermissionRepository;
     private final UserRepository userRepository;
-    private final SchemaMetadataRepository schemaMetadataRepository;
+    private final TableMetadataRepository tableMetadataRepository;
 
     public PermissionService(
             UserPermissionRepository userPermissionRepository,
             UserRepository userRepository,
-            SchemaMetadataRepository schemaMetadataRepository
+            TableMetadataRepository tableMetadataRepository
     ) {
         this.userPermissionRepository = userPermissionRepository;
         this.userRepository = userRepository;
-        this.schemaMetadataRepository = schemaMetadataRepository;
+        this.tableMetadataRepository = tableMetadataRepository;
     }
 
     /**
@@ -283,7 +282,10 @@ public class PermissionService {
             return EnumSet.noneOf(PermissionType.class);
         }
 
-        return getTablePermissions(currentUserId, connectionId, schemaName, tableName);
+        return getTablePermissions(
+                currentUserId, connectionId,
+                schemaName, tableName
+        );
     }
 
     /**
@@ -393,8 +395,10 @@ public class PermissionService {
         if (currentUserId == null) {
             return EnumSet.noneOf(PermissionType.class);
         }
-
-        return getColumnPermissions(currentUserId, connectionId, schemaName, tableName, columnName);
+        return getColumnPermissions(
+                currentUserId, connectionId,
+                schemaName, tableName, columnName
+        );
     }
 
     /**
@@ -431,37 +435,70 @@ public class PermissionService {
      * Check if current user can delete entire table (all columns must have DELETE permission)
      */
     @Transactional(readOnly = true)
-    public boolean canDeleteTable(Long connectionId, String schemaName, String tableName) {
+    public boolean canDeleteTable(
+            Long connectionId,
+            String schemaName, String tableName
+    ) {
         Long currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             return false;
         }
-        return canDeleteTable(currentUserId, connectionId, schemaName, tableName);
+        return canDeleteTable(
+                currentUserId, connectionId,
+                schemaName, tableName
+        );
     }
 
     /**
      * Check if user can delete entire table (all columns must have DELETE permission)
      */
     @Transactional(readOnly = true)
-    public boolean canDeleteTable(Long userId, Long connectionId, String schemaName, String tableName) {
+    public boolean canDeleteTable(
+            Long userId, Long connectionId,
+            String schemaName, String tableName
+    ) {
         // Check if user is admin
         if (isUserAdmin(userId)) {
             return true;
         }
 
+        // Get direct table permissions as fallback for columns without explicit permissions
+        PermissionCheckResult directTableResult = checkDirectTablePermissions(
+                userId, connectionId,
+                PermissionType.DELETE,
+                schemaName, tableName
+        );
+
         // Get all table columns from metadata
-        List<String> allTableColumns = getAllTableColumnNames(connectionId, schemaName, tableName);
+        List<String> allTableColumns = tableMetadataRepository.findColumnNamesByTable(
+                connectionId,
+                schemaName, tableName
+        );
         if (allTableColumns.isEmpty()) {
             logger.warn("No columns found for table {}.{}", schemaName, tableName);
             return false;
         }
 
-        // Check if user has DELETE permission for ALL columns
+        // Check if ALL columns have DELETE permission
         for (String columnName : allTableColumns) {
-            Set<PermissionType> columnPermissions = getColumnPermissions(
-                    userId, connectionId, schemaName, tableName, columnName);
-            if (!columnPermissions.contains(PermissionType.DELETE)) {
-                return false;
+            // Check column-level permission first
+            Optional<UserPermissionEntity> columnPerm = userPermissionRepository
+                    .findByUserIdAndConnectionIdAndScopeAndPermissionTypeAndSchemaNameAndTableNameAndColumnName(
+                            userId, connectionId, PermissionScope.COLUMN,
+                            PermissionType.DELETE,
+                            schemaName, tableName, columnName
+                    );
+
+            if (columnPerm.isPresent()) {
+                // Explicit column-level setting exists, use it
+                if (!columnPerm.get().getGranted()) {
+                    return false;
+                }
+            } else {
+                // No column-level setting, use direct table permission
+                if (!directTableResult.granted()) {
+                    return false;
+                }
             }
         }
 
@@ -472,56 +509,69 @@ public class PermissionService {
      * Get list of columns that current user can write to
      */
     @Transactional(readOnly = true)
-    public List<String> getWritableColumns(Long connectionId, String schemaName, String tableName) {
+    public List<String> getWritableColumns(
+            Long connectionId,
+            String schemaName, String tableName
+    ) {
         Long currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             return List.of();
         }
-        return getWritableColumns(currentUserId, connectionId, schemaName, tableName);
+        return getWritableColumns(
+                currentUserId, connectionId,
+                schemaName, tableName
+        );
     }
 
     /**
      * Get list of columns that user can write to
      */
     @Transactional(readOnly = true)
-    public List<String> getWritableColumns(Long userId, Long connectionId, String schemaName, String tableName) {
+    public List<String> getWritableColumns(
+            Long userId, Long connectionId,
+            String schemaName, String tableName
+    ) {
         // Check if user is admin
         if (isUserAdmin(userId)) {
-            return getAllTableColumnNames(connectionId, schemaName, tableName);
+            return tableMetadataRepository.findColumnNamesByTable(
+                    connectionId,
+                    schemaName, tableName
+            );
         }
 
+        // Get direct table permissions as fallback for columns without explicit permissions
+        PermissionCheckResult directTableResult = checkDirectTablePermissions(
+                userId, connectionId,
+                PermissionType.WRITE,
+                schemaName, tableName
+        );
+
         // Get all table columns from metadata
-        List<String> allTableColumns = getAllTableColumnNames(connectionId, schemaName, tableName);
-        
+        List<String> allTableColumns = tableMetadataRepository.findColumnNamesByTable(
+                connectionId,
+                schemaName, tableName
+        );
+
         // Filter to only writable columns
         return allTableColumns.stream()
                 .filter(columnName -> {
-                    Set<PermissionType> columnPermissions = getColumnPermissions(
-                            userId, connectionId, schemaName, tableName, columnName);
-                    return columnPermissions.contains(PermissionType.WRITE);
+                    // Check column-level permission first
+                    Optional<UserPermissionEntity> columnPerm = userPermissionRepository
+                            .findByUserIdAndConnectionIdAndScopeAndPermissionTypeAndSchemaNameAndTableNameAndColumnName(
+                                    userId, connectionId, PermissionScope.COLUMN,
+                                    PermissionType.WRITE,
+                                    schemaName, tableName, columnName
+                            );
+
+                    if (columnPerm.isPresent()) {
+                        // Explicit column-level setting exists, use it
+                        return columnPerm.get().getGranted();
+                    } else {
+                        // No column-level setting, use direct table permission
+                        return directTableResult.granted();
+                    }
                 })
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Get all column names for a table from metadata
-     */
-    private List<String> getAllTableColumnNames(Long connectionId, String schemaName, String tableName) {
-        // Get table metadata from repository
-        SchemaMetadataEntity schemaEntity = schemaMetadataRepository.findByConnectionId(connectionId)
-                .orElse(null);
-        
-        if (schemaEntity == null) {
-            return List.of();
-        }
-
-        return schemaEntity.getTables().stream()
-                .filter(table -> schemaName.equals(table.getSchema()) && tableName.equals(table.getTableName()))
-                .findFirst()
-                .map(table -> table.getColumns().stream()
-                        .map(column -> column.getColumnName())
-                        .collect(Collectors.toList()))
-                .orElse(List.of());
     }
 
     /**
