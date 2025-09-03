@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -110,12 +111,22 @@ public class DataAccessService {
         // Convert columns if requested
         List<AccessibleColumn> accessibleColumns = null;
         if (includeColumns) {
+            // Get all column names for bulk permission check
+            List<String> allColumnNames = tableEntity.getColumns().stream()
+                    .map(columnEntity -> columnEntity.getColumnName())
+                    .collect(Collectors.toList());
+
+            // Get all column permissions in bulk (optimized)
+            Map<String, Set<PermissionType>> bulkColumnPermissions = permissionService.getBulkColumnPermissions(
+                    connectionId, tableEntity.getSchema(), tableEntity.getTableName(), allColumnNames
+            );
+
             accessibleColumns = tableEntity.getColumns().stream()
                     .map(columnEntity -> {
-                        Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
-                                connectionId,
-                                tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()
-                        );
+                        Set<PermissionType> columnPermissions = bulkColumnPermissions.get(columnEntity.getColumnName());
+                        if (columnPermissions == null) {
+                            columnPermissions = Set.of();
+                        }
 
                         return new AccessibleColumn(
                                 columnEntity.getColumnName(),

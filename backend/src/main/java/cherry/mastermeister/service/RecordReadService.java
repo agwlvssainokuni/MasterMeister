@@ -16,6 +16,7 @@
 
 package cherry.mastermeister.service;
 
+import cherry.mastermeister.entity.ColumnMetadataEntity;
 import cherry.mastermeister.entity.SchemaMetadataEntity;
 import cherry.mastermeister.entity.TableMetadataEntity;
 import cherry.mastermeister.enums.DatabaseType;
@@ -85,11 +86,7 @@ public class RecordReadService {
         long startTime = System.currentTimeMillis();
 
         // Check READ permission for the table
-        Set<PermissionType> tablePermissions = permissionService.getTablePermissions(
-                connectionId,
-                schemaName, tableName
-        );
-        if (!tablePermissions.contains(PermissionType.READ)) {
+        if (!permissionService.hasReadPermission(connectionId, schemaName, tableName)) {
             throw new IllegalArgumentException("READ permission required for table " + schemaName + "." + tableName);
         }
 
@@ -178,18 +175,23 @@ public class RecordReadService {
             Long connectionId,
             TableMetadataEntity tableEntity
     ) {
-        // Pre-calculate table permissions to avoid repeated calls
-        Set<PermissionType> tablePermissions = permissionService.getTablePermissions(
-                connectionId, tableEntity.getSchema(), tableEntity.getTableName()
+        // Get all column names for bulk permission check
+        List<String> allColumnNames = tableEntity.getColumns().stream()
+                .map(ColumnMetadataEntity::getColumnName)
+                .collect(Collectors.toList());
+
+        // Get all column permissions in bulk (optimized - single query)
+        Map<String, Set<PermissionType>> bulkColumnPermissions = permissionService.getBulkColumnPermissions(
+                connectionId, tableEntity.getSchema(), tableEntity.getTableName(), allColumnNames
         );
 
         return tableEntity.getColumns().stream()
+                .filter(columnEntity -> {
+                    Set<PermissionType> permissions = bulkColumnPermissions.get(columnEntity.getColumnName());
+                    return permissions != null && permissions.contains(PermissionType.READ);
+                })
                 .map(columnEntity -> {
-                    // Check if we need column-specific permissions or can use table permissions
-                    Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
-                            connectionId,
-                            tableEntity.getSchema(), tableEntity.getTableName(), columnEntity.getColumnName()
-                    );
+                    Set<PermissionType> columnPermissions = bulkColumnPermissions.get(columnEntity.getColumnName());
 
                     return new AccessibleColumn(
                             columnEntity.getColumnName(),
@@ -209,7 +211,6 @@ public class RecordReadService {
                             columnPermissions.contains(PermissionType.ADMIN)
                     );
                 })
-                .filter(AccessibleColumn::hasReadPermission)
                 .collect(Collectors.toList());
     }
 

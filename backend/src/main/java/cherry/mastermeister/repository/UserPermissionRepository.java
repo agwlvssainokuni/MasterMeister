@@ -95,35 +95,18 @@ public interface UserPermissionRepository extends JpaRepository<UserPermissionEn
     );
 
     /**
-     * Get all column names that have granted permission for specific table
-     */
-    @Query("""
-            SELECT p.columnName FROM UserPermissionEntity p
-            WHERE p.user.id = :userId AND p.connectionId = :connectionId
-                AND p.scope = 'COLUMN' AND p.permissionType = :permissionType
-                AND p.schemaName = :schemaName AND p.tableName = :tableName
-                AND p.granted = true
-                AND p.grantedAt <= CURRENT_TIMESTAMP
-                AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)
-            """)
-    List<String> findGrantedColumnNames(
-            Long userId, Long connectionId, PermissionType permissionType,
-            String schemaName, String tableName
-    );
-
-    /**
-     * Get all column-level permissions (both granted and denied) for specific table
+     * Get all column-level permissions for a specific table (all permission types)
      */
     @Query("""
             SELECT p FROM UserPermissionEntity p
             WHERE p.user.id = :userId AND p.connectionId = :connectionId
-                AND p.scope = 'COLUMN' AND p.permissionType = :permissionType
+                AND p.scope = 'COLUMN'
                 AND p.schemaName = :schemaName AND p.tableName = :tableName
                 AND p.grantedAt <= CURRENT_TIMESTAMP
                 AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)
             """)
-    List<UserPermissionEntity> findAllColumnPermissions(
-            Long userId, Long connectionId, PermissionType permissionType,
+    List<UserPermissionEntity> findAllColumnPermissionsForTable(
+            Long userId, Long connectionId,
             String schemaName, String tableName
     );
 }

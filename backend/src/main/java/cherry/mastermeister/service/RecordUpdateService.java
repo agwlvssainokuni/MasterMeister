@@ -18,7 +18,6 @@ package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
-import java.util.Set;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordUpdateResult;
@@ -36,6 +35,7 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,7 +122,7 @@ public class RecordUpdateService {
             // Log detailed record update success
             auditLogService.logDataModificationDetailed(connectionId, schemaName, tableName,
                     "UPDATE", rowsAffected, executionTime, updateQuery.query(),
-                    String.format("Updated %d records, SET %d fields, WHERE %d conditions", 
+                    String.format("Updated %d records, SET %d fields, WHERE %d conditions",
                             rowsAffected, updateData.size(), whereConditions.size()));
 
             logger.info("Successfully updated {} records in {}.{} in {}ms",
@@ -132,33 +132,33 @@ public class RecordUpdateService {
 
         } catch (DataAccessException e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log detailed database failure (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
-                    "UPDATE", e.getMessage(), executionTime, 
-                    String.format("UPDATE failed: SET %d fields, WHERE %d conditions", 
+                    "UPDATE", e.getMessage(), executionTime,
+                    String.format("UPDATE failed: SET %d fields, WHERE %d conditions",
                             updateData.size(), whereConditions.size()));
-            
+
             logger.error("Failed to update records in table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw new RuntimeException("Failed to update records", e);
         } catch (IllegalArgumentException e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log validation failure (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
-                    "UPDATE", "Validation failed: " + e.getMessage(), executionTime, 
+                    "UPDATE", "Validation failed: " + e.getMessage(), executionTime,
                     "Data validation, permission check, or WHERE clause validation failed");
-            
+
             logger.error("Validation error updating records in table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw e;
         } catch (Exception e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            
+
             // Log unexpected failure (REQUIRES_NEW ensures this is recorded)
             auditLogService.logDataModificationFailure(connectionId, schemaName, tableName,
-                    "UPDATE", "Unexpected error: " + e.getMessage(), executionTime, 
+                    "UPDATE", "Unexpected error: " + e.getMessage(), executionTime,
                     "Internal server error during record update");
-            
+
             logger.error("Unexpected error updating records in table {}.{}: {}", schemaName, tableName, e.getMessage());
             throw new RuntimeException("Failed to update records due to internal error", e);
         }
@@ -185,11 +185,20 @@ public class RecordUpdateService {
     private List<ColumnMetadata> getReadableColumns(
             Long connectionId, TableMetadata tableMetadata
     ) {
+        // Get all column names for bulk permission check
+        List<String> allColumnNames = tableMetadata.columns().stream()
+                .map(ColumnMetadata::columnName)
+                .collect(Collectors.toList());
+
+        // Get all column permissions in bulk (optimized)
+        Map<String, Set<PermissionType>> bulkColumnPermissions = permissionService.getBulkColumnPermissions(
+                connectionId, tableMetadata.schema(), tableMetadata.tableName(), allColumnNames
+        );
+
         return tableMetadata.columns().stream()
                 .filter(column -> {
-                    Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
-                            connectionId, tableMetadata.schema(), tableMetadata.tableName(), column.columnName());
-                    return columnPermissions.contains(PermissionType.READ);
+                    Set<PermissionType> permissions = bulkColumnPermissions.get(column.columnName());
+                    return permissions != null && permissions.contains(PermissionType.READ);
                 })
                 .collect(Collectors.toList());
     }
