@@ -18,11 +18,11 @@ package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
+import java.util.Set;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordUpdateResult;
 import cherry.mastermeister.model.TableMetadata;
-import cherry.mastermeister.util.PermissionUtils;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,18 +45,18 @@ public class RecordUpdateService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
     private final SchemaMetadataService schemaMetadataService;
-    private final PermissionUtils permissionUtils;
+    private final PermissionService permissionService;
     private final AuditLogService auditLogService;
 
     public RecordUpdateService(
             DatabaseService databaseService,
             SchemaMetadataService schemaMetadataService,
-            PermissionUtils permissionUtils,
+            PermissionService permissionService,
             AuditLogService auditLogService
     ) {
         this.databaseService = databaseService;
         this.schemaMetadataService = schemaMetadataService;
-        this.permissionUtils = permissionUtils;
+        this.permissionService = permissionService;
         this.auditLogService = auditLogService;
     }
 
@@ -71,26 +71,23 @@ public class RecordUpdateService {
 
         long startTime = System.currentTimeMillis();
 
-        // Check WRITE permission for the table
-        permissionUtils.requireTablePermission(connectionId, PermissionType.WRITE, schemaName, tableName);
+        // Get columns that user can write to
+        List<String> writableColumnNames = permissionService.getWritableColumns(connectionId, schemaName, tableName);
+        if (writableColumnNames.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No writable columns found for table " + schemaName + "." + tableName);
+        }
 
         try {
             // Get table metadata
             TableMetadata tableMetadata = schemaMetadataService.getTableMetadata(
                     connectionId, schemaName, tableName);
 
-            // Get writable columns with permissions
-            List<ColumnMetadata> writableColumns = getWritableColumns(connectionId, tableMetadata);
+            // Filter update data to only include writable columns
+            Map<String, Object> validatedUpdateData = filterWritableUpdateData(updateData, writableColumnNames, tableMetadata);
 
-            // Get readable columns for WHERE conditions (need READ permission for WHERE)
+            // Get readable columns for WHERE conditions validation
             List<ColumnMetadata> readableColumns = getReadableColumns(connectionId, tableMetadata);
-
-            if (writableColumns.isEmpty()) {
-                throw new IllegalArgumentException("No writable columns found for table " + schemaName + "." + tableName);
-            }
-
-            // Validate update data and WHERE conditions
-            Map<String, Object> validatedUpdateData = validateUpdateData(updateData, writableColumns);
             Map<String, Object> validatedWhereConditions = validateWhereConditions(whereConditions, readableColumns);
 
             if (validatedUpdateData.isEmpty()) {
@@ -174,9 +171,11 @@ public class RecordUpdateService {
             Long connectionId, TableMetadata tableMetadata
     ) {
         return tableMetadata.columns().stream()
-                .filter(column -> permissionUtils.hasColumnPermission(
-                        connectionId, PermissionType.WRITE,
-                        tableMetadata.schema(), tableMetadata.tableName(), column.columnName()))
+                .filter(column -> {
+                    Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
+                            connectionId, tableMetadata.schema(), tableMetadata.tableName(), column.columnName());
+                    return columnPermissions.contains(PermissionType.WRITE);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -187,17 +186,19 @@ public class RecordUpdateService {
             Long connectionId, TableMetadata tableMetadata
     ) {
         return tableMetadata.columns().stream()
-                .filter(column -> permissionUtils.hasColumnPermission(
-                        connectionId, PermissionType.READ,
-                        tableMetadata.schema(), tableMetadata.tableName(), column.columnName()))
+                .filter(column -> {
+                    Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
+                            connectionId, tableMetadata.schema(), tableMetadata.tableName(), column.columnName());
+                    return columnPermissions.contains(PermissionType.READ);
+                })
                 .collect(Collectors.toList());
     }
 
     /**
-     * Validate and filter update data based on column permissions
+     * Filter update data to only include writable columns
      */
-    private Map<String, Object> validateUpdateData(
-            Map<String, Object> updateData, List<ColumnMetadata> writableColumns
+    private Map<String, Object> filterWritableUpdateData(
+            Map<String, Object> updateData, List<String> writableColumnNames, TableMetadata tableMetadata
     ) {
         Map<String, Object> validatedData = new HashMap<>();
 
@@ -206,15 +207,16 @@ public class RecordUpdateService {
             Object value = entry.getValue();
 
             // Check if column is writable
-            ColumnMetadata column = writableColumns.stream()
-                    .filter(col -> col.columnName().equals(columnName))
-                    .findFirst()
-                    .orElse(null);
-
-            if (column == null) {
+            if (!writableColumnNames.contains(columnName)) {
                 logger.warn("Column '{}' is not writable, skipping update", columnName);
                 continue;
             }
+
+            // Find column metadata
+            ColumnMetadata column = tableMetadata.columns().stream()
+                    .filter(col -> col.columnName().equals(columnName))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Column not found: " + columnName));
 
             // Skip auto-increment columns - they should not be updated manually
             if (column.autoIncrement()) {

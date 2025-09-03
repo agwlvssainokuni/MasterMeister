@@ -18,11 +18,11 @@ package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
+import java.util.Set;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordDeleteResult;
 import cherry.mastermeister.model.TableMetadata;
-import cherry.mastermeister.util.PermissionUtils;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,18 +50,18 @@ public class RecordDeleteService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
     private final SchemaMetadataService schemaMetadataService;
-    private final PermissionUtils permissionUtils;
+    private final PermissionService permissionService;
     private final AuditLogService auditLogService;
 
     public RecordDeleteService(
             DatabaseService databaseService,
             SchemaMetadataService schemaMetadataService,
-            PermissionUtils permissionUtils,
+            PermissionService permissionService,
             AuditLogService auditLogService
     ) {
         this.databaseService = databaseService;
         this.schemaMetadataService = schemaMetadataService;
-        this.permissionUtils = permissionUtils;
+        this.permissionService = permissionService;
         this.auditLogService = auditLogService;
     }
 
@@ -77,8 +77,11 @@ public class RecordDeleteService {
         long startTime = System.currentTimeMillis();
         List<String> warnings = new ArrayList<>();
 
-        // Check DELETE permission for the table
-        permissionUtils.requireTablePermission(connectionId, PermissionType.DELETE, schemaName, tableName);
+        // Check DELETE permission for ALL columns in the table
+        if (!permissionService.canDeleteTable(connectionId, schemaName, tableName)) {
+            throw new IllegalArgumentException(
+                    "DELETE permission required for ALL columns in table " + schemaName + "." + tableName);
+        }
 
         try {
             // Get table metadata
@@ -194,9 +197,11 @@ public class RecordDeleteService {
             Long connectionId, TableMetadata tableMetadata
     ) {
         return tableMetadata.columns().stream()
-                .filter(column -> permissionUtils.hasColumnPermission(
-                        connectionId, PermissionType.READ,
-                        tableMetadata.schema(), tableMetadata.tableName(), column.columnName()))
+                .filter(column -> {
+                    Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
+                            connectionId, tableMetadata.schema(), tableMetadata.tableName(), column.columnName());
+                    return columnPermissions.contains(PermissionType.READ);
+                })
                 .collect(Collectors.toList());
     }
 

@@ -22,7 +22,6 @@ import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordCreationResult;
 import cherry.mastermeister.model.TableMetadata;
-import cherry.mastermeister.util.PermissionUtils;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,18 +46,18 @@ public class RecordCreateService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatabaseService databaseService;
     private final SchemaMetadataService schemaMetadataService;
-    private final PermissionUtils permissionUtils;
+    private final PermissionService permissionService;
     private final AuditLogService auditLogService;
 
     public RecordCreateService(
             DatabaseService databaseService,
             SchemaMetadataService schemaMetadataService,
-            PermissionUtils permissionUtils,
+            PermissionService permissionService,
             AuditLogService auditLogService
     ) {
         this.databaseService = databaseService;
         this.schemaMetadataService = schemaMetadataService;
-        this.permissionUtils = permissionUtils;
+        this.permissionService = permissionService;
         this.auditLogService = auditLogService;
     }
 
@@ -72,23 +71,20 @@ public class RecordCreateService {
 
         long startTime = System.currentTimeMillis();
 
-        // Check WRITE permission for the table
-        permissionUtils.requireTablePermission(connectionId, PermissionType.WRITE, schemaName, tableName);
+        // Get columns that user can write to
+        List<String> writableColumnNames = permissionService.getWritableColumns(connectionId, schemaName, tableName);
+        if (writableColumnNames.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No writable columns found for table " + schemaName + "." + tableName);
+        }
 
         try {
             // Get table metadata
             TableMetadata tableMetadata = schemaMetadataService.getTableMetadata(
                     connectionId, schemaName, tableName);
 
-            // Get writable columns with permissions
-            List<ColumnMetadata> writableColumns = getWritableColumns(connectionId, tableMetadata);
-
-            if (writableColumns.isEmpty()) {
-                throw new IllegalArgumentException("No writable columns found for table " + schemaName + "." + tableName);
-            }
-
-            // Validate and filter input data
-            Map<String, Object> validatedData = validateAndFilterData(recordData, writableColumns);
+            // Filter record data to only include writable columns
+            Map<String, Object> validatedData = filterWritableData(recordData, writableColumnNames, tableMetadata);
 
             // Build and execute INSERT query
             DataSource dataSource = databaseService.getDataSource(connectionId);
@@ -114,9 +110,12 @@ public class RecordCreateService {
                 throw new RuntimeException("Expected 1 row to be inserted, but " + rowsAffected + " rows were affected");
             }
 
+            // Get writable columns metadata for response
+            List<ColumnMetadata> writableColumnsMetadata = getWritableColumnsMetadata(writableColumnNames, tableMetadata);
+            
             // Get the created record with generated keys
-            Map<String, Object> createdRecord = getCreatedRecordData(validatedData, keyHolder, writableColumns);
-            Map<String, String> columnTypes = writableColumns.stream()
+            Map<String, Object> createdRecord = getCreatedRecordData(validatedData, keyHolder, writableColumnsMetadata);
+            Map<String, String> columnTypes = writableColumnsMetadata.stream()
                     .collect(Collectors.toMap(ColumnMetadata::columnName, ColumnMetadata::dataType));
 
             long executionTime = System.currentTimeMillis() - startTime;
@@ -167,28 +166,19 @@ public class RecordCreateService {
     }
 
     /**
-     * Get writable columns based on user permissions
+     * Filter input data to only include writable columns
      */
-    private List<ColumnMetadata> getWritableColumns(
-            Long connectionId, TableMetadata tableMetadata
-    ) {
-        return tableMetadata.columns().stream()
-                .filter(column -> permissionUtils.hasColumnPermission(
-                        connectionId, PermissionType.WRITE,
-                        tableMetadata.schema(), tableMetadata.tableName(), column.columnName()))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Validate and filter input data based on column permissions and metadata
-     */
-    private Map<String, Object> validateAndFilterData(
-            Map<String, Object> inputData, List<ColumnMetadata> writableColumns
+    private Map<String, Object> filterWritableData(
+            Map<String, Object> inputData, List<String> writableColumnNames, TableMetadata tableMetadata
     ) {
         Map<String, Object> validatedData = new HashMap<>();
 
-        for (ColumnMetadata column : writableColumns) {
-            String columnName = column.columnName();
+        for (String columnName : writableColumnNames) {
+            // Find column metadata
+            ColumnMetadata column = tableMetadata.columns().stream()
+                    .filter(col -> col.columnName().equals(columnName))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Column not found: " + columnName));
 
             // Skip auto-increment columns - they will be generated by database
             if (column.autoIncrement()) {
@@ -213,6 +203,20 @@ public class RecordCreateService {
         }
 
         return validatedData;
+    }
+
+    /**
+     * Get writable columns metadata for response
+     */
+    private List<ColumnMetadata> getWritableColumnsMetadata(
+            List<String> writableColumnNames, TableMetadata tableMetadata
+    ) {
+        return writableColumnNames.stream()
+                .map(columnName -> tableMetadata.columns().stream()
+                        .filter(col -> col.columnName().equals(columnName))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Column not found: " + columnName)))
+                .collect(Collectors.toList());
     }
 
     /**
