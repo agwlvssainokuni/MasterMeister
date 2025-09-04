@@ -131,6 +131,11 @@ public class PermissionService {
             Long userId, Long connectionId,
             String schemaName, String tableName
     ) {
+        // Check if user is admin
+        if (isUserAdmin(userId)) {
+            return true;
+        }
+
         return hasTablePermission(
                 userId, connectionId,
                 PermissionType.READ,
@@ -146,6 +151,11 @@ public class PermissionService {
             Long userId, Long connectionId,
             String schemaName, String tableName
     ) {
+        // Check if user is admin
+        if (isUserAdmin(userId)) {
+            return true;
+        }
+
         return hasTablePermission(
                 userId, connectionId,
                 PermissionType.DELETE,
