@@ -17,6 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
+import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordDeleteResult;
 import cherry.mastermeister.model.TableMetadata;
@@ -76,8 +77,8 @@ public class RecordDeleteService {
 
         // Check DELETE permission for ALL columns in the table
         if (!permissionService.hasDeletePermission(connectionId, schemaName, tableName)) {
-            throw new IllegalArgumentException(
-                    "DELETE permission required for ALL columns in table " + schemaName + "." + tableName);
+            throw new PermissionDeniedException(
+                    "DELETE permission required for ALL columns in table " + schemaName + "." + tableName, null);
         }
 
         try {

@@ -17,6 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
+import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordCreateResult;
@@ -73,8 +74,8 @@ public class RecordCreateService {
         // Get columns that user can write to
         List<String> writableColumnNames = permissionService.getWritableColumns(connectionId, schemaName, tableName);
         if (writableColumnNames.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "No writable columns found for table " + schemaName + "." + tableName);
+            throw new PermissionDeniedException(
+                    "No writable columns found for table " + schemaName + "." + tableName, null);
         }
 
         try {

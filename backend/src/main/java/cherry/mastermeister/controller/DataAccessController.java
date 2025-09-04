@@ -16,13 +16,11 @@
 
 package cherry.mastermeister.controller;
 
-import cherry.mastermeister.annotation.RequirePermission;
 import cherry.mastermeister.controller.dto.*;
 import cherry.mastermeister.controller.dto.RecordCreateResult;
 import cherry.mastermeister.controller.dto.RecordDeleteResult;
 import cherry.mastermeister.controller.dto.RecordQueryResult;
 import cherry.mastermeister.controller.dto.RecordUpdateResult;
-import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.*;
 import cherry.mastermeister.service.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -139,10 +137,6 @@ public class DataAccessController {
             summary = "Get table records",
             description = "Get records from table with column-level permission filtering"
     )
-    @RequirePermission(
-            value = PermissionType.READ, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName"
-    )
     public ApiResponse<RecordQueryResult> getTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
@@ -169,10 +163,6 @@ public class DataAccessController {
     @Operation(
             summary = "Filter table records",
             description = "Get filtered records from table with column-level permission filtering"
-    )
-    @RequirePermission(
-            value = PermissionType.READ, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName"
     )
     public ApiResponse<RecordQueryResult> filterTableRecords(
             @PathVariable Long connectionId,
@@ -205,10 +195,6 @@ public class DataAccessController {
             summary = "Create table record",
             description = "Create a new record in table with column-level permission validation"
     )
-    @RequirePermission(
-            value = PermissionType.WRITE, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName"
-    )
     public ResponseEntity<ApiResponse<RecordCreateResult>> createTableRecord(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
@@ -232,10 +218,6 @@ public class DataAccessController {
     @Operation(
             summary = "Update table records",
             description = "Update records in table with column-level permission validation and transaction management"
-    )
-    @RequirePermission(
-            value = PermissionType.WRITE, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName"
     )
     public ApiResponse<RecordUpdateResult> updateTableRecords(
             @PathVariable Long connectionId,
@@ -261,10 +243,6 @@ public class DataAccessController {
     @Operation(
             summary = "Delete table records",
             description = "Delete records from table with referential integrity checks and column-level permission validation"
-    )
-    @RequirePermission(
-            value = PermissionType.DELETE, connectionIdParam = "connectionId",
-            schemaNameParam = "schemaName", tableNameParam = "tableName"
     )
     public ApiResponse<RecordDeleteResult> deleteTableRecords(
             @PathVariable Long connectionId,

@@ -21,7 +21,6 @@ import cherry.mastermeister.entity.UserPermissionEntity;
 import cherry.mastermeister.enums.PermissionScope;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.enums.UserRole;
-import cherry.mastermeister.model.PermissionCheckResult;
 import cherry.mastermeister.model.UserPermission;
 import cherry.mastermeister.repository.TableMetadataRepository;
 import cherry.mastermeister.repository.UserPermissionRepository;
@@ -94,75 +93,6 @@ public class PermissionService {
 
         logger.info("Permission {} successfully with ID: {}", granted ? "granted" : "denied", saved.getId());
         return toModel(saved);
-    }
-
-    // ========================================
-    // Permission Checking (Core)
-    // ========================================
-
-    /**
-     * Check permission with current authenticated user
-     */
-    @Transactional(readOnly = true)
-    public PermissionCheckResult checkPermission(
-            Long connectionId,
-            PermissionType permissionType,
-            String schemaName, String tableName, String columnName
-    ) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
-            return PermissionCheckResult.denied("No authenticated user");
-        }
-
-        String userEmail = auth.getName();
-        Long userId = userRepository.findByEmail(userEmail)
-                .map(UserEntity::getId)
-                .orElse(null);
-
-        if (userId == null) {
-            return PermissionCheckResult.denied("User not found");
-        }
-
-        return checkPermission(
-                userId, connectionId,
-                permissionType,
-                schemaName, tableName, columnName
-        );
-    }
-
-    /**
-     * Check if user has permission for the requested operation
-     */
-    @Transactional(readOnly = true)
-    public PermissionCheckResult checkPermission(
-            Long userId, Long connectionId,
-            PermissionType permissionType,
-            String schemaName, String tableName, String columnName
-    ) {
-        logger.debug("Checking permission for user: {}, connection: {}, type: {}, schema: {}, table: {}, column: {}",
-                userId, connectionId, permissionType,
-                schemaName, tableName, columnName);
-
-        // Admin users have full access
-        if (isUserAdmin(userId)) {
-            logger.debug("Administrator access granted for user: {}", userId);
-            return PermissionCheckResult.adminAccess();
-        }
-
-        // Check hierarchical permissions from most specific to most general
-        PermissionCheckResult result = checkHierarchicalPermissions(
-                userId, connectionId,
-                permissionType,
-                schemaName, tableName, columnName
-        );
-
-        if (result.granted()) {
-            logger.debug("Permission granted for user: {}, reason: {}", userId, result.reason());
-        } else {
-            logger.debug("Permission denied for user: {}, reason: {}", userId, result.reason());
-        }
-
-        return result;
     }
 
     // ========================================
@@ -324,7 +254,7 @@ public class PermissionService {
         }
 
         // Get upper-level permissions once for all columns
-        Map<PermissionType, PermissionCheckResult> upperLevelPermissions = getAllUpperLevelPermissions(
+        Map<PermissionType, Boolean> upperLevelPermissions = getUpperLevelPermissions(
                 userId, connectionId, schemaName, tableName);
 
         // Get all column-level permissions for this table in one query
@@ -492,85 +422,6 @@ public class PermissionService {
     // ========================================
 
     /**
-     * Check hierarchical permissions from specific to general
-     */
-    private PermissionCheckResult checkHierarchicalPermissions(
-            Long userId, Long connectionId,
-            PermissionType permissionType,
-            String schemaName, String tableName, String columnName
-    ) {
-
-        // 1. Check column-level permission (most specific)
-        if (columnName != null) {
-            var columnPerm = userPermissionRepository.findActivePermission(
-                    userId, connectionId, PermissionScope.COLUMN,
-                    permissionType,
-                    schemaName, tableName, columnName
-            );
-
-            if (columnPerm.isPresent()) {
-                return columnPerm.map(perm -> new PermissionCheckResult(
-                        perm.getGranted(),
-                        PermissionScope.COLUMN, permissionType,
-                        "Column-level permission", toModel(perm)
-                )).get();
-            }
-        }
-
-        // 2. Check table-level permission
-        if (tableName != null) {
-            var tablePerm = userPermissionRepository.findActivePermission(
-                    userId, connectionId, PermissionScope.TABLE,
-                    permissionType,
-                    schemaName, tableName, null
-            );
-
-            if (tablePerm.isPresent()) {
-                return tablePerm.map(perm -> new PermissionCheckResult(
-                        perm.getGranted(),
-                        PermissionScope.TABLE, permissionType,
-                        "Table-level permission", toModel(perm)
-                )).get();
-            }
-        }
-
-        // 3. Check schema-level permission
-        if (schemaName != null) {
-            var schemaPerm = userPermissionRepository.findActivePermission(
-                    userId, connectionId, PermissionScope.SCHEMA,
-                    permissionType,
-                    schemaName, null, null
-            );
-
-            if (schemaPerm.isPresent()) {
-                return schemaPerm.map(perm -> new PermissionCheckResult(
-                        perm.getGranted(),
-                        PermissionScope.SCHEMA, permissionType,
-                        "Schema-level permission", toModel(perm)
-                )).get();
-            }
-        }
-
-        // 4. Check connection-level permission (most general)
-        var connectionPerm = userPermissionRepository.findActivePermission(
-                userId, connectionId, PermissionScope.CONNECTION,
-                permissionType,
-                null, null, null
-        );
-
-        if (connectionPerm.isPresent()) {
-            return connectionPerm.map(perm -> new PermissionCheckResult(
-                    perm.getGranted(),
-                    PermissionScope.CONNECTION, permissionType,
-                    "Connection-level permission", toModel(perm)
-            )).get();
-        }
-
-        // No permission found
-        return PermissionCheckResult.denied("No matching permission found");
-    }
-
-    /**
      * Check if user has specific permission for a table (considering column-level permissions)
      */
     private boolean hasTablePermission(
@@ -579,7 +430,7 @@ public class PermissionService {
             String schemaName, String tableName
     ) {
         // Get direct table permissions as fallback for columns without explicit permissions
-        PermissionCheckResult directTableResult = checkDirectTablePermissions(
+        boolean directTablePermission = checkDirectTablePermissions(
                 userId, connectionId,
                 permissionType,
                 schemaName, tableName
@@ -611,7 +462,7 @@ public class PermissionService {
                 }
             } else {
                 // No column-level setting, use direct table permission
-                if (!directTableResult.granted()) {
+                if (!directTablePermission) {
                     return false;
                 }
             }
@@ -623,7 +474,7 @@ public class PermissionService {
     /**
      * Check TABLE/SCHEMA/CONNECTION level permissions (excluding COLUMN scope)
      */
-    private PermissionCheckResult checkDirectTablePermissions(
+    private boolean checkDirectTablePermissions(
             Long userId, Long connectionId,
             PermissionType permissionType,
             String schemaName, String tableName
@@ -635,10 +486,7 @@ public class PermissionService {
         ).filter(UserPermissionEntity::getGranted);
 
         if (tablePerm.isPresent()) {
-            return new PermissionCheckResult(
-                    true, PermissionScope.TABLE, permissionType,
-                    "Table-level permission", toModel(tablePerm.get())
-            );
+            return true;
         }
 
         // 2. Check schema-level permission
@@ -648,10 +496,7 @@ public class PermissionService {
         ).filter(UserPermissionEntity::getGranted);
 
         if (schemaPerm.isPresent()) {
-            return new PermissionCheckResult(
-                    true, PermissionScope.SCHEMA, permissionType,
-                    "Schema-level permission", toModel(schemaPerm.get())
-            );
+            return true;
         }
 
         // 3. Check connection-level permission  
@@ -660,23 +505,16 @@ public class PermissionService {
                 permissionType, null, null, null
         ).filter(UserPermissionEntity::getGranted);
 
-        if (connectionPerm.isPresent()) {
-            return new PermissionCheckResult(
-                    true, PermissionScope.CONNECTION, permissionType,
-                    "Connection-level permission", toModel(connectionPerm.get())
-            );
-        }
-
-        return PermissionCheckResult.denied("No direct table permission found");
+        return connectionPerm.isPresent();
     }
 
     /**
      * Get all upper-level permissions (TABLE/SCHEMA/CONNECTION) for all permission types
      */
-    private Map<PermissionType, PermissionCheckResult> getAllUpperLevelPermissions(
+    private Map<PermissionType, Boolean> getUpperLevelPermissions(
             Long userId, Long connectionId, String schemaName, String tableName
     ) {
-        Map<PermissionType, PermissionCheckResult> results = new HashMap<>();
+        Map<PermissionType, Boolean> results = new HashMap<>();
 
         for (PermissionType permissionType : PermissionType.values()) {
             results.put(permissionType, checkDirectTablePermissions(
@@ -691,7 +529,7 @@ public class PermissionService {
      */
     private Set<PermissionType> calculatePermissionsForColumn(
             Map<PermissionType, Boolean> columnLevelPermissions,
-            Map<PermissionType, PermissionCheckResult> upperLevelPermissions
+            Map<PermissionType, Boolean> upperLevelPermissions
     ) {
         Set<PermissionType> permissions = EnumSet.noneOf(PermissionType.class);
 
@@ -703,8 +541,7 @@ public class PermissionService {
                 hasPermission = columnLevelPermissions.get(permissionType);
             } else {
                 // No column-level setting, use upper-level permission
-                PermissionCheckResult upperResult = upperLevelPermissions.get(permissionType);
-                hasPermission = upperResult != null && upperResult.granted();
+                hasPermission = upperLevelPermissions.getOrDefault(permissionType, false);
             }
 
             if (hasPermission) {

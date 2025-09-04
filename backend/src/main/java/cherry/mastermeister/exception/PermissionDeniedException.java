@@ -16,67 +16,9 @@
 
 package cherry.mastermeister.exception;
 
-import cherry.mastermeister.enums.PermissionType;
-import cherry.mastermeister.model.PermissionCheckResult;
-
 public class PermissionDeniedException extends RuntimeException {
 
-    private final PermissionType requiredPermission;
-    private final Long connectionId;
-    private final String schemaName;
-    private final String tableName;
-    private final String columnName;
-    private final PermissionCheckResult checkResult;
-
-    public PermissionDeniedException(
-            String message,
-            PermissionType requiredPermission,
-            Long connectionId, String schemaName, String tableName,
-            String columnName, PermissionCheckResult checkResult
-    ) {
-        super(message);
-        this.requiredPermission = requiredPermission;
-        this.connectionId = connectionId;
-        this.schemaName = schemaName;
-        this.tableName = tableName;
-        this.columnName = columnName;
-        this.checkResult = checkResult;
-    }
-
-    public PermissionDeniedException(
-            String message,
-            PermissionCheckResult checkResult
-    ) {
-        super(message + (checkResult != null ? ": " + checkResult.reason() : ""));
-        this.requiredPermission = null;
-        this.connectionId = null;
-        this.schemaName = null;
-        this.tableName = null;
-        this.columnName = null;
-        this.checkResult = checkResult;
-    }
-
-    public PermissionType getRequiredPermission() {
-        return requiredPermission;
-    }
-
-    public Long getConnectionId() {
-        return connectionId;
-    }
-
-    public String getSchemaName() {
-        return schemaName;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public String getColumnName() {
-        return columnName;
-    }
-
-    public PermissionCheckResult getCheckResult() {
-        return checkResult;
+    public PermissionDeniedException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

@@ -22,6 +22,7 @@ import cherry.mastermeister.entity.TableMetadataEntity;
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.exception.DatabaseNotFoundException;
+import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.exception.TableNotFoundException;
 import cherry.mastermeister.model.*;
 import cherry.mastermeister.repository.SchemaMetadataRepository;
@@ -87,7 +88,7 @@ public class RecordReadService {
 
         // Check READ permission for the table
         if (!permissionService.hasReadPermission(connectionId, schemaName, tableName)) {
-            throw new IllegalArgumentException("READ permission required for table " + schemaName + "." + tableName);
+            throw new PermissionDeniedException("READ permission required for table " + schemaName + "." + tableName, null);
         }
 
         try {
