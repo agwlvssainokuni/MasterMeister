@@ -115,7 +115,19 @@ public class PermissionService {
 
         // Check each permission type
         for (PermissionType permissionType : PermissionType.values()) {
-            if (hasTablePermission(userId, connectionId, permissionType, schemaName, tableName)) {
+            boolean atLeastOne = switch (permissionType) {
+                case READ, WRITE -> true;   // at least one column must have permission (partial access)
+                case DELETE, ADMIN -> false; // all columns must have permission (complete access)
+            };
+
+            boolean hasPermission = checkColumnPermissions(
+                    userId, connectionId,
+                    permissionType,
+                    schemaName, tableName,
+                    atLeastOne
+            );
+
+            if (hasPermission) {
                 permissions.add(permissionType);
             }
         }
@@ -136,10 +148,11 @@ public class PermissionService {
             return true;
         }
 
-        return hasTablePermission(
+        return checkColumnPermissions(
                 userId, connectionId,
                 PermissionType.READ,
-                schemaName, tableName
+                schemaName, tableName,
+                true  // at least one column must have READ permission
         );
     }
 
@@ -156,10 +169,11 @@ public class PermissionService {
             return true;
         }
 
-        return hasTablePermission(
+        return checkColumnPermissions(
                 userId, connectionId,
                 PermissionType.DELETE,
-                schemaName, tableName
+                schemaName, tableName,
+                false  // all columns must have DELETE permission
         );
     }
 
@@ -297,12 +311,21 @@ public class PermissionService {
     // ========================================
 
     /**
-     * Check if user has specific permission for a table (considering column-level permissions)
+     * Common method to check column permissions with different strategies
+     *
+     * @param userId         User ID to check permissions for
+     * @param connectionId   Database connection ID
+     * @param permissionType Type of permission to check (READ, WRITE, DELETE, etc.)
+     * @param schemaName     Database schema name
+     * @param tableName      Database table name
+     * @param atLeastOne     true: AT LEAST ONE column must have permission, false: ALL columns must have permission
+     * @return true if permission check passes according to the specified strategy
      */
-    private boolean hasTablePermission(
+    private boolean checkColumnPermissions(
             Long userId, Long connectionId,
             PermissionType permissionType,
-            String schemaName, String tableName
+            String schemaName, String tableName,
+            boolean atLeastOne
     ) {
         // Get direct table permissions as fallback for columns without explicit permissions
         boolean directTablePermission = checkDirectTablePermissions(
@@ -321,7 +344,8 @@ public class PermissionService {
             return false;
         }
 
-        // Check if ALL columns have specified permission
+        boolean foundPermittedColumn = false;
+
         for (String columnName : allTableColumns) {
             // Check column-level permission first
             Optional<UserPermissionEntity> columnPerm = userPermissionRepository.findActivePermission(
@@ -330,20 +354,32 @@ public class PermissionService {
                     schemaName, tableName, columnName
             );
 
+            boolean hasColumnPermission;
             if (columnPerm.isPresent()) {
                 // Explicit column-level setting exists, use it
-                if (!columnPerm.get().getGranted()) {
-                    return false;
-                }
+                hasColumnPermission = columnPerm.get().getGranted();
             } else {
                 // No column-level setting, use direct table permission
-                if (!directTablePermission) {
+                hasColumnPermission = directTablePermission;
+            }
+
+            if (atLeastOne) {
+                // For READ: if we find at least one permitted column, return true
+                if (hasColumnPermission) {
+                    return true;
+                }
+            } else {
+                // For DELETE: if we find any column without permission, return false
+                if (!hasColumnPermission) {
                     return false;
                 }
+                foundPermittedColumn = true;
             }
         }
 
-        return true;
+        // For atLeastOne strategy: no permitted column found
+        // For requireAll strategy: all columns have permission
+        return atLeastOne ? false : foundPermittedColumn;
     }
 
     /**
