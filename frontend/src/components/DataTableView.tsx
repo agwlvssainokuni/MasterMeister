@@ -18,7 +18,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {FaEdit, FaKey, FaSort, FaSortDown, FaSortUp, FaTrash} from 'react-icons/fa'
 import {dataAccessService} from '../services/dataAccessService'
-import {ConditionalPermission, PermissionGuard} from './PermissionGuard'
+import {ConditionalPermission} from './PermissionGuard'
 import type {TabItem} from './Tabs'
 import {Tabs} from './Tabs'
 import {TableMetadataView} from './TableMetadataView'
@@ -292,13 +292,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
             <table className="data-table table-striped">
               <thead className="data-table-header">
               <tr>
-                <ConditionalPermission table={accessibleTable} requiredPermission="write">
-                  {(hasWritePermission) => (
-                    hasWritePermission || accessibleTable.canDelete ? (
-                      <th className="actions-column">{t('common.actions')}</th>
-                    ) : null
-                  )}
-                </ConditionalPermission>
+                <th className="actions-column">{t('common.actions')}</th>
                 {accessibleColumns.map(column => {
                   const tooltipText = [
                     column.dataType,
@@ -329,34 +323,34 @@ export const DataTableView: React.FC<DataTableViewProps> = (
               <tbody className="data-table-body">
               {records.map((record, index) => (
                 <tr key={index}>
-                  <ConditionalPermission table={accessibleTable} requiredPermission="write">
-                    {(hasWritePermission) => (
-                      hasWritePermission || accessibleTable.canDelete ? (
-                        <td className="actions-column">
-                          <div className="action-buttons">
-                            <PermissionGuard table={accessibleTable} requiredPermission="write">
-                              <button
-                                className="button button-sm button-secondary"
-                                onClick={() => onRecordEdit?.(record)}
-                                title={t('common.edit')}
-                              >
-                                <FaEdit/>
-                              </button>
-                            </PermissionGuard>
-                            <PermissionGuard table={accessibleTable} requiredPermission="delete">
-                              <button
-                                className="button button-sm button-danger"
-                                onClick={() => onRecordDelete?.(record)}
-                                title={t('common.delete')}
-                              >
-                                <FaTrash/>
-                              </button>
-                            </PermissionGuard>
-                          </div>
-                        </td>
-                      ) : null
-                    )}
-                  </ConditionalPermission>
+                  <td className="actions-column">
+                    <div className="action-buttons">
+                      <ConditionalPermission table={accessibleTable} requiredPermission="write">
+                        {(hasWritePermission) => (
+                          <button
+                            className="button button-sm button-secondary"
+                            disabled={!hasWritePermission}
+                            onClick={() => hasWritePermission && onRecordEdit?.(record)}
+                            title={hasWritePermission ? t('common.edit') : t('permissions.insufficientPermissions')}
+                          >
+                            <FaEdit/>
+                          </button>
+                        )}
+                      </ConditionalPermission>
+                      <ConditionalPermission table={accessibleTable} requiredPermission="delete">
+                        {(hasDeletePermission) => (
+                          <button
+                            className="button button-sm button-danger"
+                            disabled={!hasDeletePermission}
+                            onClick={() => hasDeletePermission && onRecordDelete?.(record)}
+                            title={hasDeletePermission ? t('common.delete') : t('permissions.insufficientPermissions')}
+                          >
+                            <FaTrash/>
+                          </button>
+                        )}
+                      </ConditionalPermission>
+                    </div>
+                  </td>
                   {accessibleColumns.map(column => (
                     <td key={column.columnName} className={column.primaryKey ? 'data-cell pk-column' : 'data-cell'}>
                       {formatCellValue(record[column.columnName], column)}
@@ -436,11 +430,18 @@ export const DataTableView: React.FC<DataTableViewProps> = (
         </div>
 
         <div className="table-actions">
-          <PermissionGuard table={accessibleTable} requiredPermission="write">
-            <button className="button button-primary" onClick={() => onRecordCreate?.()}>
-              {t('dataTable.createRecord')}
-            </button>
-          </PermissionGuard>
+          <ConditionalPermission table={accessibleTable} requiredPermission="write">
+            {(hasWritePermission) => (
+              <button
+                className="button button-primary"
+                disabled={!hasWritePermission}
+                onClick={() => hasWritePermission && onRecordCreate?.()}
+                title={hasWritePermission ? t('dataTable.createRecord') : t('permissions.insufficientPermissions')}
+              >
+                {t('dataTable.createRecord')}
+              </button>
+            )}
+          </ConditionalPermission>
         </div>
       </div>
 

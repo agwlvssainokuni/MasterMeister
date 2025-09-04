@@ -16,14 +16,14 @@
 
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {FaDatabase, FaChartBar, FaEdit} from 'react-icons/fa'
+import {FaChartBar, FaDatabase, FaEdit} from 'react-icons/fa'
 import {useNotification} from '../contexts/NotificationContext'
 import {UserLayout} from './layouts/UserLayout'
 import {DatabaseTreeView} from '../components/DatabaseTreeView'
 import {DataTableView} from '../components/DataTableView'
 import {RecordEditModal} from '../components/RecordEditModal'
 import {RecordDeleteModal} from '../components/RecordDeleteModal'
-import {PermissionGuard} from '../components/PermissionGuard'
+import {ConditionalPermission} from '../components/PermissionGuard'
 import {dataAccessService} from '../services/dataAccessService'
 import type {AccessibleTable, Database, TableRecord} from '../types/frontend'
 
@@ -144,14 +144,14 @@ export const DataAccessPage: React.FC = () => {
             />
           ) : selectedDatabase ? (
             <div className="empty-content">
-              <div className="empty-icon"><FaDatabase size={48} /></div>
+              <div className="empty-icon"><FaDatabase size={48}/></div>
               <h3>{t('dataAccess.databaseSelected')}</h3>
               <p>{selectedDatabase.name} ({selectedDatabase.dbType})</p>
               <p className="empty-description">{t('dataAccess.selectTableFromTree')}</p>
             </div>
           ) : (
             <div className="empty-content">
-              <div className="empty-icon"><FaChartBar size={48} /></div>
+              <div className="empty-icon"><FaChartBar size={48}/></div>
               <h3>{t('dataAccess.selectDatabase')}</h3>
               <p>{t('dataAccess.selectDatabaseDescription')}</p>
             </div>
@@ -192,15 +192,18 @@ export const DataAccessPage: React.FC = () => {
 
       {/* Floating Action Button for Create */}
       {selectedTable && (
-        <PermissionGuard table={selectedTable} requiredPermission="write">
-          <button
-            className="fab create-record-fab"
-            onClick={handleCreateRecord}
-            title={t('dataTable.createRecord')}
-          >
-            <FaEdit />
-          </button>
-        </PermissionGuard>
+        <ConditionalPermission table={selectedTable} requiredPermission="write">
+          {(hasWritePermission) => (
+            <button
+              className="fab create-record-fab"
+              disabled={!hasWritePermission}
+              onClick={() => hasWritePermission && handleCreateRecord()}
+              title={hasWritePermission ? t('dataTable.createRecord') : t('permissions.insufficientPermissions')}
+            >
+              <FaEdit/>
+            </button>
+          )}
+        </ConditionalPermission>
       )}
     </UserLayout>
   )
