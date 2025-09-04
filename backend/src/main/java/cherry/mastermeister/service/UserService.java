@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -36,6 +37,15 @@ public class UserService {
     public UserService(UserRepository userRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.emailService = emailService;
+    }
+
+    /**
+     * Get user ID by email address
+     */
+    @Transactional(readOnly = true)
+    public Optional<Long> getUserIdByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(UserEntity::getId);
     }
 
     public List<UserSummary> getPendingUsers() {

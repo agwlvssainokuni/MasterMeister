@@ -27,10 +27,7 @@ import cherry.mastermeister.repository.UserPermissionRepository;
 import cherry.mastermeister.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,7 +82,7 @@ public class PermissionService {
         entity.setTableName(tableName);
         entity.setColumnName(columnName);
         entity.setGranted(granted);
-        entity.setGrantedBy(getCurrentUserEmail());
+        entity.setGrantedBy(user.getEmail());
         entity.setExpiresAt(expiresAt);
         entity.setComment(comment);
 
@@ -100,28 +97,10 @@ public class PermissionService {
     // ========================================
 
     /**
-     * Get all permission types that current user has for a specific table
-     */
-    @Transactional(readOnly = true)
-    public Set<PermissionType> getTablePermissions(
-            Long connectionId,
-            String schemaName, String tableName
-    ) {
-        Long currentUserId = getCurrentUserId();
-        if (currentUserId == null) {
-            return EnumSet.noneOf(PermissionType.class);
-        }
-
-        return getTablePermissions(
-                currentUserId, connectionId,
-                schemaName, tableName
-        );
-    }
-
-    /**
      * Get all permission types that specified user has for a specific table
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "tablePermissions", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public Set<PermissionType> getTablePermissions(
             Long userId, Long connectionId,
             String schemaName, String tableName
@@ -144,27 +123,10 @@ public class PermissionService {
     }
 
     /**
-     * Check if current user has READ permission for a table
+     * Check if user has read permission for a table
      */
     @Transactional(readOnly = true)
-    public boolean hasReadPermission(
-            Long connectionId,
-            String schemaName, String tableName
-    ) {
-        Long currentUserId = getCurrentUserId();
-        if (currentUserId == null) {
-            return false;
-        }
-        return hasReadPermission(
-                currentUserId, connectionId,
-                schemaName, tableName
-        );
-    }
-
-    /**
-     * Check if user has READ permission for a table
-     */
-    @Transactional(readOnly = true)
+    @Cacheable(value = "readPermissions", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public boolean hasReadPermission(
             Long userId, Long connectionId,
             String schemaName, String tableName
@@ -177,27 +139,10 @@ public class PermissionService {
     }
 
     /**
-     * Check if current user can delete entire table (all columns must have DELETE permission)
-     */
-    @Transactional(readOnly = true)
-    public boolean hasDeletePermission(
-            Long connectionId,
-            String schemaName, String tableName
-    ) {
-        Long currentUserId = getCurrentUserId();
-        if (currentUserId == null) {
-            return false;
-        }
-        return hasDeletePermission(
-                currentUserId, connectionId,
-                schemaName, tableName
-        );
-    }
-
-    /**
      * Check if user can delete entire table (all columns must have DELETE permission)
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "deletePermissions", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public boolean hasDeletePermission(
             Long userId, Long connectionId,
             String schemaName, String tableName
@@ -212,28 +157,6 @@ public class PermissionService {
     // ========================================
     // Column-Level Permission Checking
     // ========================================
-
-    /**
-     * Get column permissions for multiple columns in bulk (optimized)
-     */
-    @Transactional(readOnly = true)
-    public Map<String, Set<PermissionType>> getBulkColumnPermissions(
-            Long connectionId, String schemaName,
-            String tableName, List<String> columnNames
-    ) {
-        Long currentUserId = getCurrentUserId();
-        if (currentUserId == null) {
-            return columnNames.stream()
-                    .collect(Collectors.toMap(
-                            columnName -> columnName,
-                            columnName -> EnumSet.noneOf(PermissionType.class)
-                    ));
-        }
-        return getBulkColumnPermissions(
-                currentUserId, connectionId,
-                schemaName, tableName, columnNames
-        );
-    }
 
     /**
      * Get column permissions for multiple columns in bulk (optimized)
@@ -282,27 +205,10 @@ public class PermissionService {
     }
 
     /**
-     * Get list of columns that current user can read from
-     */
-    @Transactional(readOnly = true)
-    public List<String> getReadableColumns(
-            Long connectionId,
-            String schemaName, String tableName
-    ) {
-        Long currentUserId = getCurrentUserId();
-        if (currentUserId == null) {
-            return List.of();
-        }
-        return getReadableColumns(
-                currentUserId, connectionId,
-                schemaName, tableName
-        );
-    }
-
-    /**
      * Get list of columns that user can read from
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "readableColumns", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public List<String> getReadableColumns(
             Long userId, Long connectionId,
             String schemaName, String tableName
@@ -331,27 +237,10 @@ public class PermissionService {
     }
 
     /**
-     * Get list of columns that current user can write to
-     */
-    @Transactional(readOnly = true)
-    public List<String> getWritableColumns(
-            Long connectionId,
-            String schemaName, String tableName
-    ) {
-        Long currentUserId = getCurrentUserId();
-        if (currentUserId == null) {
-            return List.of();
-        }
-        return getWritableColumns(
-                currentUserId, connectionId,
-                schemaName, tableName
-        );
-    }
-
-    /**
      * Get list of columns that user can write to
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "writableColumns", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public List<String> getWritableColumns(
             Long userId, Long connectionId,
             String schemaName, String tableName
@@ -396,25 +285,6 @@ public class PermissionService {
         return entities.stream()
                 .map(this::toModel)
                 .toList();
-    }
-
-    // ========================================
-    // Admin Utilities
-    // ========================================
-
-    /**
-     * Check if current user is admin
-     */
-    @Transactional(readOnly = true)
-    public boolean isCurrentUserAdmin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
-            return false;
-        }
-
-        return auth.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(authority -> authority.equals("ROLE_" + UserRole.ADMIN.name()));
     }
 
     // ========================================
@@ -555,28 +425,6 @@ public class PermissionService {
     // ========================================
     // Context and Utility Methods
     // ========================================
-
-    /**
-     * Get current user ID from security context
-     */
-    private Long getCurrentUserId() {
-        return Optional.of(SecurityContextHolder.getContext())
-                .map(SecurityContext::getAuthentication)
-                .map(Authentication::getName)
-                .flatMap(userRepository::findByEmail)
-                .map(UserEntity::getId)
-                .orElse(null);
-    }
-
-    /**
-     * Get current user email from security context
-     */
-    private String getCurrentUserEmail() {
-        return Optional.of(SecurityContextHolder.getContext())
-                .map(SecurityContext::getAuthentication)
-                .map(Authentication::getName)
-                .orElse("system");
-    }
 
     /**
      * Check if user is admin

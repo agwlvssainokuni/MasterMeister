@@ -67,8 +67,10 @@ public class RecordDeleteService {
      * Delete records with permission validation and referential integrity checks
      */
     public RecordDeleteResult deleteRecord(
-            Long connectionId, String schemaName, String tableName,
-            Map<String, Object> whereConditions, boolean skipReferentialIntegrityCheck
+            Long userId, Long connectionId,
+            String schemaName, String tableName,
+            Map<String, Object> whereConditions,
+            boolean skipReferentialIntegrityCheck
     ) {
         logger.info("Deleting records from table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
@@ -76,7 +78,7 @@ public class RecordDeleteService {
         List<String> warnings = new ArrayList<>();
 
         // Check DELETE permission for ALL columns in the table
-        if (!permissionService.hasDeletePermission(connectionId, schemaName, tableName)) {
+        if (!permissionService.hasDeletePermission(userId, connectionId, schemaName, tableName)) {
             throw new PermissionDeniedException(
                     "DELETE permission required for ALL columns in table " + schemaName + "." + tableName, null);
         }
@@ -87,7 +89,7 @@ public class RecordDeleteService {
                     connectionId, schemaName, tableName);
 
             // Get readable columns for WHERE conditions (need READ permission for WHERE)
-            List<String> readableColumns = permissionService.getReadableColumns(connectionId, schemaName, tableName);
+            List<String> readableColumns = permissionService.getReadableColumns(userId, connectionId, schemaName, tableName);
 
             // Validate WHERE conditions
             Map<String, Object> validatedWhereConditions = validateWhereConditions(whereConditions, readableColumns);

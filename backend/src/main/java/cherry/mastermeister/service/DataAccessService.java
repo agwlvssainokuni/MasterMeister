@@ -55,7 +55,7 @@ public class DataAccessService {
      * Used for metadata display where all table information should be visible
      */
     public List<AccessibleTable> getAllAvailableTables(
-            Long connectionId
+            Long userId, Long connectionId
     ) {
         logger.info("Retrieving all available tables for connection: {}", connectionId);
 
@@ -64,7 +64,7 @@ public class DataAccessService {
                 .orElseThrow(() -> new DatabaseNotFoundException("Schema metadata not found for connection: " + connectionId));
 
         List<AccessibleTable> accessibleTables = schemaEntity.getTables().stream()
-                .map(tableEntity -> convertToAccessibleTable(tableEntity, connectionId, false))
+                .map(tableEntity -> convertToAccessibleTable(tableEntity, userId, connectionId, false))
                 .collect(Collectors.toList());
 
         logger.info("Found {} total accessible tables for connection: {}", accessibleTables.size(), connectionId);
@@ -75,7 +75,7 @@ public class DataAccessService {
      * Get accessible table with detailed column permission information
      */
     public AccessibleTable getAccessibleTableWithColumns(
-            Long connectionId,
+            Long userId, Long connectionId,
             String schemaName, String tableName
     ) {
         logger.debug("Getting accessible table with columns for {}.{} on connection {}",
@@ -91,7 +91,7 @@ public class DataAccessService {
                 .orElseThrow(() -> new TableNotFoundException("Table not found: " + schemaName + "." + tableName));
 
         // Convert directly to AccessibleTable with columns
-        return convertToAccessibleTable(tableEntity, connectionId, true);
+        return convertToAccessibleTable(tableEntity, userId, connectionId, true);
     }
 
     /**
@@ -99,12 +99,12 @@ public class DataAccessService {
      */
     private AccessibleTable convertToAccessibleTable(
             TableMetadataEntity tableEntity,
-            Long connectionId,
+            Long userId, Long connectionId,
             boolean includeColumns
     ) {
         // Get table permissions
         Set<PermissionType> tablePermissions = permissionService.getTablePermissions(
-                connectionId,
+                userId, connectionId,
                 tableEntity.getSchema(), tableEntity.getTableName()
         );
 
@@ -118,7 +118,7 @@ public class DataAccessService {
 
             // Get all column permissions in bulk (optimized)
             Map<String, Set<PermissionType>> bulkColumnPermissions = permissionService.getBulkColumnPermissions(
-                    connectionId, tableEntity.getSchema(), tableEntity.getTableName(), allColumnNames
+                    userId, connectionId, tableEntity.getSchema(), tableEntity.getTableName(), allColumnNames
             );
 
             accessibleColumns = tableEntity.getColumns().stream()

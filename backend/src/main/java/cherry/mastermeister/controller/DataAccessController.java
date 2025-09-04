@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,6 +55,7 @@ public class DataAccessController {
     private final RecordDeleteService recordDeleteService;
     private final RecordFilterConverterService recordFilterConverterService;
     private final DatabaseService databaseService;
+    private final UserService userService;
 
     public DataAccessController(
             DataAccessService dataAccessService,
@@ -62,7 +64,8 @@ public class DataAccessController {
             RecordUpdateService recordUpdateService,
             RecordDeleteService recordDeleteService,
             RecordFilterConverterService recordFilterConverterService,
-            DatabaseService databaseService
+            DatabaseService databaseService,
+            UserService userService
     ) {
         this.dataAccessService = dataAccessService;
         this.recordReadService = recordReadService;
@@ -71,6 +74,7 @@ public class DataAccessController {
         this.recordDeleteService = recordDeleteService;
         this.recordFilterConverterService = recordFilterConverterService;
         this.databaseService = databaseService;
+        this.userService = userService;
     }
 
     @GetMapping("/databases")
@@ -101,8 +105,9 @@ public class DataAccessController {
 
         logger.info("Getting all tables with permission info for connection: {}", connectionId);
 
+        Long userId = getCurrentUserId();
         // Get all tables with permission information (metadata should be visible to all)
-        List<AccessibleTable> tables = dataAccessService.getAllAvailableTables(connectionId);
+        List<AccessibleTable> tables = dataAccessService.getAllAvailableTables(userId, connectionId);
 
         // Convert to DTOs with permission information (without column details for performance)
         List<AccessibleTableResult> accessibleTables = tables.stream()
@@ -125,8 +130,9 @@ public class DataAccessController {
 
         logger.info("Getting table info for {}.{} on connection: {}", schemaName, tableName, connectionId);
 
+        Long userId = getCurrentUserId();
         AccessibleTable accessibleTable = dataAccessService.getAccessibleTableWithColumns(
-                connectionId, schemaName, tableName);
+                userId, connectionId, schemaName, tableName);
         AccessibleTableResult result = convertAccessibleTableToDto(accessibleTable, true);
 
         return ApiResponse.success(result);
@@ -148,7 +154,9 @@ public class DataAccessController {
         logger.info("Getting records for table {}.{} on connection: {}, page: {}, size: {}",
                 schemaName, tableName, connectionId, page, pageSize);
 
+        Long userId = getCurrentUserId();
         cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
+                userId,
                 connectionId,
                 schemaName, tableName,
                 RecordFilter.empty(),
@@ -179,7 +187,9 @@ public class DataAccessController {
 
         RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
 
+        Long userId = getCurrentUserId();
         cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
+                userId,
                 connectionId,
                 schemaName, tableName,
                 filter,
@@ -204,9 +214,9 @@ public class DataAccessController {
 
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
+        Long userId = getCurrentUserId();
         cherry.mastermeister.model.RecordCreateResult result = recordCreateService.createRecord(
-                connectionId,
-                schemaName, tableName,
+                userId, connectionId, schemaName, tableName,
                 request.data()
         );
 
@@ -228,11 +238,10 @@ public class DataAccessController {
 
         logger.info("Updating records in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
+        Long userId = getCurrentUserId();
         cherry.mastermeister.model.RecordUpdateResult result = recordUpdateService.updateRecord(
-                connectionId,
-                schemaName, tableName,
-                request.data(),
-                request.whereConditions()
+                userId, connectionId, schemaName, tableName,
+                request.data(), request.whereConditions()
         );
 
         RecordUpdateResult dto = convertToRecordUpdateResult(result);
@@ -253,11 +262,10 @@ public class DataAccessController {
 
         logger.info("Deleting records from table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
+        Long userId = getCurrentUserId();
         cherry.mastermeister.model.RecordDeleteResult result = recordDeleteService.deleteRecord(
-                connectionId,
-                schemaName, tableName,
-                request.whereConditions(),
-                request.skipReferentialIntegrityCheck()
+                userId, connectionId, schemaName, tableName,
+                request.whereConditions(), request.skipReferentialIntegrityCheck()
         );
 
         RecordDeleteResult dto = convertToRecordDeleteResult(result);
@@ -434,12 +442,23 @@ public class DataAccessController {
             Long connectionId, String schemaName, String tableName
     ) {
         // Get accessible table with column information
+        Long userId = getCurrentUserId();
         AccessibleTable accessibleTable = dataAccessService.getAccessibleTableWithColumns(
-                connectionId, schemaName, tableName);
+                userId, connectionId, schemaName, tableName);
 
         return accessibleTable.columns().stream()
                 .map(this::convertAccessibleColumnToResult)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get current authenticated user ID
+     */
+    private Long getCurrentUserId() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        return userService.getUserIdByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
     }
 
     /**

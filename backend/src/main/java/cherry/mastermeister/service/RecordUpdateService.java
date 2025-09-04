@@ -63,15 +63,17 @@ public class RecordUpdateService {
      * Update records with permission validation and transaction management
      */
     public RecordUpdateResult updateRecord(
-            Long connectionId, String schemaName, String tableName,
-            Map<String, Object> updateData, Map<String, Object> whereConditions
+            Long userId, Long connectionId,
+            String schemaName, String tableName,
+            Map<String, Object> updateData,
+            Map<String, Object> whereConditions
     ) {
         logger.info("Updating records in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         long startTime = System.currentTimeMillis();
 
         // Get columns that user can write to
-        List<String> writableColumnNames = permissionService.getWritableColumns(connectionId, schemaName, tableName);
+        List<String> writableColumnNames = permissionService.getWritableColumns(userId, connectionId, schemaName, tableName);
         if (writableColumnNames.isEmpty()) {
             throw new PermissionDeniedException(
                     "No writable columns found for table " + schemaName + "." + tableName, null);
@@ -87,7 +89,7 @@ public class RecordUpdateService {
             Map<String, Object> validatedUpdateData = filterWritableUpdateData(updateData, writableColumnNames, tableMetadata);
 
             // Get readable columns for WHERE conditions validation
-            List<String> readableColumns = permissionService.getReadableColumns(connectionId, schemaName, tableName);
+            List<String> readableColumns = permissionService.getReadableColumns(userId, connectionId, schemaName, tableName);
             Map<String, Object> validatedWhereConditions = validateWhereConditions(whereConditions, readableColumns);
 
             if (validatedUpdateData.isEmpty()) {

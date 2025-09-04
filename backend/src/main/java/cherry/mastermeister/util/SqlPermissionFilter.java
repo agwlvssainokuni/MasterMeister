@@ -19,6 +19,8 @@ package cherry.mastermeister.util;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.UserPermission;
 import cherry.mastermeister.service.PermissionService;
+import cherry.mastermeister.repository.UserRepository;
+import cherry.mastermeister.enums.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,6 +37,7 @@ public class SqlPermissionFilter {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final PermissionService permissionService;
+    private final UserRepository userRepository;
 
     private static final Pattern TABLE_PATTERN = Pattern.compile(
             "(?i)\\b(?:FROM|JOIN|UPDATE|INSERT\\s+INTO|DELETE\\s+FROM)\\s+(?:([\\w.]+)\\.)?(\\w+)",
@@ -46,8 +49,9 @@ public class SqlPermissionFilter {
             Pattern.CASE_INSENSITIVE
     );
 
-    public SqlPermissionFilter(PermissionService permissionService) {
+    public SqlPermissionFilter(PermissionService permissionService, UserRepository userRepository) {
         this.permissionService = permissionService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -56,7 +60,8 @@ public class SqlPermissionFilter {
     public SqlValidationResult validateSqlQuery(String sql, Long userId, Long connectionId) {
         logger.debug("Validating SQL query for user: {}, connection: {}", userId, connectionId);
 
-        if (permissionService.isCurrentUserAdmin()) {
+        // Check if user is admin (admin users have all permissions)
+        if (isUserAdmin(userId)) {
             return SqlValidationResult.allowed("Administrator access");
         }
 
@@ -307,6 +312,15 @@ public class SqlPermissionFilter {
                 (schemaName == null || schemaName.equals(permission.schemaName())) &&
                 tableName.equals(permission.tableName()) &&
                 columnName.equals(permission.columnName());
+    }
+
+    /**
+     * Check if user is admin
+     */
+    private boolean isUserAdmin(Long userId) {
+        return userRepository.findById(userId)
+                .map(user -> user.getRole() == UserRole.ADMIN)
+                .orElse(false);
     }
 
     /**

@@ -65,14 +65,16 @@ public class RecordCreateService {
      * Create new record with permission validation
      */
     public RecordCreateResult createRecord(
-            Long connectionId, String schemaName, String tableName, Map<String, Object> recordData
+            Long userId, Long connectionId,
+            String schemaName, String tableName,
+            Map<String, Object> recordData
     ) {
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         long startTime = System.currentTimeMillis();
 
         // Get columns that user can write to
-        List<String> writableColumnNames = permissionService.getWritableColumns(connectionId, schemaName, tableName);
+        List<String> writableColumnNames = permissionService.getWritableColumns(userId, connectionId, schemaName, tableName);
         if (writableColumnNames.isEmpty()) {
             throw new PermissionDeniedException(
                     "No writable columns found for table " + schemaName + "." + tableName, null);
@@ -169,7 +171,8 @@ public class RecordCreateService {
      * Filter input data to only include writable columns
      */
     private Map<String, Object> filterWritableData(
-            Map<String, Object> inputData, List<String> writableColumnNames, TableMetadata tableMetadata
+            Map<String, Object> inputData, List<String> writableColumnNames,
+            TableMetadata tableMetadata
     ) {
         Map<String, Object> validatedData = new HashMap<>();
 
@@ -223,7 +226,8 @@ public class RecordCreateService {
      * Build INSERT query with parameterized values
      */
     private InsertQueryResult buildInsertQuery(
-            String schemaName, String tableName, Map<String, Object> data, DatabaseType dbType
+            String schemaName, String tableName, Map<String, Object> data,
+            DatabaseType dbType
     ) {
         String fullTableName = buildTableName(schemaName, tableName, dbType);
 

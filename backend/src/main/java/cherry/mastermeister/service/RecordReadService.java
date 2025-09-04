@@ -76,7 +76,7 @@ public class RecordReadService {
      * Get records from table with filtering and column-level permission filtering
      */
     public RecordQueryResult getRecords(
-            Long connectionId,
+            Long userId, Long connectionId,
             String schemaName, String tableName,
             RecordFilter filter,
             int page, int pageSize
@@ -87,7 +87,7 @@ public class RecordReadService {
         long startTime = System.currentTimeMillis();
 
         // Check READ permission for the table
-        if (!permissionService.hasReadPermission(connectionId, schemaName, tableName)) {
+        if (!permissionService.hasReadPermission(userId, connectionId, schemaName, tableName)) {
             throw new PermissionDeniedException("READ permission required for table " + schemaName + "." + tableName, null);
         }
 
@@ -96,7 +96,7 @@ public class RecordReadService {
             TableMetadataEntity tableEntity = getTableEntity(connectionId, schemaName, tableName);
 
             // Get accessible columns with permissions
-            List<AccessibleColumn> accessibleColumns = getAccessibleColumns(connectionId, tableEntity);
+            List<AccessibleColumn> accessibleColumns = getAccessibleColumns(userId, connectionId, tableEntity);
 
             if (accessibleColumns.isEmpty()) {
                 logger.warn("No accessible columns found for table {}.{}", schemaName, tableName);
@@ -173,7 +173,7 @@ public class RecordReadService {
      * Get accessible columns with permission information
      */
     private List<AccessibleColumn> getAccessibleColumns(
-            Long connectionId,
+            Long userId, Long connectionId,
             TableMetadataEntity tableEntity
     ) {
         // Get all column names for bulk permission check
@@ -183,7 +183,7 @@ public class RecordReadService {
 
         // Get all column permissions in bulk (optimized - single query)
         Map<String, Set<PermissionType>> bulkColumnPermissions = permissionService.getBulkColumnPermissions(
-                connectionId, tableEntity.getSchema(), tableEntity.getTableName(), allColumnNames
+                userId, connectionId, tableEntity.getSchema(), tableEntity.getTableName(), allColumnNames
         );
 
         return tableEntity.getColumns().stream()
