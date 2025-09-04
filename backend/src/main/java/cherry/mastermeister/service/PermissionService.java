@@ -29,6 +29,7 @@ import cherry.mastermeister.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +64,9 @@ public class PermissionService {
      * Create permission with granted/denied status
      */
     @Transactional
+    @CacheEvict(value = {"tablePermissions", "readPermissions", "deletePermissions", "readableColumns", "writableColumns"}, 
+                key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName", 
+                beforeInvocation = true)
     public UserPermission createPermission(
             Long userId, Long connectionId, PermissionScope scope,
             PermissionType permissionType,
