@@ -318,16 +318,46 @@ public class PermissionService {
             PermissionType permissionType,
             String schemaName, String tableName
     ) {
-        // 1. Check if any column has granted permission
-        if (userPermissionRepository.hasGrantedColumnPermission(
-                userId, connectionId, permissionType, schemaName, tableName)) {
-            return true;
+        // Get direct table permissions as fallback for columns without explicit permissions
+        PermissionCheckResult directTableResult = checkDirectTablePermissions(
+                userId, connectionId,
+                permissionType,
+                schemaName, tableName
+        );
+
+        // Get all table columns from metadata
+        List<String> allTableColumns = tableMetadataRepository.findColumnNamesByTable(
+                connectionId,
+                schemaName, tableName
+        );
+        if (allTableColumns.isEmpty()) {
+            logger.warn("No columns found for table {}.{}", schemaName, tableName);
+            return false;
         }
 
-        // 2. If no column-level granted permission, check upper levels
-        return checkDirectTablePermissions(
-                userId, connectionId, permissionType, schemaName, tableName
-        ).granted();
+        // Check if ALL columns have specified permission
+        for (String columnName : allTableColumns) {
+            // Check column-level permission first
+            Optional<UserPermissionEntity> columnPerm = userPermissionRepository.findActivePermission(
+                    userId, connectionId, PermissionScope.COLUMN,
+                    permissionType,
+                    schemaName, tableName, columnName
+            );
+
+            if (columnPerm.isPresent()) {
+                // Explicit column-level setting exists, use it
+                if (!columnPerm.get().getGranted()) {
+                    return false;
+                }
+            } else {
+                // No column-level setting, use direct table permission
+                if (!directTableResult.granted()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -381,59 +411,12 @@ public class PermissionService {
     }
 
     /**
-     * Get all permission types that current user has for a specific column
-     */
-    @Transactional(readOnly = true)
-    public Set<PermissionType> getColumnPermissions(
-            Long connectionId,
-            String schemaName, String tableName, String columnName
-    ) {
-        Long currentUserId = getCurrentUserId();
-        if (currentUserId == null) {
-            return EnumSet.noneOf(PermissionType.class);
-        }
-        return getColumnPermissions(
-                currentUserId, connectionId,
-                schemaName, tableName, columnName
-        );
-    }
-
-    /**
-     * Get all permission types that specified user has for a specific column
-     */
-    @Transactional(readOnly = true)
-    public Set<PermissionType> getColumnPermissions(
-            Long userId, Long connectionId,
-            String schemaName, String tableName, String columnName
-    ) {
-        // Check if user is admin
-        if (isUserAdmin(userId)) {
-            return EnumSet.allOf(PermissionType.class);
-        }
-
-        Set<PermissionType> permissions = EnumSet.noneOf(PermissionType.class);
-
-        // Check each permission type using full hierarchical check
-        for (PermissionType permissionType : PermissionType.values()) {
-            PermissionCheckResult result = checkHierarchicalPermissions(
-                    userId, connectionId,
-                    permissionType,
-                    schemaName, tableName, columnName
-            );
-            if (result.granted()) {
-                permissions.add(permissionType);
-            }
-        }
-
-        return permissions;
-    }
-
-    /**
      * Get column permissions for multiple columns in bulk (optimized)
      */
     @Transactional(readOnly = true)
     public Map<String, Set<PermissionType>> getBulkColumnPermissions(
-            Long connectionId, String schemaName, String tableName, List<String> columnNames
+            Long connectionId, String schemaName,
+            String tableName, List<String> columnNames
     ) {
         Long currentUserId = getCurrentUserId();
         if (currentUserId == null) {
@@ -443,7 +426,10 @@ public class PermissionService {
                             columnName -> EnumSet.noneOf(PermissionType.class)
                     ));
         }
-        return getBulkColumnPermissions(currentUserId, connectionId, schemaName, tableName, columnNames);
+        return getBulkColumnPermissions(
+                currentUserId, connectionId,
+                schemaName, tableName, columnNames
+        );
     }
 
     /**
@@ -451,7 +437,8 @@ public class PermissionService {
      */
     @Transactional(readOnly = true)
     public Map<String, Set<PermissionType>> getBulkColumnPermissions(
-            Long userId, Long connectionId, String schemaName, String tableName, List<String> columnNames
+            Long userId, Long connectionId,
+            String schemaName, String tableName, List<String> columnNames
     ) {
         // Check if user is admin
         if (isUserAdmin(userId)) {
@@ -540,7 +527,7 @@ public class PermissionService {
      * Check if current user can delete entire table (all columns must have DELETE permission)
      */
     @Transactional(readOnly = true)
-    public boolean canDeleteTable(
+    public boolean hasDeletePermission(
             Long connectionId,
             String schemaName, String tableName
     ) {
@@ -548,7 +535,7 @@ public class PermissionService {
         if (currentUserId == null) {
             return false;
         }
-        return canDeleteTable(
+        return hasDeletePermission(
                 currentUserId, connectionId,
                 schemaName, tableName
         );
@@ -558,111 +545,76 @@ public class PermissionService {
      * Check if user can delete entire table (all columns must have DELETE permission)
      */
     @Transactional(readOnly = true)
-    public boolean canDeleteTable(
+    public boolean hasDeletePermission(
             Long userId, Long connectionId,
             String schemaName, String tableName
     ) {
-        // Check if user is admin
-        if (isUserAdmin(userId)) {
-            return true;
-        }
-
-        // Get direct table permissions as fallback for columns without explicit permissions
-        PermissionCheckResult directTableResult = checkDirectTablePermissions(
+        return hasTablePermission(
                 userId, connectionId,
                 PermissionType.DELETE,
                 schemaName, tableName
         );
-
-        // Get all table columns from metadata
-        List<String> allTableColumns = tableMetadataRepository.findColumnNamesByTable(
-                connectionId,
-                schemaName, tableName
-        );
-        if (allTableColumns.isEmpty()) {
-            logger.warn("No columns found for table {}.{}", schemaName, tableName);
-            return false;
-        }
-
-        // Check if ALL columns have DELETE permission
-        for (String columnName : allTableColumns) {
-            // Check column-level permission first
-            Optional<UserPermissionEntity> columnPerm = userPermissionRepository
-                    .findByUserIdAndConnectionIdAndScopeAndPermissionTypeAndSchemaNameAndTableNameAndColumnName(
-                            userId, connectionId, PermissionScope.COLUMN,
-                            PermissionType.DELETE,
-                            schemaName, tableName, columnName
-                    );
-
-            if (columnPerm.isPresent()) {
-                // Explicit column-level setting exists, use it
-                if (!columnPerm.get().getGranted()) {
-                    return false;
-                }
-            } else {
-                // No column-level setting, use direct table permission
-                if (!directTableResult.granted()) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     /**
      * Check if current user has READ permission for a table
      */
     @Transactional(readOnly = true)
-    public boolean hasReadPermission(Long connectionId, String schemaName, String tableName) {
+    public boolean hasReadPermission(
+            Long connectionId,
+            String schemaName, String tableName
+    ) {
         Long currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             return false;
         }
-        return hasReadPermission(currentUserId, connectionId, schemaName, tableName);
+        return hasReadPermission(
+                currentUserId, connectionId,
+                schemaName, tableName
+        );
     }
 
     /**
      * Check if user has READ permission for a table
      */
     @Transactional(readOnly = true)
-    public boolean hasReadPermission(Long userId, Long connectionId, String schemaName, String tableName) {
-        // Check if user is admin
-        if (isUserAdmin(userId)) {
-            return true;
-        }
-
-        // Get direct table permissions as fallback for columns without explicit permissions
-        PermissionCheckResult directTableResult = checkDirectTablePermissions(
-                userId, connectionId, PermissionType.READ, schemaName, tableName);
-
-        // If table-level permission is granted, we have access
-        if (directTableResult.granted()) {
-            return true;
-        }
-
-        // Check if any column has READ permission
-        return userPermissionRepository.hasGrantedColumnPermission(
-                userId, connectionId, PermissionType.READ, schemaName, tableName);
+    public boolean hasReadPermission(
+            Long userId, Long connectionId,
+            String schemaName, String tableName
+    ) {
+        return hasTablePermission(
+                userId, connectionId,
+                PermissionType.READ,
+                schemaName, tableName
+        );
     }
 
     /**
      * Get list of columns that current user can read from
      */
     @Transactional(readOnly = true)
-    public List<String> getReadableColumns(Long connectionId, String schemaName, String tableName) {
+    public List<String> getReadableColumns(
+            Long connectionId,
+            String schemaName, String tableName
+    ) {
         Long currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             return List.of();
         }
-        return getReadableColumns(currentUserId, connectionId, schemaName, tableName);
+        return getReadableColumns(
+                currentUserId, connectionId,
+                schemaName, tableName
+        );
     }
 
     /**
      * Get list of columns that user can read from
      */
     @Transactional(readOnly = true)
-    public List<String> getReadableColumns(Long userId, Long connectionId, String schemaName, String tableName) {
+    public List<String> getReadableColumns(
+            Long userId, Long connectionId,
+            String schemaName, String tableName
+    ) {
         // Check if user is admin
         if (isUserAdmin(userId)) {
             return tableMetadataRepository.findColumnNamesByTable(

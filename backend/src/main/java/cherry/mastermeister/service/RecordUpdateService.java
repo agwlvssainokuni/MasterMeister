@@ -17,7 +17,6 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
-import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordUpdateResult;
@@ -35,7 +34,6 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,13 +79,14 @@ public class RecordUpdateService {
         try {
             // Get table metadata
             TableMetadata tableMetadata = schemaMetadataService.getTableMetadata(
-                    connectionId, schemaName, tableName);
+                    connectionId, schemaName, tableName
+            );
 
             // Filter update data to only include writable columns
             Map<String, Object> validatedUpdateData = filterWritableUpdateData(updateData, writableColumnNames, tableMetadata);
 
             // Get readable columns for WHERE conditions validation
-            List<ColumnMetadata> readableColumns = getReadableColumns(connectionId, tableMetadata);
+            List<String> readableColumns = permissionService.getReadableColumns(connectionId, schemaName, tableName);
             Map<String, Object> validatedWhereConditions = validateWhereConditions(whereConditions, readableColumns);
 
             if (validatedUpdateData.isEmpty()) {
@@ -165,45 +164,6 @@ public class RecordUpdateService {
     }
 
     /**
-     * Get writable columns based on user permissions
-     */
-    private List<ColumnMetadata> getWritableColumns(
-            Long connectionId, TableMetadata tableMetadata
-    ) {
-        return tableMetadata.columns().stream()
-                .filter(column -> {
-                    Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
-                            connectionId, tableMetadata.schema(), tableMetadata.tableName(), column.columnName());
-                    return columnPermissions.contains(PermissionType.WRITE);
-                })
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get readable columns based on user permissions (for WHERE conditions)
-     */
-    private List<ColumnMetadata> getReadableColumns(
-            Long connectionId, TableMetadata tableMetadata
-    ) {
-        // Get all column names for bulk permission check
-        List<String> allColumnNames = tableMetadata.columns().stream()
-                .map(ColumnMetadata::columnName)
-                .collect(Collectors.toList());
-
-        // Get all column permissions in bulk (optimized)
-        Map<String, Set<PermissionType>> bulkColumnPermissions = permissionService.getBulkColumnPermissions(
-                connectionId, tableMetadata.schema(), tableMetadata.tableName(), allColumnNames
-        );
-
-        return tableMetadata.columns().stream()
-                .filter(column -> {
-                    Set<PermissionType> permissions = bulkColumnPermissions.get(column.columnName());
-                    return permissions != null && permissions.contains(PermissionType.READ);
-                })
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Filter update data to only include writable columns
      */
     private Map<String, Object> filterWritableUpdateData(
@@ -249,7 +209,7 @@ public class RecordUpdateService {
      * Validate WHERE conditions based on column permissions
      */
     private Map<String, Object> validateWhereConditions(
-            Map<String, Object> whereConditions, List<ColumnMetadata> readableColumns
+            Map<String, Object> whereConditions, List<String> readableColumns
     ) {
         Map<String, Object> validatedConditions = new HashMap<>();
 
@@ -258,8 +218,7 @@ public class RecordUpdateService {
             Object value = entry.getValue();
 
             // Check if column is readable
-            boolean isReadable = readableColumns.stream()
-                    .anyMatch(col -> col.columnName().equals(columnName));
+            boolean isReadable = readableColumns.stream().anyMatch(columnName::equals);
 
             if (!isReadable) {
                 throw new IllegalArgumentException(

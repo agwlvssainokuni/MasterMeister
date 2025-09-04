@@ -17,9 +17,6 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
-import cherry.mastermeister.enums.PermissionType;
-import java.util.Set;
-import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.model.RecordDeleteResult;
 import cherry.mastermeister.model.TableMetadata;
@@ -78,7 +75,7 @@ public class RecordDeleteService {
         List<String> warnings = new ArrayList<>();
 
         // Check DELETE permission for ALL columns in the table
-        if (!permissionService.canDeleteTable(connectionId, schemaName, tableName)) {
+        if (!permissionService.hasDeletePermission(connectionId, schemaName, tableName)) {
             throw new IllegalArgumentException(
                     "DELETE permission required for ALL columns in table " + schemaName + "." + tableName);
         }
@@ -89,7 +86,7 @@ public class RecordDeleteService {
                     connectionId, schemaName, tableName);
 
             // Get readable columns for WHERE conditions (need READ permission for WHERE)
-            List<ColumnMetadata> readableColumns = getReadableColumns(connectionId, tableMetadata);
+            List<String> readableColumns = permissionService.getReadableColumns(connectionId, schemaName, tableName);
 
             // Validate WHERE conditions
             Map<String, Object> validatedWhereConditions = validateWhereConditions(whereConditions, readableColumns);
@@ -191,25 +188,10 @@ public class RecordDeleteService {
     }
 
     /**
-     * Get readable columns based on user permissions (for WHERE conditions)
-     */
-    private List<ColumnMetadata> getReadableColumns(
-            Long connectionId, TableMetadata tableMetadata
-    ) {
-        return tableMetadata.columns().stream()
-                .filter(column -> {
-                    Set<PermissionType> columnPermissions = permissionService.getColumnPermissions(
-                            connectionId, tableMetadata.schema(), tableMetadata.tableName(), column.columnName());
-                    return columnPermissions.contains(PermissionType.READ);
-                })
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Validate WHERE conditions based on column permissions
      */
     private Map<String, Object> validateWhereConditions(
-            Map<String, Object> whereConditions, List<ColumnMetadata> readableColumns
+            Map<String, Object> whereConditions, List<String> readableColumns
     ) {
         Map<String, Object> validatedConditions = new HashMap<>();
 
@@ -218,8 +200,7 @@ public class RecordDeleteService {
             Object value = entry.getValue();
 
             // Check if column is readable
-            boolean isReadable = readableColumns.stream()
-                    .anyMatch(col -> col.columnName().equals(columnName));
+            boolean isReadable = readableColumns.stream().anyMatch(columnName::equals);
 
             if (!isReadable) {
                 throw new IllegalArgumentException(
