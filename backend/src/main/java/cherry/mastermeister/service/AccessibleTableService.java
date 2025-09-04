@@ -36,13 +36,13 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
-public class DataAccessService {
+public class AccessibleTableService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final SchemaMetadataRepository schemaMetadataRepository;
     private final PermissionService permissionService;
 
-    public DataAccessService(
+    public AccessibleTableService(
             SchemaMetadataRepository schemaMetadataRepository,
             PermissionService permissionService
     ) {

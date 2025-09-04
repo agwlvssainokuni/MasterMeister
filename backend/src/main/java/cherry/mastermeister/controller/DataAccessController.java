@@ -21,6 +21,7 @@ import cherry.mastermeister.controller.dto.RecordCreateResult;
 import cherry.mastermeister.controller.dto.RecordDeleteResult;
 import cherry.mastermeister.controller.dto.RecordQueryResult;
 import cherry.mastermeister.controller.dto.RecordUpdateResult;
+import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.model.*;
 import cherry.mastermeister.service.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,11 +33,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,7 +50,7 @@ import java.util.stream.Collectors;
 public class DataAccessController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final DataAccessService dataAccessService;
+    private final AccessibleTableService accessibleTableService;
     private final RecordReadService recordReadService;
     private final RecordCreateService recordCreateService;
     private final RecordUpdateService recordUpdateService;
@@ -58,7 +60,7 @@ public class DataAccessController {
     private final UserService userService;
 
     public DataAccessController(
-            DataAccessService dataAccessService,
+            AccessibleTableService accessibleTableService,
             RecordReadService recordReadService,
             RecordCreateService recordCreateService,
             RecordUpdateService recordUpdateService,
@@ -67,7 +69,7 @@ public class DataAccessController {
             DatabaseService databaseService,
             UserService userService
     ) {
-        this.dataAccessService = dataAccessService;
+        this.accessibleTableService = accessibleTableService;
         this.recordReadService = recordReadService;
         this.recordCreateService = recordCreateService;
         this.recordUpdateService = recordUpdateService;
@@ -100,18 +102,24 @@ public class DataAccessController {
             description = "Get all table metadata with user permission information for each table"
     )
     public ApiResponse<List<AccessibleTableResult>> getAccessibleTables(
-            @PathVariable Long connectionId
+            @PathVariable Long connectionId,
+            Authentication authentication
     ) {
 
         logger.info("Getting all tables with permission info for connection: {}", connectionId);
 
-        Long userId = getCurrentUserId();
+        Long userId = getUserId(authentication);
         // Get all tables with permission information (metadata should be visible to all)
-        List<AccessibleTable> tables = dataAccessService.getAllAvailableTables(userId, connectionId);
+        List<AccessibleTable> tables = accessibleTableService.getAllAvailableTables(
+                userId, connectionId
+        );
 
         // Convert to DTOs with permission information (without column details for performance)
         List<AccessibleTableResult> accessibleTables = tables.stream()
-                .map(table -> convertAccessibleTableToDto(table, false))
+                .map(table -> convertAccessibleTableToDto(
+                        userId, table,
+                        false
+                ))
                 .collect(Collectors.toList());
 
         return ApiResponse.success(accessibleTables);
@@ -125,15 +133,21 @@ public class DataAccessController {
     public ApiResponse<AccessibleTableResult> getTableInfo(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
-            @PathVariable String tableName
+            @PathVariable String tableName,
+            Authentication authentication
     ) {
 
         logger.info("Getting table info for {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        Long userId = getCurrentUserId();
-        AccessibleTable accessibleTable = dataAccessService.getAccessibleTableWithColumns(
-                userId, connectionId, schemaName, tableName);
-        AccessibleTableResult result = convertAccessibleTableToDto(accessibleTable, true);
+        Long userId = getUserId(authentication);
+        AccessibleTable accessibleTable = accessibleTableService.getAccessibleTableWithColumns(
+                userId, connectionId,
+                schemaName, tableName
+        );
+        AccessibleTableResult result = convertAccessibleTableToDto(
+                userId, accessibleTable,
+                true
+        );
 
         return ApiResponse.success(result);
     }
@@ -148,16 +162,16 @@ public class DataAccessController {
             @PathVariable String schemaName,
             @PathVariable String tableName,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int pageSize
+            @RequestParam(defaultValue = "50") int pageSize,
+            Authentication authentication
     ) {
 
         logger.info("Getting records for table {}.{} on connection: {}, page: {}, size: {}",
                 schemaName, tableName, connectionId, page, pageSize);
 
-        Long userId = getCurrentUserId();
+        Long userId = getUserId(authentication);
         cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
-                userId,
-                connectionId,
+                userId, connectionId,
                 schemaName, tableName,
                 RecordFilter.empty(),
                 page, pageSize
@@ -178,7 +192,8 @@ public class DataAccessController {
             @PathVariable String tableName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int pageSize,
-            @RequestBody(required = false) RecordFilterRequest filterRequest
+            @RequestBody(required = false) RecordFilterRequest filterRequest,
+            Authentication authentication
     ) {
 
         logger.info("Filtering records for table {}.{} on connection: {}, page: {}, size: {}, filters: {}",
@@ -187,10 +202,9 @@ public class DataAccessController {
 
         RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
 
-        Long userId = getCurrentUserId();
+        Long userId = getUserId(authentication);
         cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
-                userId,
-                connectionId,
+                userId, connectionId,
                 schemaName, tableName,
                 filter,
                 page, pageSize
@@ -209,14 +223,16 @@ public class DataAccessController {
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
-            @Valid @RequestBody RecordCreateRequest request
+            @Valid @RequestBody RecordCreateRequest request,
+            Authentication authentication
     ) {
 
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        Long userId = getCurrentUserId();
+        Long userId = getUserId(authentication);
         cherry.mastermeister.model.RecordCreateResult result = recordCreateService.createRecord(
-                userId, connectionId, schemaName, tableName,
+                userId, connectionId,
+                schemaName, tableName,
                 request.data()
         );
 
@@ -233,15 +249,18 @@ public class DataAccessController {
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
-            @Valid @RequestBody RecordUpdateRequest request
+            @Valid @RequestBody RecordUpdateRequest request,
+            Authentication authentication
     ) {
 
         logger.info("Updating records in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        Long userId = getCurrentUserId();
+        Long userId = getUserId(authentication);
         cherry.mastermeister.model.RecordUpdateResult result = recordUpdateService.updateRecord(
-                userId, connectionId, schemaName, tableName,
-                request.data(), request.whereConditions()
+                userId, connectionId,
+                schemaName, tableName,
+                request.data(),
+                request.whereConditions()
         );
 
         RecordUpdateResult dto = convertToRecordUpdateResult(result);
@@ -257,15 +276,18 @@ public class DataAccessController {
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
-            @Valid @RequestBody RecordDeleteRequest request
+            @Valid @RequestBody RecordDeleteRequest request,
+            Authentication authentication
     ) {
 
         logger.info("Deleting records from table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        Long userId = getCurrentUserId();
+        Long userId = getUserId(authentication);
         cherry.mastermeister.model.RecordDeleteResult result = recordDeleteService.deleteRecord(
-                userId, connectionId, schemaName, tableName,
-                request.whereConditions(), request.skipReferentialIntegrityCheck()
+                userId, connectionId,
+                schemaName, tableName,
+                request.whereConditions(),
+                request.skipReferentialIntegrityCheck()
         );
 
         RecordDeleteResult dto = convertToRecordDeleteResult(result);
@@ -345,31 +367,12 @@ public class DataAccessController {
     }
 
     /**
-     * Convert ColumnMetadata to ColumnMetadataResult
-     */
-    private ColumnMetadataResult convertToColumnMetadataResult(
-            ColumnMetadata column
-    ) {
-        return new ColumnMetadataResult(
-                column.columnName(),
-                column.dataType(),
-                column.columnSize(),
-                column.decimalDigits(),
-                column.nullable(),
-                column.defaultValue(),
-                column.comment(),
-                column.primaryKey(),
-                column.autoIncrement(),
-                column.ordinalPosition()
-        );
-    }
-
-
-    /**
      * Convert AccessibleTable to AccessibleTableResult DTO
      */
     private AccessibleTableResult convertAccessibleTableToDto(
-            AccessibleTable accessibleTable, boolean includeColumns
+            Long userId,
+            AccessibleTable accessibleTable,
+            boolean includeColumns
     ) {
         // Convert permissions to string set
         Set<String> permissionStrings = accessibleTable.permissions().stream()
@@ -386,8 +389,10 @@ public class DataAccessController {
                         .collect(Collectors.toList());
             } else {
                 // Fetch columns if not included in AccessibleTable
-                columnResults = getColumnsWithPermissions(accessibleTable.connectionId(),
-                        accessibleTable.schemaName(), accessibleTable.tableName());
+                columnResults = getColumnsWithPermissions(
+                        userId, accessibleTable.connectionId(),
+                        accessibleTable.schemaName(), accessibleTable.tableName()
+                );
             }
         } else {
             columnResults = List.of(); // Empty list for performance when not needed
@@ -410,7 +415,6 @@ public class DataAccessController {
                 columnResults
         );
     }
-
 
     /**
      * Convert DatabaseConnection model to DatabaseConnectionResult DTO
@@ -439,12 +443,14 @@ public class DataAccessController {
      * Get columns with permission information for AccessibleTable conversion
      */
     private List<AccessibleColumnResult> getColumnsWithPermissions(
-            Long connectionId, String schemaName, String tableName
+            Long userId, Long connectionId,
+            String schemaName, String tableName
     ) {
         // Get accessible table with column information
-        Long userId = getCurrentUserId();
-        AccessibleTable accessibleTable = dataAccessService.getAccessibleTableWithColumns(
-                userId, connectionId, schemaName, tableName);
+        AccessibleTable accessibleTable = accessibleTableService.getAccessibleTableWithColumns(
+                userId, connectionId,
+                schemaName, tableName
+        );
 
         return accessibleTable.columns().stream()
                 .map(this::convertAccessibleColumnToResult)
@@ -454,11 +460,11 @@ public class DataAccessController {
     /**
      * Get current authenticated user ID
      */
-    private Long getCurrentUserId() {
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        return userService.getUserIdByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found: " + email));
+    private Long getUserId(Authentication authentication) {
+        return Optional.of(authentication)
+                .map(Authentication::getName)
+                .flatMap(userService::getUserIdByEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + authentication.getName()));
     }
 
     /**

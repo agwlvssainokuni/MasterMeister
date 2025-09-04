@@ -21,6 +21,7 @@ import cherry.mastermeister.entity.UserPermissionEntity;
 import cherry.mastermeister.enums.PermissionScope;
 import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.enums.UserRole;
+import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.model.UserPermission;
 import cherry.mastermeister.repository.TableMetadataRepository;
 import cherry.mastermeister.repository.UserPermissionRepository;
@@ -36,6 +37,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class PermissionService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -71,7 +73,7 @@ public class PermissionService {
                 granted ? "Granting" : "Denying", permissionType, scope, userId, connectionId);
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
 
         UserPermissionEntity entity = new UserPermissionEntity();
         entity.setUser(user);
@@ -99,7 +101,6 @@ public class PermissionService {
     /**
      * Get all permission types that specified user has for a specific table
      */
-    @Transactional(readOnly = true)
     @Cacheable(value = "tablePermissions", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public Set<PermissionType> getTablePermissions(
             Long userId, Long connectionId,
@@ -125,7 +126,6 @@ public class PermissionService {
     /**
      * Check if user has read permission for a table
      */
-    @Transactional(readOnly = true)
     @Cacheable(value = "readPermissions", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public boolean hasReadPermission(
             Long userId, Long connectionId,
@@ -141,7 +141,6 @@ public class PermissionService {
     /**
      * Check if user can delete entire table (all columns must have DELETE permission)
      */
-    @Transactional(readOnly = true)
     @Cacheable(value = "deletePermissions", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public boolean hasDeletePermission(
             Long userId, Long connectionId,
@@ -161,7 +160,6 @@ public class PermissionService {
     /**
      * Get column permissions for multiple columns in bulk (optimized)
      */
-    @Transactional(readOnly = true)
     public Map<String, Set<PermissionType>> getBulkColumnPermissions(
             Long userId, Long connectionId,
             String schemaName, String tableName, List<String> columnNames
@@ -207,7 +205,6 @@ public class PermissionService {
     /**
      * Get list of columns that user can read from
      */
-    @Transactional(readOnly = true)
     @Cacheable(value = "readableColumns", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public List<String> getReadableColumns(
             Long userId, Long connectionId,
@@ -239,7 +236,6 @@ public class PermissionService {
     /**
      * Get list of columns that user can write to
      */
-    @Transactional(readOnly = true)
     @Cacheable(value = "writableColumns", key = "#userId + ':' + #connectionId + ':' + #schemaName + ':' + #tableName")
     public List<String> getWritableColumns(
             Long userId, Long connectionId,
@@ -275,7 +271,6 @@ public class PermissionService {
     /**
      * Get all active permissions for a user and connection
      */
-    @Transactional(readOnly = true)
     public List<UserPermission> getUserPermissions(Long userId, Long connectionId) {
         logger.debug("Retrieving permissions for user: {}, connection: {}", userId, connectionId);
 
