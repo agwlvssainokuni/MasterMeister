@@ -25,7 +25,7 @@ import {RecordEditModal} from '../components/RecordEditModal'
 import {RecordDeleteModal} from '../components/RecordDeleteModal'
 import {PermissionGuard} from '../components/PermissionGuard'
 import {dataAccessService} from '../services/dataAccessService'
-import type {AccessibleTable, Database, TableMetadata, TableRecord} from '../types/frontend'
+import type {AccessibleTable, Database, TableRecord} from '../types/frontend'
 
 export const DataAccessPage: React.FC = () => {
   const {t} = useTranslation()
@@ -33,7 +33,7 @@ export const DataAccessPage: React.FC = () => {
 
   const [selectedDatabase, setSelectedDatabase] = useState<Database>()
   const [selectedTable, setSelectedTable] = useState<AccessibleTable>()
-  const [tableMetadata, setTableMetadata] = useState<TableMetadata>()
+  const [tableDetails, setTableDetails] = useState<AccessibleTable>()
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [editMode, setEditMode] = useState<'create' | 'edit'>('create')
@@ -44,18 +44,18 @@ export const DataAccessPage: React.FC = () => {
     setSelectedDatabase(database)
     // Clear table selection when database changes
     setSelectedTable(undefined)
-    setTableMetadata(undefined)
+    setTableDetails(undefined)
   }
 
   const handleTableSelect = async (table: AccessibleTable) => {
     try {
       setSelectedTable(table)
-      const metadata = await dataAccessService.getTableMetadata(
+      const details = await dataAccessService.getTableDetails(
         table.connectionId,
         table.schemaName,
         table.tableName
       )
-      setTableMetadata(metadata)
+      setTableDetails(details)
     } catch (err) {
       console.error('Error loading table metadata:', err)
       addNotification({
@@ -131,7 +131,7 @@ export const DataAccessPage: React.FC = () => {
         </aside>
 
         <main className="data-content">
-          {selectedTable && tableMetadata ? (
+          {selectedTable && tableDetails ? (
             <DataTableView
               connectionId={selectedTable.connectionId}
               schemaName={selectedTable.schemaName}
@@ -160,14 +160,14 @@ export const DataAccessPage: React.FC = () => {
       </div>
 
       {/* Create/Edit Modal */}
-      {editModalOpen && selectedTable && tableMetadata && (
+      {editModalOpen && selectedTable && tableDetails && (
         <RecordEditModal
           isOpen={editModalOpen}
           mode={editMode}
           connectionId={selectedTable.connectionId}
           schemaName={selectedTable.schemaName}
           tableName={selectedTable.tableName}
-          columns={tableMetadata.columns}
+          columns={tableDetails.columns}
           existingRecord={editMode === 'edit' ? selectedRecord : undefined}
           onClose={() => setEditModalOpen(false)}
           onSuccess={handleEditSuccess}
@@ -176,14 +176,14 @@ export const DataAccessPage: React.FC = () => {
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteModalOpen && selectedTable && tableMetadata && selectedRecord && (
+      {deleteModalOpen && selectedTable && tableDetails && selectedRecord && (
         <RecordDeleteModal
           isOpen={deleteModalOpen}
           connectionId={selectedTable.connectionId}
           schemaName={selectedTable.schemaName}
           tableName={selectedTable.tableName}
           record={selectedRecord}
-          columns={tableMetadata.columns}
+          columns={tableDetails.columns}
           onClose={() => setDeleteModalOpen(false)}
           onSuccess={handleDeleteSuccess}
           onError={handleDeleteError}

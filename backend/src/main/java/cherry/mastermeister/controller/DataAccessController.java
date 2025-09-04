@@ -127,17 +127,17 @@ public class DataAccessController {
 
     @GetMapping("/{connectionId}/tables/{schemaName}/{tableName}")
     @Operation(
-            summary = "Get table information",
+            summary = "Get table details",
             description = "Get detailed information for a specific table"
     )
-    public ApiResponse<AccessibleTableResult> getTableInfo(
+    public ApiResponse<AccessibleTableResult> getTableDetails(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
             Authentication authentication
     ) {
 
-        logger.info("Getting table info for {}.{} on connection: {}", schemaName, tableName, connectionId);
+        logger.info("Getting table details for {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         Long userId = getUserId(authentication);
         AccessibleTable accessibleTable = accessibleTableService.getAccessibleTableWithColumns(

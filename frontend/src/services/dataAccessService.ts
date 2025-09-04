@@ -28,8 +28,7 @@ import type {
   RecordFilterRequest,
   RecordQueryResult,
   RecordUpdateRequest,
-  RecordUpdateResult,
-  TableMetadataResult
+  RecordUpdateResult
 } from '../types/api'
 import type {
   AccessibleColumn,
@@ -42,8 +41,7 @@ import type {
   RecordFilter,
   RecordQueryData,
   RecordUpdateData,
-  RecordUpdateResponse,
-  TableMetadata
+  RecordUpdateResponse
 } from '../types/frontend'
 
 class DataAccessService {
@@ -72,16 +70,16 @@ class DataAccessService {
     return response.data.data.map(this.convertToAccessibleTable)
   }
 
-  async getTableMetadata(connectionId: number, schemaName: string, tableName: string): Promise<TableMetadata> {
-    const response = await apiClient.get<ApiResponse<TableMetadataResult>>(
-      API_ENDPOINTS.DATA_ACCESS.TABLE_METADATA(connectionId, schemaName, tableName)
+  async getTableDetails(connectionId: number, schemaName: string, tableName: string): Promise<AccessibleTable> {
+    const response = await apiClient.get<ApiResponse<AccessibleTableResult>>(
+      API_ENDPOINTS.DATA_ACCESS.TABLE_DETAILS(connectionId, schemaName, tableName)
     )
 
     if (!response.data.ok || !response.data.data) {
       throw new Error('Failed to fetch table metadata')
     }
 
-    return this.convertToTableMetadata(response.data.data)
+    return this.convertToAccessibleTable(response.data.data)
   }
 
   async getRecords(
@@ -104,12 +102,12 @@ class DataAccessService {
 
     const response = requestBody
       ? await apiClient.post<ApiResponse<RecordQueryResult>>(
-          `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS_FILTER(connectionId, schemaName, tableName)}?${params.toString()}`,
-          requestBody
-        )
+        `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS_FILTER(connectionId, schemaName, tableName)}?${params.toString()}`,
+        requestBody
+      )
       : await apiClient.get<ApiResponse<RecordQueryResult>>(
-          `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS(connectionId, schemaName, tableName)}?${params.toString()}`
-        )
+        `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS(connectionId, schemaName, tableName)}?${params.toString()}`
+      )
 
     if (!response.data.ok || !response.data.data) {
       throw new Error('Failed to fetch records')
@@ -201,7 +199,7 @@ class DataAccessService {
       canAdmin: apiTable.canAdmin,
       canModifyData: apiTable.canModifyData,
       canPerformCrud: apiTable.canPerformCrud,
-      columns: apiTable.columns.map(this.convertToAccessibleColumn)
+      columns: apiTable.columns?.map(col => this.convertToAccessibleColumn(col))
     }
   }
 
@@ -222,27 +220,6 @@ class DataAccessService {
       canWrite: apiColumn.canWrite,
       canDelete: apiColumn.canDelete,
       canAdmin: apiColumn.canAdmin
-    }
-  }
-
-  private convertToTableMetadata(apiMetadata: TableMetadataResult): TableMetadata {
-    return {
-      schema: apiMetadata.schema,
-      tableName: apiMetadata.tableName,
-      tableType: apiMetadata.tableType,
-      comment: apiMetadata.comment,
-      columns: apiMetadata.columns.map(col => ({
-        columnName: col.columnName,
-        dataType: col.dataType,
-        columnSize: col.columnSize,
-        decimalDigits: col.decimalDigits,
-        nullable: col.nullable,
-        defaultValue: col.defaultValue,
-        comment: col.comment,
-        primaryKey: col.primaryKey,
-        autoIncrement: col.autoIncrement,
-        ordinalPosition: col.ordinalPosition
-      }))
     }
   }
 
