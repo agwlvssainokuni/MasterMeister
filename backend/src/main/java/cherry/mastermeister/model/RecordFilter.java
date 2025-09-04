@@ -66,9 +66,9 @@ public record RecordFilter(
         EQUALS,         // =
         NOT_EQUALS,     // !=
         GREATER_THAN,   // >
-        GREATER_EQUAL,  // >=
+        GREATER_EQUALS, // >=
         LESS_THAN,      // <
-        LESS_EQUAL,     // <=
+        LESS_EQUALS,    // <=
         LIKE,           // LIKE (for strings)
         NOT_LIKE,       // NOT LIKE
         IN,             // IN (list)

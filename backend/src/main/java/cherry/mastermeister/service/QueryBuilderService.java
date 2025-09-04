@@ -159,7 +159,7 @@ public class QueryBuilderService {
                 parameters.put(paramName, columnFilter.value());
                 return columnName + " > :" + paramName;
 
-            case GREATER_EQUAL:
+            case GREATER_EQUALS:
                 parameters.put(paramName, columnFilter.value());
                 return columnName + " >= :" + paramName;
 
@@ -167,7 +167,7 @@ public class QueryBuilderService {
                 parameters.put(paramName, columnFilter.value());
                 return columnName + " < :" + paramName;
 
-            case LESS_EQUAL:
+            case LESS_EQUALS:
                 parameters.put(paramName, columnFilter.value());
                 return columnName + " <= :" + paramName;
 

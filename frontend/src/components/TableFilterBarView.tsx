@@ -53,6 +53,25 @@ export const TableFilterBarView: React.FC<TableFilterBarProps> = (
 
   const hasActiveFilters = activeFilters.length > 0
 
+  const operatorToSqlExpression = (operator: string): string => {
+    switch (operator) {
+      case 'EQUALS': return '='
+      case 'NOT_EQUALS': return '!='
+      case 'GREATER_THAN': return '>'
+      case 'LESS_THAN': return '<'
+      case 'GREATER_EQUALS': return '>='
+      case 'LESS_EQUALS': return '<='
+      case 'LIKE': return 'LIKE'
+      case 'NOT_LIKE': return 'NOT LIKE'
+      case 'BETWEEN': return 'BETWEEN'
+      case 'IN': return 'IN'
+      case 'NOT_IN': return 'NOT IN'
+      case 'IS_NULL': return 'IS NULL'
+      case 'IS_NOT_NULL': return 'IS NOT NULL'
+      default: return operator
+    }
+  }
+
   return (
     <div className="table-filter-bar">
       <div className="filter-bar-header">
@@ -84,7 +103,7 @@ export const TableFilterBarView: React.FC<TableFilterBarProps> = (
             {activeFilters.map(filter => (
                 <div key={filter.columnName} className="filter-chip">
                   <span className="filter-chip-column">{filter.columnName}</span>
-                  <span className="filter-chip-operator">{filter.operator}</span>
+                  <span className="filter-chip-operator">{operatorToSqlExpression(filter.operator)}</span>
                   <span className="filter-chip-value">
                     {filter.value !== undefined ? String(filter.value) : ''}
                     {filter.operator === 'BETWEEN' && filter.value2 !== undefined && (
