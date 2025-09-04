@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * Model representing record creation result
  */
-public record RecordCreationResult(
+public record RecordCreateResult(
         Map<String, Object> createdRecord,
         Map<String, String> columnTypes,
         long executionTimeMs,

@@ -17,10 +17,9 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
-import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
-import cherry.mastermeister.model.RecordCreationResult;
+import cherry.mastermeister.model.RecordCreateResult;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
@@ -64,7 +63,7 @@ public class RecordCreateService {
     /**
      * Create new record with permission validation
      */
-    public RecordCreationResult createRecord(
+    public RecordCreateResult createRecord(
             Long connectionId, String schemaName, String tableName, Map<String, Object> recordData
     ) {
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
@@ -112,7 +111,7 @@ public class RecordCreateService {
 
             // Get writable columns metadata for response
             List<ColumnMetadata> writableColumnsMetadata = getWritableColumnsMetadata(writableColumnNames, tableMetadata);
-            
+
             // Get the created record with generated keys
             Map<String, Object> createdRecord = getCreatedRecordData(validatedData, keyHolder, writableColumnsMetadata);
             Map<String, String> columnTypes = writableColumnsMetadata.stream()
@@ -120,7 +119,7 @@ public class RecordCreateService {
 
             long executionTime = System.currentTimeMillis() - startTime;
 
-            RecordCreationResult result = new RecordCreationResult(
+            RecordCreateResult result = new RecordCreateResult(
                     createdRecord, columnTypes, executionTime, insertQuery.query());
 
             // Log detailed record creation success

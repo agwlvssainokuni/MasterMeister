@@ -18,6 +18,7 @@ package cherry.mastermeister.controller;
 
 import cherry.mastermeister.annotation.RequirePermission;
 import cherry.mastermeister.controller.dto.*;
+import cherry.mastermeister.controller.dto.RecordCreateResult;
 import cherry.mastermeister.controller.dto.RecordDeleteResult;
 import cherry.mastermeister.controller.dto.RecordQueryResult;
 import cherry.mastermeister.controller.dto.RecordUpdateResult;
@@ -217,7 +218,7 @@ public class DataAccessController {
 
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
-        RecordCreationResult result = recordCreateService.createRecord(
+        cherry.mastermeister.model.RecordCreateResult result = recordCreateService.createRecord(
                 connectionId,
                 schemaName, tableName,
                 request.data()
@@ -316,10 +317,10 @@ public class DataAccessController {
     /**
      * Convert model RecordCreationResult to DTO
      */
-    private RecordCreateResult convertToRecordCreateResult(
-            RecordCreationResult model
+    private cherry.mastermeister.controller.dto.RecordCreateResult convertToRecordCreateResult(
+            cherry.mastermeister.model.RecordCreateResult model
     ) {
-        return new RecordCreateResult(
+        return new cherry.mastermeister.controller.dto.RecordCreateResult(
                 model.createdRecord(),
                 model.columnTypes(),
                 model.executionTimeMs(),
