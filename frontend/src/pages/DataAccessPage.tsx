@@ -198,7 +198,7 @@ export const DataAccessPage: React.FC = () => {
               className="fab create-record-fab"
               disabled={!hasWritePermission}
               onClick={() => hasWritePermission && handleCreateRecord()}
-              title={hasWritePermission ? t('dataTable.createRecord') : t('permissions.insufficientPermissions')}
+              title={hasWritePermission ? t('dataTable.createRecord') : t('common.insufficientPermissions')}
             >
               <FaEdit/>
             </button>

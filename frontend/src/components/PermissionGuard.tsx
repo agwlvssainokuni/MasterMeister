@@ -59,7 +59,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
       return (
         <div className="permission-denied">
           <span className="permission-denied-text">
-            {t('permissions.insufficientPermissions')}
+            {t('common.insufficientPermissions')}
           </span>
         </div>
       )

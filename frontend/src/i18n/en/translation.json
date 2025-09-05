@@ -204,7 +204,8 @@
     "actions": "Actions",
     "clear": "Clear",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "insufficientPermissions": "Insufficient permissions"
   },
   "tabs": {
     "data": "Data",
@@ -309,13 +310,6 @@
       "isNull": "Is empty",
       "isNotNull": "Is not empty"
     }
-  },
-  "permissions": {
-    "insufficientPermissions": "Insufficient permissions",
-    "noReadAccess": "No read access to this data",
-    "noWriteAccess": "No write access to this data",
-    "noDeleteAccess": "No delete access to this data",
-    "noAdminAccess": "No admin access to this resource"
   },
   "dashboard": {
     "title": "Master Meister Dashboard",

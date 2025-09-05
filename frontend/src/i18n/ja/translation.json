@@ -204,7 +204,8 @@
     "actions": "操作",
     "clear": "クリア",
     "yes": "はい",
-    "no": "いいえ"
+    "no": "いいえ",
+    "insufficientPermissions": "権限が不足しています"
   },
   "tabs": {
     "data": "データ",
@@ -309,13 +310,6 @@
       "isNull": "空である",
       "isNotNull": "空でない"
     }
-  },
-  "permissions": {
-    "insufficientPermissions": "権限が不足しています",
-    "noReadAccess": "このデータの読み取り権限がありません",
-    "noWriteAccess": "このデータの書き込み権限がありません",
-    "noDeleteAccess": "このデータの削除権限がありません",
-    "noAdminAccess": "このリソースの管理者権限がありません"
   },
   "dashboard": {
     "title": "Master Meister ダッシュボード",

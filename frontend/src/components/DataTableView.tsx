@@ -346,7 +346,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                             className="button button-sm button-secondary"
                             disabled={!hasWritePermission}
                             onClick={() => hasWritePermission && onRecordEdit?.(record)}
-                            title={hasWritePermission ? t('common.edit') : t('permissions.insufficientPermissions')}
+                            title={hasWritePermission ? t('common.edit') : t('common.insufficientPermissions')}
                           >
                             <FaEdit/>
                           </button>
@@ -358,7 +358,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                             className="button button-sm button-danger"
                             disabled={!hasDeletePermission}
                             onClick={() => hasDeletePermission && onRecordDelete?.(record)}
-                            title={hasDeletePermission ? t('common.delete') : t('permissions.insufficientPermissions')}
+                            title={hasDeletePermission ? t('common.delete') : t('common.insufficientPermissions')}
                           >
                             <FaTrash/>
                           </button>
@@ -462,7 +462,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                 className="button button-primary"
                 disabled={!hasWritePermission}
                 onClick={() => hasWritePermission && onRecordCreate?.()}
-                title={hasWritePermission ? t('dataTable.createRecord') : t('permissions.insufficientPermissions')}
+                title={hasWritePermission ? t('dataTable.createRecord') : t('common.insufficientPermissions')}
               >
                 {t('dataTable.createRecord')}
               </button>
