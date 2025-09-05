@@ -187,12 +187,12 @@ public class RecordReadService {
         );
 
         return tableEntity.getColumns().stream()
-                .filter(columnEntity -> {
-                    Set<PermissionType> permissions = bulkColumnPermissions.get(columnEntity.getColumnName());
-                    return permissions != null && permissions.contains(PermissionType.READ);
-                })
                 .map(columnEntity -> {
                     Set<PermissionType> columnPermissions = bulkColumnPermissions.get(columnEntity.getColumnName());
+                    // Handle case where no permissions are found (default to empty set)
+                    if (columnPermissions == null) {
+                        columnPermissions = Set.of();
+                    }
 
                     return new AccessibleColumn(
                             columnEntity.getColumnName(),
@@ -238,10 +238,18 @@ public class RecordReadService {
             data.put(columnName, value);
             columnTypes.put(columnName, columnType);
 
-            // Check if column is in accessible list
+            // Check if column has READ permission
             boolean canRead = accessibleColumns.stream()
-                    .anyMatch(col -> col.columnName().equals(columnName));
+                    .filter(col -> col.columnName().equals(columnName))
+                    .findFirst()
+                    .map(AccessibleColumn::canRead)
+                    .orElse(false);
             columnPermissions.put(columnName, canRead);
+
+            // If no read permission, mask the data
+            if (!canRead) {
+                data.put(columnName, "[ACCESS DENIED]");
+            }
         }
 
         return new TableRecord(data, columnTypes, columnPermissions);

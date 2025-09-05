@@ -35,31 +35,9 @@ public record AccessibleColumn(
         Boolean autoIncrement,
         Integer ordinalPosition,
         Set<PermissionType> permissions,
-        boolean hasReadPermission,
-        boolean hasWritePermission,
-        boolean hasDeletePermission,
-        boolean hasAdminPermission
+        boolean canRead,
+        boolean canWrite,
+        boolean canDelete,
+        boolean canAdmin
 ) {
-    /**
-     * Create AccessibleColumn with calculated permission flags
-     */
-    public static AccessibleColumn of(ColumnMetadata columnInfo, Set<PermissionType> permissions) {
-        return new AccessibleColumn(
-                columnInfo.columnName(),
-                columnInfo.dataType(),
-                columnInfo.columnSize(),
-                columnInfo.decimalDigits(),
-                columnInfo.nullable(),
-                columnInfo.defaultValue(),
-                columnInfo.comment(),
-                columnInfo.primaryKey(),
-                columnInfo.autoIncrement(),
-                columnInfo.ordinalPosition(),
-                permissions,
-                permissions.contains(PermissionType.READ),
-                permissions.contains(PermissionType.WRITE),
-                permissions.contains(PermissionType.DELETE),
-                permissions.contains(PermissionType.ADMIN)
-        );
-    }
 }

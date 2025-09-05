@@ -406,10 +406,10 @@ public class DataAccessController {
                 accessibleTable.tableType(),
                 accessibleTable.comment(),
                 permissionStrings,
-                accessibleTable.hasReadPermission(),
-                accessibleTable.hasWritePermission(),
-                accessibleTable.hasDeletePermission(),
-                accessibleTable.hasAdminPermission(),
+                accessibleTable.canRead(),
+                accessibleTable.canWrite(),
+                accessibleTable.canDelete(),
+                accessibleTable.canAdmin(),
                 accessibleTable.canModifyData(),
                 accessibleTable.canPerformCrud(),
                 columnResults
@@ -488,10 +488,10 @@ public class DataAccessController {
                 column.autoIncrement(),
                 column.ordinalPosition(),
                 permissionStrings,
-                column.hasReadPermission(),
-                column.hasWritePermission(),
-                column.hasDeletePermission(),
-                column.hasAdminPermission()
+                column.canRead(),
+                column.canWrite(),
+                column.canDelete(),
+                column.canAdmin()
         );
     }
 }

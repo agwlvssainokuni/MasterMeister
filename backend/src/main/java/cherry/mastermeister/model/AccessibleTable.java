@@ -31,53 +31,12 @@ public record AccessibleTable(
         String tableType,
         String comment,
         Set<PermissionType> permissions,
-        boolean hasReadPermission,
-        boolean hasWritePermission,
-        boolean hasDeletePermission,
-        boolean hasAdminPermission,
+        boolean canRead,
+        boolean canWrite,
+        boolean canDelete,
+        boolean canAdmin,
         List<AccessibleColumn> columns
 ) {
-    /**
-     * Create AccessibleTable with calculated permission flags
-     */
-    /**
-     * Create AccessibleTable without column details (for list view)
-     */
-    public static AccessibleTable of(TableMetadata tableInfo, Long connectionId, Set<PermissionType> permissions) {
-        return new AccessibleTable(
-                connectionId,
-                tableInfo.schema(),
-                tableInfo.tableName(),
-                tableInfo.tableType(),
-                tableInfo.comment(),
-                permissions,
-                permissions.contains(PermissionType.READ),
-                permissions.contains(PermissionType.WRITE),
-                permissions.contains(PermissionType.DELETE),
-                permissions.contains(PermissionType.ADMIN),
-                null // No column details for list view
-        );
-    }
-
-    /**
-     * Create AccessibleTable with column details (for detail view)
-     */
-    public static AccessibleTable withColumns(TableMetadata tableInfo, Long connectionId, 
-            Set<PermissionType> permissions, List<AccessibleColumn> columns) {
-        return new AccessibleTable(
-                connectionId,
-                tableInfo.schema(),
-                tableInfo.tableName(),
-                tableInfo.tableType(),
-                tableInfo.comment(),
-                permissions,
-                permissions.contains(PermissionType.READ),
-                permissions.contains(PermissionType.WRITE),
-                permissions.contains(PermissionType.DELETE),
-                permissions.contains(PermissionType.ADMIN),
-                columns
-        );
-    }
 
     /**
      * Get full table identifier
@@ -93,13 +52,13 @@ public record AccessibleTable(
      * Check if user can perform CRUD operations
      */
     public boolean canPerformCrud() {
-        return hasReadPermission && hasWritePermission && hasDeletePermission;
+        return canRead && canWrite && canDelete;
     }
 
     /**
      * Check if user can modify data (read and write)
      */
     public boolean canModifyData() {
-        return hasReadPermission && hasWritePermission;
+        return canRead && canWrite;
     }
 }
