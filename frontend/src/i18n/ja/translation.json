@@ -250,6 +250,7 @@
     "pageSize": "ページサイズ",
     "pageInfo": "{{total}}ページ中{{current}}ページ（{{totalRecords}}件）",
     "noData": "データがありません",
+    "metadataOnlyAccess": "このテーブルはメタデータのみ表示可能です。データを閲覧するには読み取り権限が必要です。",
     "filters": {
       "title": "フィルター",
       "active": "適用中のフィルター",

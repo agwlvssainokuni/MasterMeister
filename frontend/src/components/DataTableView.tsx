@@ -81,6 +81,14 @@ export const DataTableView: React.FC<DataTableViewProps> = (
   }, [sortOrders])
 
   const loadRecords = useCallback(async () => {
+    // If no READ permission, skip data loading
+    if (!accessibleTable.canRead) {
+      setLoading(false)
+      setError(null)
+      setQueryData(null)
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -107,7 +115,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     } finally {
       setLoading(false)
     }
-  }, [connectionId, schemaName, tableName, currentPage, pageSize])
+  }, [connectionId, schemaName, tableName, currentPage, pageSize, accessibleTable.canRead])
 
   useEffect(() => {
     loadRecords()
@@ -270,24 +278,31 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     )
   }
 
-  if (!queryData) {
-    return (
-      <div className="data-table-container">
-        <div className="empty-state">
-          <p>{t('dataTable.noData')}</p>
-        </div>
-      </div>
-    )
-  }
-
-  const {records, accessibleColumns, totalRecords, totalPages, hasNextPage, hasPreviousPage} = queryData
+  // Extract data from queryData if available, otherwise use defaults
+  const records = queryData?.records || []
+  const accessibleColumns = queryData?.accessibleColumns || []
+  const totalRecords = queryData?.totalRecords || 0
+  const totalPages = queryData?.totalPages || 0
+  const hasNextPage = queryData?.hasNextPage || false
+  const hasPreviousPage = queryData?.hasPreviousPage || false
 
   // Create tab items
   const tabItems: TabItem[] = [
     {
       id: 'data',
       label: t('tabs.data'),
-      content: (
+      content: !accessibleTable.canRead ? (
+        <div className="permission-denied-tab-content">
+          <div className="permission-denied-message">
+            <p className="permission-message">
+              {t('common.insufficientPermissions')} - {t('dataTable.permissions.noAccess')}
+            </p>
+            <p className="permission-explanation">
+              {t('dataTable.metadataOnlyAccess')}
+            </p>
+          </div>
+        </div>
+      ) : (
         <div className="data-tab-content">
           <div className="table-controls">
             <div className="page-size-control">
@@ -434,7 +449,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
       label: t('tabs.metadata'),
       content: (
         <TableMetadataView
-          columns={accessibleColumns}
+          columns={accessibleTable.columns}
         />
       )
     }
@@ -449,9 +464,11 @@ export const DataTableView: React.FC<DataTableViewProps> = (
             <span className="record-count">
               {t('dataTable.recordCount', {count: totalRecords})}
             </span>
-            <span className="execution-time">
-              {t('dataTable.executionTime', {time: queryData.executionTimeMs})}
-            </span>
+            {queryData && (
+              <span className="execution-time">
+                {t('dataTable.executionTime', {time: queryData.executionTimeMs})}
+              </span>
+            )}
           </div>
         </div>
 

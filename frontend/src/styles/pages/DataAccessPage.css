@@ -374,3 +374,29 @@
   align-items: center;
   gap: var(--spacing-md);
 }
+
+/* Permission denied states for DataTable */
+.permission-denied-state,
+.permission-denied-tab-content {
+  text-align: center;
+  padding: var(--spacing-xxl);
+  color: var(--color-text-secondary);
+}
+
+.permission-denied-message {
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.permission-message {
+  font-size: var(--font-size-lg);
+  color: var(--color-warning);
+  margin-bottom: var(--spacing-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.permission-explanation {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  margin-bottom: 0;
+}

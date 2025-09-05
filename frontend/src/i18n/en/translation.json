@@ -250,6 +250,7 @@
     "pageSize": "Page Size",
     "pageInfo": "Page {{current}} of {{total}} ({{totalRecords}} records)",
     "noData": "No data available",
+    "metadataOnlyAccess": "This table supports metadata-only access. READ permission is required to view data.",
     "filters": {
       "title": "Filters",
       "active": "Active Filters",

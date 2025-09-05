@@ -136,7 +136,7 @@ export const DataAccessPage: React.FC = () => {
               connectionId={selectedTable.connectionId}
               schemaName={selectedTable.schemaName}
               tableName={selectedTable.tableName}
-              accessibleTable={selectedTable}
+              accessibleTable={tableDetails}
               reloadTrigger={dataTableReloadTrigger}
               onRecordEdit={handleEditRecord}
               onRecordDelete={handleDeleteRecord}
