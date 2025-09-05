@@ -24,9 +24,9 @@ import {Tabs} from './Tabs'
 import {TableMetadataView} from './TableMetadataView'
 import {TableFilterBarView} from './TableFilterBarView'
 import type {
+  AccessibleColumn,
   AccessibleTable,
   ColumnFilter,
-  ColumnMetadata,
   RecordFilter,
   RecordQueryData,
   SortOrder,
@@ -211,7 +211,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     return sortOrder.direction === 'ASC' ? <FaSortUp/> : <FaSortDown/>
   }
 
-  const formatCellValue = (value: unknown, column: ColumnMetadata): string => {
+  const formatCellValue = (value: unknown, column: AccessibleColumn): string => {
     if (value === null || value === undefined) {
       return ''
     }
@@ -231,7 +231,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     return String(value)
   }
 
-  const renderCellValue = (record: TableRecord, column: ColumnMetadata): string => {
+  const renderCellValue = (record: TableRecord, column: AccessibleColumn): string => {
     // Check if user has read permission for this column
     if (!column.canRead) {
       return t('permissions.dataDisplay.noAccess')
@@ -375,7 +375,7 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                       !hasReadPermission && 'no-permission',
                       hasReadPermission && !hasData && 'forbidden-data'
                     ].filter(Boolean).join(' ')
-                    
+
                     return (
                       <td key={column.columnName} className={cellClassName}>
                         {renderCellValue(record, column)}

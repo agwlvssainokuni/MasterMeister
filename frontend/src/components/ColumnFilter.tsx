@@ -16,11 +16,11 @@
 
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import type {ColumnFilter, ColumnMetadata} from '../types/frontend'
+import type {AccessibleColumn, ColumnFilter} from '../types/frontend'
 import '../styles/components/ColumnFilter.css'
 
 interface ColumnFilterProps {
-  column: ColumnMetadata
+  column: AccessibleColumn
   currentFilter?: ColumnFilter
   pendingFilter?: ColumnFilter
   onPendingFilterChange: (filter: ColumnFilter | null) => void

@@ -18,10 +18,10 @@ import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {FaTimes} from 'react-icons/fa'
 import {ColumnFilterComponent} from './ColumnFilter'
-import type {ColumnFilter, ColumnMetadata} from '../types/frontend'
+import type {AccessibleColumn, ColumnFilter} from '../types/frontend'
 
 interface TableFilterBarProps {
-  columns: ColumnMetadata[]
+  columns: AccessibleColumn[]
   activeFilters: ColumnFilter[]
   pendingFilters?: ColumnFilter[]
   onFilterChange: (columnName: string, filter: ColumnFilter | null) => void
@@ -55,20 +55,34 @@ export const TableFilterBarView: React.FC<TableFilterBarProps> = (
 
   const operatorToSqlExpression = (operator: string): string => {
     switch (operator) {
-      case 'EQUALS': return '='
-      case 'NOT_EQUALS': return '!='
-      case 'GREATER_THAN': return '>'
-      case 'LESS_THAN': return '<'
-      case 'GREATER_EQUALS': return '>='
-      case 'LESS_EQUALS': return '<='
-      case 'LIKE': return 'LIKE'
-      case 'NOT_LIKE': return 'NOT LIKE'
-      case 'BETWEEN': return 'BETWEEN'
-      case 'IN': return 'IN'
-      case 'NOT_IN': return 'NOT IN'
-      case 'IS_NULL': return 'IS NULL'
-      case 'IS_NOT_NULL': return 'IS NOT NULL'
-      default: return operator
+      case 'EQUALS':
+        return '='
+      case 'NOT_EQUALS':
+        return '!='
+      case 'GREATER_THAN':
+        return '>'
+      case 'LESS_THAN':
+        return '<'
+      case 'GREATER_EQUALS':
+        return '>='
+      case 'LESS_EQUALS':
+        return '<='
+      case 'LIKE':
+        return 'LIKE'
+      case 'NOT_LIKE':
+        return 'NOT LIKE'
+      case 'BETWEEN':
+        return 'BETWEEN'
+      case 'IN':
+        return 'IN'
+      case 'NOT_IN':
+        return 'NOT IN'
+      case 'IS_NULL':
+        return 'IS NULL'
+      case 'IS_NOT_NULL':
+        return 'IS NOT NULL'
+      default:
+        return operator
     }
   }
 
@@ -101,24 +115,24 @@ export const TableFilterBarView: React.FC<TableFilterBarProps> = (
           <span className="active-filters-label">{t('dataTable.filters.active')}:</span>
           <div className="filter-chips">
             {activeFilters.map(filter => (
-                <div key={filter.columnName} className="filter-chip">
-                  <span className="filter-chip-column">{filter.columnName}</span>
-                  <span className="filter-chip-operator">{operatorToSqlExpression(filter.operator)}</span>
-                  <span className="filter-chip-value">
+              <div key={filter.columnName} className="filter-chip">
+                <span className="filter-chip-column">{filter.columnName}</span>
+                <span className="filter-chip-operator">{operatorToSqlExpression(filter.operator)}</span>
+                <span className="filter-chip-value">
                     {filter.value !== undefined ? String(filter.value) : ''}
-                    {filter.operator === 'BETWEEN' && filter.value2 !== undefined && (
-                      <> AND {String(filter.value2)}</>
-                    )}
+                  {filter.operator === 'BETWEEN' && filter.value2 !== undefined && (
+                    <> AND {String(filter.value2)}</>
+                  )}
                   </span>
-                  <button
-                    className="filter-chip-remove"
-                    onClick={() => onFilterChange(filter.columnName, null)}
-                    title={t('dataTable.filters.remove')}
-                  >
-                    <FaTimes/>
-                  </button>
-                </div>
-              ))}
+                <button
+                  className="filter-chip-remove"
+                  onClick={() => onFilterChange(filter.columnName, null)}
+                  title={t('dataTable.filters.remove')}
+                >
+                  <FaTimes/>
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}

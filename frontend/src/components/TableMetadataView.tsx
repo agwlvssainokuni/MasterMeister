@@ -17,10 +17,10 @@
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {FaKey, FaLock} from 'react-icons/fa'
-import type {ColumnMetadata} from '../types/frontend'
+import type {AccessibleColumn} from '../types/frontend'
 
 interface TableMetadataViewProps {
-  columns: ColumnMetadata[]
+  columns: AccessibleColumn[]
 }
 
 export const TableMetadataView: React.FC<TableMetadataViewProps> = (

@@ -17,7 +17,7 @@
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
-import type {ColumnMetadata, RecordDeleteData, TableRecord} from '../types/frontend'
+import type {AccessibleColumn, RecordDeleteData, TableRecord} from '../types/frontend'
 
 interface RecordDeleteModalProps {
   isOpen: boolean
@@ -25,7 +25,7 @@ interface RecordDeleteModalProps {
   schemaName: string
   tableName: string
   record: TableRecord
-  columns: ColumnMetadata[]
+  columns: AccessibleColumn[]
   onClose: () => void
   onSuccess: (message: string) => void
   onError: (error: string) => void

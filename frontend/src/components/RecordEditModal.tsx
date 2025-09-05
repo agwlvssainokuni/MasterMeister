@@ -17,7 +17,7 @@
 import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {dataAccessService} from '../services/dataAccessService'
-import type {ColumnMetadata, RecordCreateData, RecordUpdateData, TableRecord} from '../types/frontend'
+import type {AccessibleColumn, RecordCreateData, RecordUpdateData, TableRecord} from '../types/frontend'
 
 interface RecordEditModalProps {
   isOpen: boolean
@@ -25,7 +25,7 @@ interface RecordEditModalProps {
   connectionId: number
   schemaName: string
   tableName: string
-  columns: ColumnMetadata[]
+  columns: AccessibleColumn[]
   existingRecord?: TableRecord
   onClose: () => void
   onSuccess: (message: string) => void
@@ -147,7 +147,7 @@ export const RecordEditModal: React.FC<RecordEditModalProps> = (
     }
   }
 
-  const getInputType = (column: ColumnMetadata): string => {
+  const getInputType = (column: AccessibleColumn): string => {
     const dataType = column.dataType.toLowerCase()
 
     if (dataType.includes('int') || dataType.includes('number') || dataType.includes('decimal')) {
@@ -173,7 +173,7 @@ export const RecordEditModal: React.FC<RecordEditModalProps> = (
     return 'text'
   }
 
-  const renderInput = (column: ColumnMetadata) => {
+  const renderInput = (column: AccessibleColumn) => {
     const inputType = getInputType(column)
     const value = formData[column.columnName]?.toString() ?? ''
 
