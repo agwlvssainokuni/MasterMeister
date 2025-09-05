@@ -234,13 +234,13 @@ export const DataTableView: React.FC<DataTableViewProps> = (
   const renderCellValue = (record: TableRecord, column: AccessibleColumn): string => {
     // Check if user has read permission for this column
     if (!column.canRead) {
-      return t('permissions.dataDisplay.noAccess')
+      return t('dataTable.permissions.noAccess')
     }
 
     // Check if data exists in the record (backend filtering)
     const value = record[column.columnName]
     if (value === undefined) {
-      return t('permissions.dataDisplay.forbidden')
+      return t('dataTable.permissions.forbidden')
     }
 
     return formatCellValue(value, column)

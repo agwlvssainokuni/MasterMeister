@@ -255,6 +255,11 @@
       "applyAll": "フィルター適用",
       "clearAll": "すべてクリア",
       "remove": "削除"
+    },
+    "permissions": {
+      "hidden": "非表示",
+      "forbidden": "アクセス禁止",
+      "noAccess": "アクセス権限なし"
     }
   },
   "recordEdit": {
@@ -310,12 +315,7 @@
     "noReadAccess": "このデータの読み取り権限がありません",
     "noWriteAccess": "このデータの書き込み権限がありません",
     "noDeleteAccess": "このデータの削除権限がありません",
-    "noAdminAccess": "このリソースの管理者権限がありません",
-    "dataDisplay": {
-      "hidden": "非表示",
-      "forbidden": "アクセス禁止",
-      "noAccess": "アクセス権限なし"
-    }
+    "noAdminAccess": "このリソースの管理者権限がありません"
   },
   "dashboard": {
     "title": "Master Meister ダッシュボード",
