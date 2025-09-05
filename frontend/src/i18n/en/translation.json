@@ -310,7 +310,12 @@
     "noReadAccess": "No read access to this data",
     "noWriteAccess": "No write access to this data",
     "noDeleteAccess": "No delete access to this data",
-    "noAdminAccess": "No admin access to this resource"
+    "noAdminAccess": "No admin access to this resource",
+    "dataDisplay": {
+      "hidden": "Hidden",
+      "forbidden": "Forbidden",
+      "noAccess": "No Access"
+    }
   },
   "dashboard": {
     "title": "Master Meister Dashboard",

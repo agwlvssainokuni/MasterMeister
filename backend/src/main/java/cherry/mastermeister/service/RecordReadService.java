@@ -235,9 +235,6 @@ public class RecordReadService {
             String columnType = metaData.getColumnTypeName(i);
             Object value = rs.getObject(i);
 
-            data.put(columnName, value);
-            columnTypes.put(columnName, columnType);
-
             // Check if column has READ permission
             boolean canRead = accessibleColumns.stream()
                     .filter(col -> col.columnName().equals(columnName))
@@ -246,9 +243,10 @@ public class RecordReadService {
                     .orElse(false);
             columnPermissions.put(columnName, canRead);
 
-            // If no read permission, mask the data
-            if (!canRead) {
-                data.put(columnName, "[ACCESS DENIED]");
+            // Only include data if user has READ permission
+            if (canRead) {
+                data.put(columnName, value);
+                columnTypes.put(columnName, columnType);
             }
         }
 

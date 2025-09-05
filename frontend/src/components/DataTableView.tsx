@@ -231,6 +231,21 @@ export const DataTableView: React.FC<DataTableViewProps> = (
     return String(value)
   }
 
+  const renderCellValue = (record: TableRecord, column: ColumnMetadata): string => {
+    // Check if user has read permission for this column
+    if (!column.canRead) {
+      return t('permissions.dataDisplay.noAccess')
+    }
+
+    // Check if data exists in the record (backend filtering)
+    const value = record[column.columnName]
+    if (value === undefined) {
+      return t('permissions.dataDisplay.forbidden')
+    }
+
+    return formatCellValue(value, column)
+  }
+
   if (loading) {
     return (
       <div className="data-table-container">
@@ -351,11 +366,22 @@ export const DataTableView: React.FC<DataTableViewProps> = (
                       </ConditionalPermission>
                     </div>
                   </td>
-                  {accessibleColumns.map(column => (
-                    <td key={column.columnName} className={column.primaryKey ? 'data-cell pk-column' : 'data-cell'}>
-                      {formatCellValue(record[column.columnName], column)}
-                    </td>
-                  ))}
+                  {accessibleColumns.map(column => {
+                    const hasReadPermission = column.canRead
+                    const hasData = record[column.columnName] !== undefined
+                    const cellClassName = [
+                      'data-cell',
+                      column.primaryKey && 'pk-column',
+                      !hasReadPermission && 'no-permission',
+                      hasReadPermission && !hasData && 'forbidden-data'
+                    ].filter(Boolean).join(' ')
+                    
+                    return (
+                      <td key={column.columnName} className={cellClassName}>
+                        {renderCellValue(record, column)}
+                      </td>
+                    )
+                  })}
                 </tr>
               ))}
               </tbody>

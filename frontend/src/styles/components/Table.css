@@ -184,6 +184,33 @@
   font-style: italic;
 }
 
+/* 権限関連のセルスタイル */
+.data-cell.no-permission {
+  background-color: rgba(255, 87, 34, 0.1); /* オレンジ背景 */
+  color: var(--color-text-muted);
+  font-style: italic;
+  position: relative;
+}
+
+.data-cell.forbidden-data {
+  background-color: rgba(244, 67, 54, 0.1); /* 赤背景 */
+  color: var(--color-text-muted);
+  font-style: italic;
+  position: relative;
+}
+
+.data-cell.no-permission::before {
+  content: '🔒';
+  margin-right: var(--spacing-xs);
+  opacity: 0.7;
+}
+
+.data-cell.forbidden-data::before {
+  content: '🚫';
+  margin-right: var(--spacing-xs);
+  opacity: 0.7;
+}
+
 /* レスポンシブ */
 @media (max-width: 768px) {
   .table-header th,
