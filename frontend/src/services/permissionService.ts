@@ -19,13 +19,13 @@ import apiClient from './apiClient'
 import type {
   ApiResponse,
   BulkPermissionRequest as ApiBulkPermissionRequest,
-  BulkPermissionResult as ApiBulkPermissionResult,
+  BulkPermissionResponse as ApiBulkPermissionResponse,
   PermissionImportResult as ApiPermissionImportResult,
   PermissionValidationResult as ApiPermissionValidationResult
 } from '../types/api'
 import type {
   BulkPermissionOptions,
-  BulkPermissionResult,
+  BulkPermissionResponse,
   PermissionImportOptions,
   PermissionImportResult,
   PermissionValidationResult
@@ -122,7 +122,7 @@ export class PermissionService {
   async bulkGrantPermissions(
     connectionId: number,
     options: BulkPermissionOptions
-  ): Promise<BulkPermissionResult> {
+  ): Promise<BulkPermissionResponse> {
     // Convert frontend type to API type
     const apiRequest: ApiBulkPermissionRequest = {
       scope: options.scope.toUpperCase() as ApiBulkPermissionRequest['scope'],
@@ -134,7 +134,7 @@ export class PermissionService {
       description: options.description
     }
 
-    const response = await apiClient.post<ApiResponse<ApiBulkPermissionResult>>(
+    const response = await apiClient.post<ApiResponse<ApiBulkPermissionResponse>>(
       API_ENDPOINTS.PERMISSIONS.BULK_GRANT(connectionId),
       apiRequest
     )
@@ -146,7 +146,7 @@ export class PermissionService {
     return this.convertToFrontendBulkResult(response.data.data)
   }
 
-  private convertToFrontendBulkResult(apiResult: ApiBulkPermissionResult): BulkPermissionResult {
+  private convertToFrontendBulkResult(apiResult: ApiBulkPermissionResponse): BulkPermissionResponse {
     return {
       processedUsers: apiResult.processedUsers,
       processedTables: apiResult.processedTables,

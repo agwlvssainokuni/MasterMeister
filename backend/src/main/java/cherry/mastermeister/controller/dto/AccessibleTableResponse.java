@@ -16,26 +16,26 @@
 
 package cherry.mastermeister.controller.dto;
 
+import java.util.List;
 import java.util.Set;
 
 /**
- * DTO for accessible column information with permission details
+ * DTO for accessible table information with permission details
  */
-public record AccessibleColumnResult(
-        String columnName,
-        String dataType,
-        Integer columnSize,
-        Integer decimalDigits,
-        Boolean nullable,
-        String defaultValue,
+public record AccessibleTableResponse(
+        Long connectionId,
+        String schemaName,
+        String tableName,
+        String fullTableName,
+        String tableType,
         String comment,
-        Boolean primaryKey,
-        Boolean autoIncrement,
-        Integer ordinalPosition,
         Set<String> permissions,
         boolean canRead,
         boolean canWrite,
         boolean canDelete,
-        boolean canAdmin
+        boolean canAdmin,
+        boolean canModifyData,
+        boolean canPerformCrud,
+        List<AccessibleColumnResponse> columns
 ) {
 }

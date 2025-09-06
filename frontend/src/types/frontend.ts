@@ -52,7 +52,7 @@ export interface RegisterEmailCredentials {
   language?: string
 }
 
-export interface RegisterEmailResult {
+export interface RegisterEmailResponse {
   email: string
 }
 
@@ -64,7 +64,7 @@ export interface RegisterUserCredentials {
   language?: string
 }
 
-export interface RegisterUserResult {
+export interface RegisterUserResponse {
   userId: number
   email: string
 }
@@ -247,7 +247,7 @@ export interface BulkPermissionOptions {
   description: string
 }
 
-export interface BulkPermissionResult {
+export interface BulkPermissionResponse {
   processedUsers: number
   processedTables: number
   createdPermissions: number

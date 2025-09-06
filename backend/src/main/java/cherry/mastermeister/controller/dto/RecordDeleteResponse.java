@@ -16,7 +16,16 @@
 
 package cherry.mastermeister.controller.dto;
 
-public record RegisterEmailResult(
-        String email
+import java.util.List;
+
+/**
+ * DTO for record deletion results
+ */
+public record RecordDeleteResponse(
+        int deletedRecordCount,
+        long executionTimeMs,
+        String query,
+        boolean referentialIntegrityChecked,
+        List<String> warnings
 ) {
 }

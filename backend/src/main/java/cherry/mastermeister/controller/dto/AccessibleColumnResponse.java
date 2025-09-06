@@ -16,12 +16,26 @@
 
 package cherry.mastermeister.controller.dto;
 
-import java.time.LocalDateTime;
+import java.util.Set;
 
-public record UserSummaryResult(
-        Long id,
-        String email,
-        String status,
-        LocalDateTime createdAt
+/**
+ * DTO for accessible column information with permission details
+ */
+public record AccessibleColumnResponse(
+        String columnName,
+        String dataType,
+        Integer columnSize,
+        Integer decimalDigits,
+        Boolean nullable,
+        String defaultValue,
+        String comment,
+        Boolean primaryKey,
+        Boolean autoIncrement,
+        Integer ordinalPosition,
+        Set<String> permissions,
+        boolean canRead,
+        boolean canWrite,
+        boolean canDelete,
+        boolean canAdmin
 ) {
 }

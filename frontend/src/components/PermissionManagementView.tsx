@@ -20,7 +20,7 @@ import {BulkPermissionSetupView} from './BulkPermissionSetupView'
 import {BulkPermissionConfirmModal} from './BulkPermissionConfirmModal'
 import type {
   BulkPermissionOptions,
-  BulkPermissionResult,
+  BulkPermissionResponse,
   BulkPermissionType,
   Database,
   PermissionImportOptions,
@@ -34,7 +34,7 @@ interface PermissionManagementViewProps {
   onExport: (connectionId: number, description?: string) => Promise<void>
   onImport: (connectionId: number, file: File, options: PermissionImportOptions) => Promise<PermissionImportResult>
   onValidate: (connectionId: number, file: File) => Promise<PermissionValidationResult>
-  onBulkGrant?: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
+  onBulkGrant?: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResponse>
 }
 
 export const PermissionManagementView: React.FC<PermissionManagementViewProps> = (

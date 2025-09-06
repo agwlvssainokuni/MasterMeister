@@ -24,7 +24,7 @@ import {databaseService} from '../services/databaseService'
 import {permissionService} from '../services/permissionService'
 import type {
   BulkPermissionOptions,
-  BulkPermissionResult,
+  BulkPermissionResponse,
   Database,
   PermissionImportOptions,
   PermissionImportResult,
@@ -144,7 +144,7 @@ export const PermissionManagementPage: React.FC = () => {
   const handleBulkGrantPermissions = async (
     connectionId: number,
     options: BulkPermissionOptions
-  ): Promise<BulkPermissionResult> => {
+  ): Promise<BulkPermissionResponse> => {
     try {
       setLoading(true)
       const result = await permissionService.bulkGrantPermissions(connectionId, options)

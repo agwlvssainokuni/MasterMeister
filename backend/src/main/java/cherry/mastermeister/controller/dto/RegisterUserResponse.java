@@ -16,16 +16,8 @@
 
 package cherry.mastermeister.controller.dto;
 
-public record ColumnMetadataResult(
-        String columnName,
-        String dataType,
-        Integer columnSize,
-        Integer decimalDigits,
-        Boolean nullable,
-        String defaultValue,
-        String comment,
-        Boolean primaryKey,
-        Boolean autoIncrement,
-        Integer ordinalPosition
+public record RegisterUserResponse(
+        Long userId,
+        String email
 ) {
 }

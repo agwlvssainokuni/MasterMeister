@@ -51,18 +51,18 @@ public class SchemaController {
 
     @GetMapping("/{connectionId}")
     @Operation(summary = "Read schema metadata", description = "Read schema metadata for a database connection")
-    public ApiResponse<SchemaMetadataResult> readSchema(@PathVariable Long connectionId) {
+    public ApiResponse<SchemaMetadataResponse> readSchema(@PathVariable Long connectionId) {
         logger.info("Reading schema metadata for connection ID: {}", connectionId);
 
         SchemaMetadata schema = schemaUpdateService.executeSchemaRead(connectionId);
-        SchemaMetadataResult result = toDto(schema);
+        SchemaMetadataResponse result = toDto(schema);
 
         return ApiResponse.success(result);
     }
 
     @GetMapping("/{connectionId}/cached")
     @Operation(summary = "Get cached schema metadata", description = "Get cached schema metadata from storage")
-    public ApiResponse<SchemaMetadataResult> getCachedSchema(@PathVariable Long connectionId) {
+    public ApiResponse<SchemaMetadataResponse> getCachedSchema(@PathVariable Long connectionId) {
         logger.info("Getting cached schema metadata for connection ID: {}", connectionId);
 
         Optional<SchemaMetadata> schema = schemaUpdateService.getStoredSchema(connectionId);
@@ -70,45 +70,45 @@ public class SchemaController {
             throw new RuntimeException("Cached schema not found for connection: " + connectionId);
         }
 
-        SchemaMetadataResult result = toDto(schema.get());
+        SchemaMetadataResponse result = toDto(schema.get());
         return ApiResponse.success(result);
     }
 
     @PostMapping("/{connectionId}/refresh")
     @Operation(summary = "Refresh schema metadata", description = "Force refresh schema metadata from database")
-    public ApiResponse<SchemaMetadataResult> refreshSchema(@PathVariable Long connectionId) {
+    public ApiResponse<SchemaMetadataResponse> refreshSchema(@PathVariable Long connectionId) {
         logger.info("Refreshing schema metadata for connection ID: {}", connectionId);
 
         SchemaMetadata schema = schemaUpdateService.executeSchemaRefresh(connectionId);
-        SchemaMetadataResult result = toDto(schema);
+        SchemaMetadataResponse result = toDto(schema);
 
         return ApiResponse.success(result);
     }
 
     @GetMapping("/{connectionId}/history")
     @Operation(summary = "Get operation history", description = "Get schema operation history for a connection")
-    public ApiResponse<List<SchemaUpdateLogResult>> getOperationHistory(@PathVariable Long connectionId) {
+    public ApiResponse<List<SchemaUpdateLogResponse>> getOperationHistory(@PathVariable Long connectionId) {
         logger.info("Getting operation history for connection ID: {}", connectionId);
 
         List<SchemaUpdateLog> history = schemaUpdateService.getConnectionOperationHistory(connectionId);
-        List<SchemaUpdateLogResult> results = history.stream().map(this::toDto).toList();
+        List<SchemaUpdateLogResponse> results = history.stream().map(this::toDto).toList();
 
         return ApiResponse.success(results);
     }
 
     @GetMapping("/{connectionId}/failures")
     @Operation(summary = "Get failed operations", description = "Get failed schema operations for a connection")
-    public ApiResponse<List<SchemaUpdateLogResult>> getFailedOperations(@PathVariable Long connectionId) {
+    public ApiResponse<List<SchemaUpdateLogResponse>> getFailedOperations(@PathVariable Long connectionId) {
         logger.info("Getting failed operations for connection ID: {}", connectionId);
 
         List<SchemaUpdateLog> failures = schemaUpdateService.getFailedOperations(connectionId);
-        List<SchemaUpdateLogResult> results = failures.stream().map(this::toDto).toList();
+        List<SchemaUpdateLogResponse> results = failures.stream().map(this::toDto).toList();
 
         return ApiResponse.success(results);
     }
 
-    private SchemaMetadataResult toDto(SchemaMetadata model) {
-        return new SchemaMetadataResult(
+    private SchemaMetadataResponse toDto(SchemaMetadata model) {
+        return new SchemaMetadataResponse(
                 model.connectionId(),
                 model.databaseName(),
                 model.schemas(),
@@ -117,8 +117,8 @@ public class SchemaController {
         );
     }
 
-    private TableMetadataResult toDto(TableMetadata model) {
-        return new TableMetadataResult(
+    private TableMetadataResponse toDto(TableMetadata model) {
+        return new TableMetadataResponse(
                 model.schema(),
                 model.tableName(),
                 model.tableType(),
@@ -127,8 +127,8 @@ public class SchemaController {
         );
     }
 
-    private ColumnMetadataResult toDto(ColumnMetadata model) {
-        return new ColumnMetadataResult(
+    private ColumnMetadataResponse toDto(ColumnMetadata model) {
+        return new ColumnMetadataResponse(
                 model.columnName(),
                 model.dataType(),
                 model.columnSize(),
@@ -142,8 +142,8 @@ public class SchemaController {
         );
     }
 
-    private SchemaUpdateLogResult toDto(SchemaUpdateLog model) {
-        return new SchemaUpdateLogResult(
+    private SchemaUpdateLogResponse toDto(SchemaUpdateLog model) {
+        return new SchemaUpdateLogResponse(
                 model.id(),
                 model.connectionId(),
                 model.operation(),

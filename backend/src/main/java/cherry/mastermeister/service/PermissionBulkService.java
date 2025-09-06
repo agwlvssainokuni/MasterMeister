@@ -21,7 +21,7 @@ import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.entity.UserPermissionEntity;
 import cherry.mastermeister.enums.PermissionScope;
 import cherry.mastermeister.enums.UserStatus;
-import cherry.mastermeister.model.BulkPermissionRequest;
+import cherry.mastermeister.model.BulkPermissionSpec;
 import cherry.mastermeister.model.BulkPermissionResult;
 import cherry.mastermeister.model.SchemaMetadata;
 import cherry.mastermeister.model.TableMetadata;
@@ -65,7 +65,7 @@ public class PermissionBulkService {
 
     public BulkPermissionResult grantBulkPermissions(
             Long connectionId,
-            BulkPermissionRequest request
+            BulkPermissionSpec request
     ) {
         logger.info("Starting bulk permission grant: connection={}, type={}, scope={}",
                 connectionId, request.permissionType(), request.scope());
@@ -184,7 +184,7 @@ public class PermissionBulkService {
 
     private List<TableMetadata> getTargetTables(
             Long connectionId,
-            BulkPermissionRequest request
+            BulkPermissionSpec request
     ) {
         Optional<SchemaMetadata> schemaMetadataOpt = schemaMetadataService.getSchemaMetadata(connectionId);
         if (schemaMetadataOpt.isEmpty()) {
