@@ -24,12 +24,12 @@ export interface ApiResponse<T> {
 }
 
 // AuthController
-export interface LoginRequest {
+export interface LoginSpec {
   email: string
   password: string
 }
 
-export interface LoginResult {
+export interface LoginResponse {
   accessToken: string
   refreshToken: string
   email: string
@@ -37,16 +37,16 @@ export interface LoginResult {
   expiresIn: number
 }
 
-export interface RefreshTokenRequest {
+export interface RefreshTokenSpec {
   refreshToken: string
 }
 
-export interface LogoutRequest {
+export interface LogoutSpec {
   refreshToken: string
 }
 
 // AdminController
-export interface UserSummaryResult {
+export interface UserSummaryResponse {
   id: number
   email: string
   status: string
@@ -65,29 +65,29 @@ export interface RejectUserRequest {
 }
 
 // User Registration - Email First Flow
-export interface RegisterEmailRequest {
+export interface RegisterEmailSpec {
   email: string
   language: string
 }
 
-export interface RegisterEmailResult {
+export interface RegisterEmailResponse {
   email: string
 }
 
-export interface RegisterUserRequest {
+export interface RegisterUserSpec {
   token: string
   email: string
   password: string
   language: string
 }
 
-export interface RegisterUserResult {
+export interface RegisterUserResponse {
   userId: number
   email: string
 }
 
 // DataAccessController
-export interface AccessibleTableResult {
+export interface AccessibleTableResponse {
   connectionId: number
   schemaName: string
   tableName: string
@@ -101,10 +101,10 @@ export interface AccessibleTableResult {
   canAdmin: boolean
   canModifyData: boolean
   canPerformCrud: boolean
-  columns: AccessibleColumnResult[]
+  columns: AccessibleColumnResponse[]
 }
 
-export interface AccessibleColumnResult {
+export interface AccessibleColumnResponse {
   columnName: string
   dataType: string
   columnSize?: number
@@ -122,23 +122,23 @@ export interface AccessibleColumnResult {
   canAdmin: boolean
 }
 
-export interface SchemaMetadataResult {
+export interface SchemaMetadataResponse {
   connectionId: number
   databaseName: string
   schemas: string[]
-  tables: TableMetadataResult[]
+  tables: TableMetadataResponse[]
   lastUpdatedAt: string
 }
 
-export interface TableMetadataResult {
+export interface TableMetadataResponse {
   schema: string
   tableName: string
   tableType: string
   comment?: string
-  columns: ColumnMetadataResult[]
+  columns: ColumnMetadataResponse[]
 }
 
-export interface ColumnMetadataResult {
+export interface ColumnMetadataResponse {
   columnName: string
   dataType: string
   columnSize?: number
@@ -151,9 +151,9 @@ export interface ColumnMetadataResult {
   ordinalPosition: number
 }
 
-export interface RecordQueryResult {
+export interface RecordQueryResponse {
   records: Record<string, unknown>[]
-  accessibleColumns: AccessibleColumnResult[]
+  accessibleColumns: AccessibleColumnResponse[]
   totalRecords: number
   currentPage: number
   pageSize: number
@@ -164,51 +164,51 @@ export interface RecordQueryResult {
   query: string
 }
 
-export interface ColumnFilterRequest {
+export interface ColumnFilterSpec {
   columnName: string
   operator: string
   value: unknown
   value2?: unknown
 }
 
-export interface SortOrderRequest {
+export interface SortOrderSpec {
   columnName: string
   direction: 'ASC' | 'DESC'
 }
 
-export interface RecordFilterRequest {
-  columnFilters: ColumnFilterRequest[]
+export interface RecordFilterSpec {
+  columnFilters: ColumnFilterSpec[]
   customWhere?: string
-  sortOrders: SortOrderRequest[]
+  sortOrders: SortOrderSpec[]
 }
 
-export interface RecordCreateRequest {
+export interface RecordCreateSpec {
   data: Record<string, unknown>
 }
 
-export interface RecordCreateResult {
+export interface RecordCreateResponse {
   createdRecord: Record<string, unknown>
   columnTypes: Record<string, string>
   executionTimeMs: number
   query: string
 }
 
-export interface RecordUpdateRequest {
+export interface RecordUpdateSpec {
   updateData: Record<string, unknown>
   whereConditions: Record<string, unknown>
 }
 
-export interface RecordUpdateResult {
+export interface RecordUpdateResponse {
   updatedRecords: number
   executionTimeMs: number
   query: string
 }
 
-export interface RecordDeleteRequest {
+export interface RecordDeleteSpec {
   whereConditions: Record<string, unknown>
 }
 
-export interface RecordDeleteResult {
+export interface RecordDeleteResponse {
   deletedRecords: number
   executionTimeMs: number
   query: string
@@ -229,7 +229,7 @@ export interface DatabaseRequest {
   active: boolean
 }
 
-export interface DatabaseResult {
+export interface DatabaseResponse {
   id: number
   name: string
   dbType: DatabaseType
@@ -245,7 +245,7 @@ export interface DatabaseResult {
   updatedAt: string
 }
 
-export interface ConnectionTestResult {
+export interface ConnectionTestResponse {
   connected: boolean
   message?: string
   errorDetails?: string
@@ -270,7 +270,7 @@ export interface PermissionImportOptions {
   skipDuplicates?: boolean
 }
 
-export interface PermissionValidationResult {
+export interface PermissionValidationResponse {
   valid: boolean
   message: string
   userCount: number
@@ -278,7 +278,7 @@ export interface PermissionValidationResult {
   totalPermissions: number
 }
 
-export interface PermissionImportResult {
+export interface PermissionImportResponse {
   importedUsers: number
   importedTemplates: number
   importedPermissions: number
@@ -292,7 +292,7 @@ export interface PermissionImportResult {
 export type BulkPermissionScope = 'ALL_TABLES' | 'SCHEMA' | 'TABLE_LIST'
 export type BulkPermissionType = 'READ' | 'WRITE' | 'DELETE'
 
-export interface BulkPermissionRequest {
+export interface BulkPermissionSpec {
   scope: BulkPermissionScope
   permissionType: BulkPermissionType
   userEmails: string[]
@@ -302,7 +302,7 @@ export interface BulkPermissionRequest {
   description?: string
 }
 
-export interface BulkPermissionResult {
+export interface BulkPermissionResponse {
   processedUsers: number
   processedTables: number
   createdPermissions: number
@@ -310,7 +310,7 @@ export interface BulkPermissionResult {
   errors: string[]
 }
 
-export interface SchemaUpdateLogResult {
+export interface SchemaUpdateLogResponse {
   id: number
   connectionId: number
   operation: SchemaUpdateOperation

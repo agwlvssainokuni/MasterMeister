@@ -24,11 +24,11 @@ import {databaseService} from '../services/databaseService'
 import {permissionService} from '../services/permissionService'
 import type {
   BulkPermissionOptions,
-  BulkPermissionResult,
+  BulkPermissionResponse,
   Database,
   PermissionImportOptions,
-  PermissionImportResult,
-  PermissionValidationResult
+  PermissionImportResponse,
+  PermissionValidationResponse
 } from '../types/frontend'
 
 export const PermissionManagementPage: React.FC = () => {
@@ -90,7 +90,7 @@ export const PermissionManagementPage: React.FC = () => {
     connectionId: number,
     file: File,
     options: PermissionImportOptions
-  ): Promise<PermissionImportResult> => {
+  ): Promise<PermissionImportResponse> => {
     try {
       setLoading(true)
       const result = await permissionService.importPermissions(connectionId, file, options)
@@ -118,7 +118,7 @@ export const PermissionManagementPage: React.FC = () => {
   const handleValidateYaml = async (
     connectionId: number,
     file: File
-  ): Promise<PermissionValidationResult> => {
+  ): Promise<PermissionValidationResponse> => {
     try {
       setLoading(true)
       const result = await permissionService.validatePermissionYaml(connectionId, file)
@@ -144,7 +144,7 @@ export const PermissionManagementPage: React.FC = () => {
   const handleBulkGrantPermissions = async (
     connectionId: number,
     options: BulkPermissionOptions
-  ): Promise<BulkPermissionResult> => {
+  ): Promise<BulkPermissionResponse> => {
     try {
       setLoading(true)
       const result = await permissionService.bulkGrantPermissions(connectionId, options)

@@ -18,10 +18,10 @@ import apiClient from './apiClient'
 import { API_ENDPOINTS } from '../config/config'
 import type {
   ApiResponse,
-  SchemaMetadataResult,
-  SchemaUpdateLogResult,
-  TableMetadataResult,
-  ColumnMetadataResult
+  SchemaMetadataResponse,
+  SchemaUpdateLogResponse,
+  TableMetadataResponse,
+  ColumnMetadataResponse
 } from '../types/api'
 import type {
   SchemaMetadata,
@@ -33,7 +33,7 @@ import type {
 class SchemaService {
 
   async readSchema(connectionId: number): Promise<SchemaMetadata> {
-    const response = await apiClient.get<ApiResponse<SchemaMetadataResult>>(
+    const response = await apiClient.get<ApiResponse<SchemaMetadataResponse>>(
       API_ENDPOINTS.SCHEMA.READ(connectionId)
     )
 
@@ -45,7 +45,7 @@ class SchemaService {
   }
 
   async getCachedSchema(connectionId: number): Promise<SchemaMetadata> {
-    const response = await apiClient.get<ApiResponse<SchemaMetadataResult>>(
+    const response = await apiClient.get<ApiResponse<SchemaMetadataResponse>>(
       API_ENDPOINTS.SCHEMA.GET_CACHED(connectionId)
     )
 
@@ -57,7 +57,7 @@ class SchemaService {
   }
 
   async refreshSchema(connectionId: number): Promise<SchemaMetadata> {
-    const response = await apiClient.post<ApiResponse<SchemaMetadataResult>>(
+    const response = await apiClient.post<ApiResponse<SchemaMetadataResponse>>(
       API_ENDPOINTS.SCHEMA.REFRESH(connectionId)
     )
 
@@ -69,7 +69,7 @@ class SchemaService {
   }
 
   async getOperationHistory(connectionId: number): Promise<SchemaUpdateLog[]> {
-    const response = await apiClient.get<ApiResponse<SchemaUpdateLogResult[]>>(
+    const response = await apiClient.get<ApiResponse<SchemaUpdateLogResponse[]>>(
       API_ENDPOINTS.SCHEMA.HISTORY(connectionId)
     )
 
@@ -81,7 +81,7 @@ class SchemaService {
   }
 
   async getFailedOperations(connectionId: number): Promise<SchemaUpdateLog[]> {
-    const response = await apiClient.get<ApiResponse<SchemaUpdateLogResult[]>>(
+    const response = await apiClient.get<ApiResponse<SchemaUpdateLogResponse[]>>(
       API_ENDPOINTS.SCHEMA.FAILURES(connectionId)
     )
 
@@ -93,7 +93,7 @@ class SchemaService {
   }
 
   // Type conversion methods (API → Frontend)
-  private convertToFrontendSchema(apiSchema: SchemaMetadataResult): SchemaMetadata {
+  private convertToFrontendSchema(apiSchema: SchemaMetadataResponse): SchemaMetadata {
     return {
       connectionId: apiSchema.connectionId,
       databaseName: apiSchema.databaseName,
@@ -103,7 +103,7 @@ class SchemaService {
     }
   }
 
-  private convertToFrontendTable = (apiTable: TableMetadataResult): TableMetadata => {
+  private convertToFrontendTable = (apiTable: TableMetadataResponse): TableMetadata => {
     return {
       schema: apiTable.schema,
       tableName: apiTable.tableName,
@@ -113,7 +113,7 @@ class SchemaService {
     }
   }
 
-  private convertToFrontendColumn = (apiColumn: ColumnMetadataResult): ColumnMetadata => {
+  private convertToFrontendColumn = (apiColumn: ColumnMetadataResponse): ColumnMetadata => {
     return {
       columnName: apiColumn.columnName,
       dataType: apiColumn.dataType,
@@ -128,7 +128,7 @@ class SchemaService {
     }
   }
 
-  private convertToFrontendLog = (apiLog: SchemaUpdateLogResult): SchemaUpdateLog => {
+  private convertToFrontendLog = (apiLog: SchemaUpdateLogResponse): SchemaUpdateLog => {
     return {
       id: apiLog.id,
       connectionId: apiLog.connectionId,

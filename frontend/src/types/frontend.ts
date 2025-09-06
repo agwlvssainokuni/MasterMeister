@@ -52,7 +52,7 @@ export interface RegisterEmailCredentials {
   language?: string
 }
 
-export interface RegisterEmailResult {
+export interface RegisterEmailResponse {
   email: string
 }
 
@@ -64,7 +64,7 @@ export interface RegisterUserCredentials {
   language?: string
 }
 
-export interface RegisterUserResult {
+export interface RegisterUserResponse {
   userId: number
   email: string
 }
@@ -215,7 +215,7 @@ export interface PermissionImportOptions {
   duplicateHandling: 'error' | 'skip' | 'overwrite'
 }
 
-export interface PermissionValidationResult {
+export interface PermissionValidationResponse {
   valid: boolean
   message: string
   userCount: number
@@ -223,7 +223,7 @@ export interface PermissionValidationResult {
   totalPermissions: number
 }
 
-export interface PermissionImportResult {
+export interface PermissionImportResponse {
   importedUsers: number
   importedTemplates: number
   importedPermissions: number
@@ -247,7 +247,7 @@ export interface BulkPermissionOptions {
   description: string
 }
 
-export interface BulkPermissionResult {
+export interface BulkPermissionResponse {
   processedUsers: number
   processedTables: number
   createdPermissions: number
@@ -283,7 +283,7 @@ export interface Database {
   updatedAt: Date
 }
 
-export interface ConnectionTestResult {
+export interface ConnectionTestResponse {
   connected: boolean
   message?: string
   errorDetails?: string

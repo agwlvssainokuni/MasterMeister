@@ -16,7 +16,7 @@
 
 import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
-import type {ApiResponse, UserSummaryResult as ApiUserSummaryResult} from '../types/api'
+import type {ApiResponse, UserSummaryResponse as ApiUserSummaryResult} from '../types/api'
 import type {PendingUser} from '../types/frontend'
 
 class AdminService {

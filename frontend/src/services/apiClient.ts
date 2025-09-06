@@ -16,7 +16,7 @@
 
 import axios from 'axios'
 import {API_BASE_URL, API_ENDPOINTS} from '../config/config'
-import type {ApiResponse, LoginResult, RefreshTokenRequest} from "../types/api"
+import type {ApiResponse, LoginResponse, RefreshTokenSpec} from "../types/api"
 import {isTokenExpiringSoon} from '../utils/jwt'
 
 const apiClient = axios.create({
@@ -42,18 +42,18 @@ export const setTokenRefreshHandler = (handler: (accessToken: string, refreshTok
 let isRefreshing = false
 
 // Background refresh function
-const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResult | undefined> => {
+const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResponse | undefined> => {
   if (isRefreshing) return
 
   isRefreshing = true
   try {
-    const response = await axios.post<ApiResponse<LoginResult>>(
+    const response = await axios.post<ApiResponse<LoginResponse>>(
       `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
         refreshToken
-      } as RefreshTokenRequest
+      } as RefreshTokenSpec
     )
 
-    const {data} = response.data as ApiResponse<LoginResult>
+    const {data} = response.data as ApiResponse<LoginResponse>
     if (data) {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)

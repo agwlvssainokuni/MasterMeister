@@ -18,34 +18,34 @@ import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
-  LoginRequest,
-  LoginResult,
-  LogoutRequest,
-  RefreshTokenRequest,
-  RegisterEmailRequest,
-  RegisterEmailResult as ApiRegisterEmailResult,
-  RegisterUserRequest,
-  RegisterUserResult as ApiRegisterUserResult
+  LoginSpec,
+  LoginResponse,
+  LogoutSpec,
+  RefreshTokenSpec,
+  RegisterEmailSpec,
+  RegisterEmailResponse as ApiRegisterEmailResult,
+  RegisterUserSpec,
+  RegisterUserResponse as ApiRegisterUserResult
 } from '../types/api'
 import type {
   AuthState,
   LoginCredentials,
   RegisterEmailCredentials,
-  RegisterEmailResult,
+  RegisterEmailResponse,
   RegisterUserCredentials,
-  RegisterUserResult,
+  RegisterUserResponse,
   User
 } from '../types/frontend'
 import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthState> {
-    const loginRequest: LoginRequest = {
+    const loginRequest: LoginSpec = {
       email: credentials.email,
       password: credentials.password
     }
 
-    const response = await apiClient.post<ApiResponse<LoginResult>>(
+    const response = await apiClient.post<ApiResponse<LoginResponse>>(
       API_ENDPOINTS.AUTH.LOGIN,
       loginRequest
     )
@@ -77,7 +77,7 @@ class AuthService {
   async logout(): Promise<void> {
     const refreshToken = localStorage.getItem('refreshToken')
     if (refreshToken) {
-      const logoutRequest: LogoutRequest = {refreshToken}
+      const logoutRequest: LogoutSpec = {refreshToken}
 
       try {
         await apiClient.post<ApiResponse<string>>(
@@ -101,12 +101,12 @@ class AuthService {
       throw new Error('No refresh token available')
     }
 
-    const refreshRequest: RefreshTokenRequest = {
+    const refreshRequest: RefreshTokenSpec = {
       refreshToken
     }
 
     try {
-      const response = await apiClient.post<ApiResponse<LoginResult>>(
+      const response = await apiClient.post<ApiResponse<LoginResponse>>(
         API_ENDPOINTS.AUTH.REFRESH,
         refreshRequest
       )
@@ -141,8 +141,8 @@ class AuthService {
     }
   }
 
-  async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {
-    const request: RegisterEmailRequest = {
+  async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResponse> {
+    const request: RegisterEmailSpec = {
       email: credentials.email,
       language: credentials.language || 'ja',
     }
@@ -159,8 +159,8 @@ class AuthService {
     return response.data.data
   }
 
-  async registerUser(credentials: RegisterUserCredentials): Promise<RegisterUserResult> {
-    const request: RegisterUserRequest = {
+  async registerUser(credentials: RegisterUserCredentials): Promise<RegisterUserResponse> {
+    const request: RegisterUserSpec = {
       token: credentials.token,
       email: credentials.email,
       password: credentials.password,

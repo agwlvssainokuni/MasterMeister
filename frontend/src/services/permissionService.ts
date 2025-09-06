@@ -18,17 +18,17 @@ import {API_ENDPOINTS} from '../config/config'
 import apiClient from './apiClient'
 import type {
   ApiResponse,
-  BulkPermissionRequest as ApiBulkPermissionRequest,
-  BulkPermissionResult as ApiBulkPermissionResult,
-  PermissionImportResult as ApiPermissionImportResult,
-  PermissionValidationResult as ApiPermissionValidationResult
+  BulkPermissionSpec as ApiBulkPermissionRequest,
+  BulkPermissionResponse as ApiBulkPermissionResult,
+  PermissionImportResponse as ApiPermissionImportResult,
+  PermissionValidationResponse as ApiPermissionValidationResult
 } from '../types/api'
 import type {
   BulkPermissionOptions,
-  BulkPermissionResult,
+  BulkPermissionResponse,
   PermissionImportOptions,
-  PermissionImportResult,
-  PermissionValidationResult
+  PermissionImportResponse,
+  PermissionValidationResponse
 } from '../types/frontend'
 
 export class PermissionService {
@@ -48,7 +48,7 @@ export class PermissionService {
     connectionId: number,
     file: File,
     options: PermissionImportOptions
-  ): Promise<PermissionImportResult> {
+  ): Promise<PermissionImportResponse> {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('importUsers', options.importUsers.toString())
@@ -76,7 +76,7 @@ export class PermissionService {
   async validatePermissionYaml(
     connectionId: number,
     file: File
-  ): Promise<PermissionValidationResult> {
+  ): Promise<PermissionValidationResponse> {
     const formData = new FormData()
     formData.append('file', file)
 
@@ -97,7 +97,7 @@ export class PermissionService {
     return this.convertToFrontendValidationResult(response.data.data)
   }
 
-  private convertToFrontendImportResult(apiResult: ApiPermissionImportResult): PermissionImportResult {
+  private convertToFrontendImportResult(apiResult: ApiPermissionImportResult): PermissionImportResponse {
     return {
       importedUsers: apiResult.importedUsers,
       importedTemplates: apiResult.importedTemplates,
@@ -109,7 +109,7 @@ export class PermissionService {
     }
   }
 
-  private convertToFrontendValidationResult(apiResult: ApiPermissionValidationResult): PermissionValidationResult {
+  private convertToFrontendValidationResult(apiResult: ApiPermissionValidationResult): PermissionValidationResponse {
     return {
       valid: apiResult.valid,
       message: apiResult.message,
@@ -122,7 +122,7 @@ export class PermissionService {
   async bulkGrantPermissions(
     connectionId: number,
     options: BulkPermissionOptions
-  ): Promise<BulkPermissionResult> {
+  ): Promise<BulkPermissionResponse> {
     // Convert frontend type to API type
     const apiRequest: ApiBulkPermissionRequest = {
       scope: options.scope.toUpperCase() as ApiBulkPermissionRequest['scope'],
@@ -146,7 +146,7 @@ export class PermissionService {
     return this.convertToFrontendBulkResult(response.data.data)
   }
 
-  private convertToFrontendBulkResult(apiResult: ApiBulkPermissionResult): BulkPermissionResult {
+  private convertToFrontendBulkResult(apiResult: ApiBulkPermissionResult): BulkPermissionResponse {
     return {
       processedUsers: apiResult.processedUsers,
       processedTables: apiResult.processedTables,
