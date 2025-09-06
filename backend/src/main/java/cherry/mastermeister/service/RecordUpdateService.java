@@ -20,7 +20,7 @@ import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
-import cherry.mastermeister.model.RecordUpdateResult;
+import cherry.mastermeister.model.RecordUpdateResponse;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class RecordUpdateService {
     /**
      * Update records with permission validation and transaction management
      */
-    public RecordUpdateResult updateRecord(
+    public RecordUpdateResponse updateRecord(
             Long userId, Long connectionId,
             String schemaName, String tableName,
             Map<String, Object> updateData,
@@ -118,7 +118,7 @@ public class RecordUpdateService {
 
             long executionTime = System.currentTimeMillis() - startTime;
 
-            RecordUpdateResult result = new RecordUpdateResult(
+            RecordUpdateResponse result = new RecordUpdateResponse(
                     rowsAffected, executionTime, updateQuery.query());
 
             // Log detailed record update success

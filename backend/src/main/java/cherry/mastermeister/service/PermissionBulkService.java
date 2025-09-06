@@ -21,8 +21,8 @@ import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.entity.UserPermissionEntity;
 import cherry.mastermeister.enums.PermissionScope;
 import cherry.mastermeister.enums.UserStatus;
-import cherry.mastermeister.model.BulkPermissionRequest;
-import cherry.mastermeister.model.BulkPermissionResult;
+import cherry.mastermeister.model.BulkPermissionSpec;
+import cherry.mastermeister.model.BulkPermissionResponse;
 import cherry.mastermeister.model.SchemaMetadata;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
@@ -63,9 +63,9 @@ public class PermissionBulkService {
         this.schemaMetadataService = schemaMetadataService;
     }
 
-    public BulkPermissionResult grantBulkPermissions(
+    public BulkPermissionResponse grantBulkPermissions(
             Long connectionId,
-            BulkPermissionRequest request
+            BulkPermissionSpec request
     ) {
         logger.info("Starting bulk permission grant: connection={}, type={}, scope={}",
                 connectionId, request.permissionType(), request.scope());
@@ -84,7 +84,7 @@ public class PermissionBulkService {
             List<UserEntity> targetUsers = getTargetUsers(request.userEmails());
             if (targetUsers.isEmpty()) {
                 errors.add("No valid users found for permission grant");
-                return new BulkPermissionResult(0, 0, 0, 0, errors);
+                return new BulkPermissionResponse(0, 0, 0, 0, errors);
             }
             processedUsers = targetUsers.size();
 
@@ -92,7 +92,7 @@ public class PermissionBulkService {
             List<TableMetadata> targetTables = getTargetTables(connectionId, request);
             if (targetTables.isEmpty()) {
                 errors.add("No tables found matching the specified scope");
-                return new BulkPermissionResult(processedUsers, 0, 0, 0, errors);
+                return new BulkPermissionResponse(processedUsers, 0, 0, 0, errors);
             }
             processedTables = targetTables.size();
 
@@ -147,7 +147,7 @@ public class PermissionBulkService {
             errors.add("Bulk operation failed: " + e.getMessage());
         }
 
-        return new BulkPermissionResult(processedUsers, processedTables, createdPermissions, skippedExisting, errors);
+        return new BulkPermissionResponse(processedUsers, processedTables, createdPermissions, skippedExisting, errors);
     }
 
     private DatabaseConnectionEntity validateConnection(
@@ -184,7 +184,7 @@ public class PermissionBulkService {
 
     private List<TableMetadata> getTargetTables(
             Long connectionId,
-            BulkPermissionRequest request
+            BulkPermissionSpec request
     ) {
         Optional<SchemaMetadata> schemaMetadataOpt = schemaMetadataService.getSchemaMetadata(connectionId);
         if (schemaMetadataOpt.isEmpty()) {

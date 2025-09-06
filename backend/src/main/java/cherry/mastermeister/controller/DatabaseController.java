@@ -17,8 +17,8 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.ApiResponse;
-import cherry.mastermeister.controller.dto.DatabaseConnectionRequest;
-import cherry.mastermeister.controller.dto.DatabaseConnectionResult;
+import cherry.mastermeister.controller.dto.DatabaseConnectionSpec;
+import cherry.mastermeister.controller.dto.DatabaseConnectionResponse;
 import cherry.mastermeister.controller.dto.ValidationGroups;
 import cherry.mastermeister.model.DatabaseConnection;
 import cherry.mastermeister.service.DatabaseService;
@@ -52,9 +52,9 @@ public class DatabaseController {
 
     @GetMapping
     @Operation(summary = "Get all database connections", description = "Retrieve list of all database connections")
-    public ApiResponse<List<DatabaseConnectionResult>> getAllConnections() {
+    public ApiResponse<List<DatabaseConnectionResponse>> getAllConnections() {
         List<DatabaseConnection> connections = databaseService.getAllConnections();
-        List<DatabaseConnectionResult> results = connections.stream()
+        List<DatabaseConnectionResponse> results = connections.stream()
                 .map(this::toResult)
                 .toList();
         return ApiResponse.success(results);
@@ -62,7 +62,7 @@ public class DatabaseController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get database connection by ID", description = "Retrieve a specific database connection")
-    public ApiResponse<DatabaseConnectionResult> getConnection(
+    public ApiResponse<DatabaseConnectionResponse> getConnection(
             @PathVariable Long id
     ) {
         DatabaseConnection connection = databaseService.getConnection(id);
@@ -71,8 +71,8 @@ public class DatabaseController {
 
     @PostMapping
     @Operation(summary = "Create database connection", description = "Create a new database connection")
-    public ApiResponse<DatabaseConnectionResult> createConnection(
-            @Validated(ValidationGroups.Create.class) @RequestBody DatabaseConnectionRequest request
+    public ApiResponse<DatabaseConnectionResponse> createConnection(
+            @Validated(ValidationGroups.Create.class) @RequestBody DatabaseConnectionSpec request
     ) {
         DatabaseConnection model = toModel(request);
         DatabaseConnection savedConnection = databaseService.createConnection(model);
@@ -82,9 +82,9 @@ public class DatabaseController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update database connection", description = "Update an existing database connection")
-    public ApiResponse<DatabaseConnectionResult> updateConnection(
+    public ApiResponse<DatabaseConnectionResponse> updateConnection(
             @PathVariable Long id,
-            @Validated(ValidationGroups.Update.class) @RequestBody DatabaseConnectionRequest request
+            @Validated(ValidationGroups.Update.class) @RequestBody DatabaseConnectionSpec request
     ) {
         // 更新時はパスワードが空の場合、既存のパスワードを保持（DatabaseServiceで処理）
         DatabaseConnection model = toModel(request);
@@ -116,7 +116,7 @@ public class DatabaseController {
 
     @PostMapping("/{id}/activate")
     @Operation(summary = "Activate database connection", description = "Activate a database connection")
-    public ApiResponse<DatabaseConnectionResult> activateConnection(
+    public ApiResponse<DatabaseConnectionResponse> activateConnection(
             @PathVariable Long id
     ) {
         DatabaseConnection connection = databaseService.activateConnection(id);
@@ -126,7 +126,7 @@ public class DatabaseController {
 
     @PostMapping("/{id}/deactivate")
     @Operation(summary = "Deactivate database connection", description = "Deactivate a database connection")
-    public ApiResponse<DatabaseConnectionResult> deactivateConnection(
+    public ApiResponse<DatabaseConnectionResponse> deactivateConnection(
             @PathVariable Long id
     ) {
         DatabaseConnection connection = databaseService.deactivateConnection(id);
@@ -134,7 +134,7 @@ public class DatabaseController {
         return ApiResponse.success(toResult(connection));
     }
 
-    private DatabaseConnection toModel(DatabaseConnectionRequest request) {
+    private DatabaseConnection toModel(DatabaseConnectionSpec request) {
         return new DatabaseConnection(
                 null,
                 request.name(),
@@ -153,8 +153,8 @@ public class DatabaseController {
         );
     }
 
-    private DatabaseConnectionResult toResult(DatabaseConnection model) {
-        return new DatabaseConnectionResult(
+    private DatabaseConnectionResponse toResult(DatabaseConnection model) {
+        return new DatabaseConnectionResponse(
                 model.id(),
                 model.name(),
                 model.dbType(),
