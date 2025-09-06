@@ -16,15 +16,12 @@
 
 package cherry.mastermeister.controller.dto;
 
-import java.util.Map;
+import java.time.LocalDateTime;
 
-/**
- * DTO for record creation results
- */
-public record RecordCreateResult(
-        Map<String, Object> createdRecord,
-        Map<String, String> columnTypes,
-        long executionTimeMs,
-        String query
+public record UserSummaryResponse(
+        Long id,
+        String email,
+        String status,
+        LocalDateTime createdAt
 ) {
 }

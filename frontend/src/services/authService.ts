@@ -19,21 +19,21 @@ import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
   LoginRequest,
-  LoginResult,
+  LoginResponse,
   LogoutRequest,
   RefreshTokenRequest,
   RegisterEmailRequest,
-  RegisterEmailResult as ApiRegisterEmailResult,
+  RegisterEmailResponse as ApiRegisterEmailResult,
   RegisterUserRequest,
-  RegisterUserResult as ApiRegisterUserResult
+  RegisterUserResponse as ApiRegisterUserResult
 } from '../types/api'
 import type {
   AuthState,
   LoginCredentials,
   RegisterEmailCredentials,
-  RegisterEmailResult,
+  RegisterEmailResponse,
   RegisterUserCredentials,
-  RegisterUserResult,
+  RegisterUserResponse,
   User
 } from '../types/frontend'
 import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
@@ -45,7 +45,7 @@ class AuthService {
       password: credentials.password
     }
 
-    const response = await apiClient.post<ApiResponse<LoginResult>>(
+    const response = await apiClient.post<ApiResponse<LoginResponse>>(
       API_ENDPOINTS.AUTH.LOGIN,
       loginRequest
     )
@@ -106,7 +106,7 @@ class AuthService {
     }
 
     try {
-      const response = await apiClient.post<ApiResponse<LoginResult>>(
+      const response = await apiClient.post<ApiResponse<LoginResponse>>(
         API_ENDPOINTS.AUTH.REFRESH,
         refreshRequest
       )
@@ -141,7 +141,7 @@ class AuthService {
     }
   }
 
-  async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {
+  async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResponse> {
     const request: RegisterEmailRequest = {
       email: credentials.email,
       language: credentials.language || 'ja',
@@ -159,7 +159,7 @@ class AuthService {
     return response.data.data
   }
 
-  async registerUser(credentials: RegisterUserCredentials): Promise<RegisterUserResult> {
+  async registerUser(credentials: RegisterUserCredentials): Promise<RegisterUserResponse> {
     const request: RegisterUserRequest = {
       token: credentials.token,
       email: credentials.email,

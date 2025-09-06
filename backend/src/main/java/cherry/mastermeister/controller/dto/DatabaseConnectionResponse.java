@@ -16,18 +16,23 @@
 
 package cherry.mastermeister.controller.dto;
 
+import cherry.mastermeister.enums.DatabaseType;
+
 import java.time.LocalDateTime;
 
-/**
- * ヘルスチェック結果
- *
- * @param status      アプリケーションステータス
- * @param timestamp   チェック実行日時
- * @param application アプリケーション名
- */
-public record HealthResult(
-        String status,
-        LocalDateTime timestamp,
-        String application
+public record DatabaseConnectionResponse(
+        Long id,
+        String name,
+        DatabaseType dbType,
+        String host,
+        Integer port,
+        String databaseName,
+        String username,
+        String connectionParams,
+        boolean active,
+        LocalDateTime lastTestedAt,
+        Boolean testResult,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }

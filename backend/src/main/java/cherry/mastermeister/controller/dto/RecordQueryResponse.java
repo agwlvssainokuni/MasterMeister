@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.model;
-
-import cherry.mastermeister.enums.BulkPermissionScope;
-import cherry.mastermeister.enums.PermissionType;
+package cherry.mastermeister.controller.dto;
 
 import java.util.List;
+import java.util.Map;
 
-public record BulkPermissionRequest(
-        BulkPermissionScope scope,
-        PermissionType permissionType,
-        List<String> userEmails,
-        List<String> schemaNames,
-        List<String> tableNames,
-        boolean includeSystemTables,
-        String description
+/**
+ * DTO for record query results with pagination and metadata
+ */
+public record RecordQueryResponse(
+        List<Map<String, Object>> records,
+        List<AccessibleColumnResponse> accessibleColumns,
+        long totalRecords,
+        int currentPage,
+        int pageSize,
+        long totalPages,
+        boolean hasNextPage,
+        boolean hasPreviousPage,
+        long executionTimeMs,
+        String query
 ) {
 }

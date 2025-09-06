@@ -18,7 +18,7 @@ import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import type {
   BulkPermissionOptions,
-  BulkPermissionResult,
+  BulkPermissionResponse,
   BulkPermissionScope,
   BulkPermissionType,
   Database
@@ -27,7 +27,7 @@ import type {
 interface BulkPermissionSetupViewProps {
   connection: Database
   loading: boolean
-  onBulkGrant: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
+  onBulkGrant: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResponse>
   onShowConfirmDialog: (
     type: BulkPermissionType,
     options: BulkPermissionOptions,
@@ -50,7 +50,7 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
   const [userEmails, setUserEmails] = useState('')
   const [description, setDescription] = useState('')
   const [includeSystemTables, setIncludeSystemTables] = useState(false)
-  const [bulkResult, setBulkResult] = useState<BulkPermissionResult | null>(null)
+  const [bulkResult, setBulkResult] = useState<BulkPermissionResponse | null>(null)
 
   const handleQuickSetup = (type: BulkPermissionType, scope: BulkPermissionScope = 'ALL_TABLES') => {
     const options: BulkPermissionOptions = {

@@ -54,7 +54,7 @@ public class PermissionController {
 
     @PostMapping("/{connectionId}/bulk-grant")
     @Operation(summary = "Bulk grant permissions", description = "Grant permissions to multiple users across multiple tables")
-    public ApiResponse<cherry.mastermeister.controller.dto.BulkPermissionResult> bulkGrantPermissions(
+    public ApiResponse<cherry.mastermeister.controller.dto.BulkPermissionResponse> bulkGrantPermissions(
             @PathVariable Long connectionId,
             @Valid @RequestBody cherry.mastermeister.controller.dto.BulkPermissionRequest request
     ) {
@@ -62,7 +62,7 @@ public class PermissionController {
                 connectionId, request.permissionType(), request.scope());
 
         // Convert DTO to Model
-        cherry.mastermeister.model.BulkPermissionRequest modelRequest = new cherry.mastermeister.model.BulkPermissionRequest(
+        cherry.mastermeister.model.BulkPermissionSpec modelRequest = new cherry.mastermeister.model.BulkPermissionSpec(
                 request.scope(),
                 request.permissionType(),
                 request.userEmails(),
@@ -75,7 +75,7 @@ public class PermissionController {
         cherry.mastermeister.model.BulkPermissionResult modelResult = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
 
         // Convert Model to DTO
-        cherry.mastermeister.controller.dto.BulkPermissionResult dtoResult = new cherry.mastermeister.controller.dto.BulkPermissionResult(
+        cherry.mastermeister.controller.dto.BulkPermissionResponse dtoResult = new cherry.mastermeister.controller.dto.BulkPermissionResponse(
                 modelResult.processedUsers(),
                 modelResult.processedTables(),
                 modelResult.createdPermissions(),
