@@ -16,8 +16,14 @@
 
 package cherry.mastermeister.controller.dto;
 
-public record RegisterUserResult(
-        Long userId,
-        String email
+import java.time.LocalDateTime;
+import java.util.List;
+
+public record SchemaMetadataResponse(
+        Long connectionId,
+        String databaseName,
+        List<String> schemas,
+        List<TableMetadataResponse> tables,
+        LocalDateTime lastUpdatedAt
 ) {
 }

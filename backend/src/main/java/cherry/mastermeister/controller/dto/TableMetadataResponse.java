@@ -16,21 +16,13 @@
 
 package cherry.mastermeister.controller.dto;
 
-import cherry.mastermeister.enums.SchemaUpdateOperation;
+import java.util.List;
 
-import java.time.LocalDateTime;
-
-public record SchemaUpdateLogResult(
-        Long id,
-        Long connectionId,
-        SchemaUpdateOperation operation,
-        String userEmail,
-        Long executionTimeMs,
-        Boolean success,
-        String errorMessage,
-        Integer tablesCount,
-        Integer columnsCount,
-        String details,
-        LocalDateTime createdAt
+public record TableMetadataResponse(
+        String schema,
+        String tableName,
+        String tableType,
+        String comment,
+        List<ColumnMetadataResponse> columns
 ) {
 }

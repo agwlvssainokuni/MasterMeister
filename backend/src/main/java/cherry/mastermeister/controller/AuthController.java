@@ -61,7 +61,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<LoginResult> login(@Valid @RequestBody LoginRequest request) {
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.email(), request.password())
@@ -73,7 +73,7 @@ public class AuthController {
 
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
 
-            LoginResult result = new LoginResult(
+            LoginResponse result = new LoginResponse(
                     accessToken,
                     refreshToken,
                     userDetails.getUsername(),
@@ -93,7 +93,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ApiResponse<LoginResult> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+    public ApiResponse<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         try {
             String refreshToken = request.refreshToken();
 
@@ -107,7 +107,7 @@ public class AuthController {
             TokenPair tokenPair = refreshTokenService.refreshTokens(refreshToken, userDetails);
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
 
-            LoginResult result = new LoginResult(
+            LoginResponse result = new LoginResponse(
                     tokenPair.accessToken(),
                     tokenPair.refreshToken(),
                     userDetails.getUsername(),

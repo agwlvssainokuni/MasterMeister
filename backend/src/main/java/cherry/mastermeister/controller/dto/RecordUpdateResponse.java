@@ -16,21 +16,11 @@
 
 package cherry.mastermeister.controller.dto;
 
-import java.util.List;
-import java.util.Map;
-
 /**
- * DTO for record query results with pagination and metadata
+ * DTO for record update results
  */
-public record RecordQueryResult(
-        List<Map<String, Object>> records,
-        List<AccessibleColumnResult> accessibleColumns,
-        long totalRecords,
-        int currentPage,
-        int pageSize,
-        long totalPages,
-        boolean hasNextPage,
-        boolean hasPreviousPage,
+public record RecordUpdateResponse(
+        int updatedRecordCount,
         long executionTimeMs,
         String query
 ) {

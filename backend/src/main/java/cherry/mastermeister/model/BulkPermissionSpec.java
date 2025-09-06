@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.controller.dto;
+package cherry.mastermeister.model;
 
-public record LoginResult(
-        String accessToken,
-        String refreshToken,
-        String email,
-        String role,
-        long expiresIn
+import cherry.mastermeister.enums.BulkPermissionScope;
+import cherry.mastermeister.enums.PermissionType;
+
+import java.util.List;
+
+public record BulkPermissionSpec(
+        BulkPermissionScope scope,
+        PermissionType permissionType,
+        List<String> userEmails,
+        List<String> schemaNames,
+        List<String> tableNames,
+        boolean includeSystemTables,
+        String description
 ) {
 }

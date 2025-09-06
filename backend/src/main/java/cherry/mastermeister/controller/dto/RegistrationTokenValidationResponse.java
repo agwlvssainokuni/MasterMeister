@@ -16,26 +16,9 @@
 
 package cherry.mastermeister.controller.dto;
 
-import java.util.List;
-import java.util.Set;
-
-/**
- * DTO for accessible table information with permission details
- */
-public record AccessibleTableResult(
-        Long connectionId,
-        String schemaName,
-        String tableName,
-        String fullTableName,
-        String tableType,
-        String comment,
-        Set<String> permissions,
-        boolean canRead,
-        boolean canWrite,
-        boolean canDelete,
-        boolean canAdmin,
-        boolean canModifyData,
-        boolean canPerformCrud,
-        List<AccessibleColumnResult> columns
+public record RegistrationTokenValidationResponse(
+        boolean valid,
+        String email,
+        String message
 ) {
 }

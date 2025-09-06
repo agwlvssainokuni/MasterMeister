@@ -39,20 +39,20 @@ public class UserController {
     }
 
     @PostMapping("/register-email")
-    public ResponseEntity<ApiResponse<RegisterEmailResult>> registerEmail(
+    public ResponseEntity<ApiResponse<RegisterEmailResponse>> registerEmail(
             @Valid @RequestBody RegisterEmailRequest request
     ) {
         RegistrationToken result = userRegistrationService.registerEmail(request.email(), request.language());
 
         // セキュリティ: 既存ユーザーの有無に関係なく同じレスポンス
-        RegisterEmailResult dto = new RegisterEmailResult(result.email());
+        RegisterEmailResponse dto = new RegisterEmailResponse(result.email());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(dto));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<RegisterUserResult>> registerUser(
+    public ResponseEntity<ApiResponse<RegisterUserResponse>> registerUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {
         UserRegistration registration = userRegistrationService.registerUser(
@@ -62,7 +62,7 @@ public class UserController {
                 request.language()
         );
 
-        RegisterUserResult result = new RegisterUserResult(
+        RegisterUserResponse result = new RegisterUserResponse(
                 registration.id(),
                 registration.email()
         );

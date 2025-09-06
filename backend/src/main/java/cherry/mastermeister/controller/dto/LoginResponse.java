@@ -16,9 +16,11 @@
 
 package cherry.mastermeister.controller.dto;
 
-public record RegistrationTokenValidationResult(
-        boolean valid,
+public record LoginResponse(
+        String accessToken,
+        String refreshToken,
         String email,
-        String message
+        String role,
+        long expiresIn
 ) {
 }

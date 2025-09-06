@@ -16,13 +16,15 @@
 
 package cherry.mastermeister.controller.dto;
 
-import java.util.List;
+import java.util.Map;
 
-public record TableMetadataResult(
-        String schema,
-        String tableName,
-        String tableType,
-        String comment,
-        List<ColumnMetadataResult> columns
+/**
+ * DTO for record creation results
+ */
+public record RecordCreateResponse(
+        Map<String, Object> createdRecord,
+        Map<String, String> columnTypes,
+        long executionTimeMs,
+        String query
 ) {
 }
