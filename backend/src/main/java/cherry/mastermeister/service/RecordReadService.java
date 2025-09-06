@@ -75,7 +75,7 @@ public class RecordReadService {
     /**
      * Get records from table with filtering and column-level permission filtering
      */
-    public RecordQueryResponse getRecords(
+    public RecordQueryResult getRecords(
             Long userId, Long connectionId,
             String schemaName, String tableName,
             RecordFilter filter,
@@ -134,7 +134,7 @@ public class RecordReadService {
 
             long executionTime = System.currentTimeMillis() - startTime;
 
-            RecordQueryResponse result = new RecordQueryResponse(
+            RecordQueryResult result = new RecordQueryResult(
                     records, accessibleColumns, totalRecords, page, pageSize, executionTime, selectQueryResult.query());
 
             // Log large dataset access
@@ -256,8 +256,8 @@ public class RecordReadService {
     /**
      * Create empty result for cases with no data or no permissions
      */
-    private RecordQueryResponse createEmptyResult(int page, int pageSize, long executionTime) {
-        return new RecordQueryResponse(
+    private RecordQueryResult createEmptyResult(int page, int pageSize, long executionTime) {
+        return new RecordQueryResult(
                 List.of(), List.of(),
                 0L, page, pageSize,
                 executionTime,

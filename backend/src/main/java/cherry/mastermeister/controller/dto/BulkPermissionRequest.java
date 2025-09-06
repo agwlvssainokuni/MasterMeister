@@ -16,29 +16,32 @@
 
 package cherry.mastermeister.controller.dto;
 
+import cherry.mastermeister.enums.BulkPermissionScope;
+import cherry.mastermeister.enums.PermissionType;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-import java.util.Map;
+import java.util.List;
 
 /**
- * DTO for record creation requests from frontend
+ * Request DTO for bulk permission operations
  */
-public record RecordCreateSpec(
-        @NotNull(message = "Record data is required")
-        Map<String, Object> data
+public record BulkPermissionRequest(
+        @NotNull
+        BulkPermissionScope scope,
+        
+        @NotNull
+        PermissionType permissionType,
+        
+        List<String> userEmails,
+        
+        List<String> schemaNames,
+        
+        List<String> tableNames,
+        
+        boolean includeSystemTables,
+        
+        @Size(max = 500)
+        String description
 ) {
-
-    /**
-     * Get column value, handling null cases
-     */
-    public Object getColumnValue(String columnName) {
-        return data != null ? data.get(columnName) : null;
-    }
-
-    /**
-     * Check if column is provided in request
-     */
-    public boolean hasColumn(String columnName) {
-        return data != null && data.containsKey(columnName);
-    }
 }

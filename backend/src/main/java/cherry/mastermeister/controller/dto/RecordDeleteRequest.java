@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * DTO for record deletion requests from frontend
  */
-public record RecordDeleteSpec(
+public record RecordDeleteRequest(
         @NotNull(message = "WHERE conditions are required")
         Map<String, Object> whereConditions,
 
@@ -47,14 +47,14 @@ public record RecordDeleteSpec(
     /**
      * Create request with referential integrity check enabled (default)
      */
-    public static RecordDeleteSpec withIntegrityCheck(Map<String, Object> whereConditions) {
-        return new RecordDeleteSpec(whereConditions, false);
+    public static RecordDeleteRequest withIntegrityCheck(Map<String, Object> whereConditions) {
+        return new RecordDeleteRequest(whereConditions, false);
     }
 
     /**
      * Create request with referential integrity check disabled (use with caution)
      */
-    public static RecordDeleteSpec skipIntegrityCheck(Map<String, Object> whereConditions) {
-        return new RecordDeleteSpec(whereConditions, true);
+    public static RecordDeleteRequest skipIntegrityCheck(Map<String, Object> whereConditions) {
+        return new RecordDeleteRequest(whereConditions, true);
     }
 }

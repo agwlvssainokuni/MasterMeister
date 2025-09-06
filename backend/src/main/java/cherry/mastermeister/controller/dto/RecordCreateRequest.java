@@ -14,17 +14,31 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.model;
+package cherry.mastermeister.controller.dto;
+
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Map;
 
 /**
- * Model representing record creation result
+ * DTO for record creation requests from frontend
  */
-public record RecordCreateResponse(
-        Map<String, Object> createdRecord,
-        Map<String, String> columnTypes,
-        long executionTimeMs,
-        String query
+public record RecordCreateRequest(
+        @NotNull(message = "Record data is required")
+        Map<String, Object> data
 ) {
+
+    /**
+     * Get column value, handling null cases
+     */
+    public Object getColumnValue(String columnName) {
+        return data != null ? data.get(columnName) : null;
+    }
+
+    /**
+     * Check if column is provided in request
+     */
+    public boolean hasColumn(String columnName) {
+        return data != null && data.containsKey(columnName);
+    }
 }

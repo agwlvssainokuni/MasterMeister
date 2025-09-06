@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Model representing the result of a record query with metadata
  */
-public record RecordQueryResponse(
+public record RecordQueryResult(
         List<TableRecord> records,
         List<AccessibleColumn> accessibleColumns,
         long totalRecords,

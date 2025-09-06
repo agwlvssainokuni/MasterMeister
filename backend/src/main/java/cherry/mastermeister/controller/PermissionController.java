@@ -56,7 +56,7 @@ public class PermissionController {
     @Operation(summary = "Bulk grant permissions", description = "Grant permissions to multiple users across multiple tables")
     public ApiResponse<cherry.mastermeister.controller.dto.BulkPermissionResponse> bulkGrantPermissions(
             @PathVariable Long connectionId,
-            @Valid @RequestBody cherry.mastermeister.controller.dto.BulkPermissionSpec request
+            @Valid @RequestBody cherry.mastermeister.controller.dto.BulkPermissionRequest request
     ) {
         logger.info("Starting bulk permission grant for connection ID: {}, type: {}, scope: {}",
                 connectionId, request.permissionType(), request.scope());
@@ -72,7 +72,7 @@ public class PermissionController {
                 request.description()
         );
 
-        cherry.mastermeister.model.BulkPermissionResponse modelResult = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
+        cherry.mastermeister.model.BulkPermissionResult modelResult = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
 
         // Convert Model to DTO
         cherry.mastermeister.controller.dto.BulkPermissionResponse dtoResult = new cherry.mastermeister.controller.dto.BulkPermissionResponse(

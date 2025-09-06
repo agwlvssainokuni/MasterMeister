@@ -215,7 +215,7 @@ export interface PermissionImportOptions {
   duplicateHandling: 'error' | 'skip' | 'overwrite'
 }
 
-export interface PermissionValidationResponse {
+export interface PermissionValidationResult {
   valid: boolean
   message: string
   userCount: number
@@ -223,7 +223,7 @@ export interface PermissionValidationResponse {
   totalPermissions: number
 }
 
-export interface PermissionImportResponse {
+export interface PermissionImportResult {
   importedUsers: number
   importedTemplates: number
   importedPermissions: number
@@ -283,7 +283,7 @@ export interface Database {
   updatedAt: Date
 }
 
-export interface ConnectionTestResponse {
+export interface ConnectionTestResult {
   connected: boolean
   message?: string
   errorDetails?: string

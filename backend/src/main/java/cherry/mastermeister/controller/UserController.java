@@ -40,7 +40,7 @@ public class UserController {
 
     @PostMapping("/register-email")
     public ResponseEntity<ApiResponse<RegisterEmailResponse>> registerEmail(
-            @Valid @RequestBody RegisterEmailSpec request
+            @Valid @RequestBody RegisterEmailRequest request
     ) {
         RegistrationToken result = userRegistrationService.registerEmail(request.email(), request.language());
 
@@ -53,7 +53,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterUserResponse>> registerUser(
-            @Valid @RequestBody RegisterUserSpec request
+            @Valid @RequestBody RegisterUserRequest request
     ) {
         UserRegistration registration = userRegistrationService.registerUser(
                 request.token(),

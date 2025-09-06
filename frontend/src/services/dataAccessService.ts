@@ -20,14 +20,14 @@ import type {
   AccessibleColumnResponse,
   AccessibleTableResponse,
   ApiResponse,
-  DatabaseResponse,
-  RecordCreateSpec,
+  DatabaseResult,
+  RecordCreateRequest,
   RecordCreateResponse,
-  RecordDeleteSpec,
+  RecordDeleteRequest,
   RecordDeleteResponse,
-  RecordFilterSpec,
+  RecordFilterRequest,
   RecordQueryResponse,
-  RecordUpdateSpec,
+  RecordUpdateRequest,
   RecordUpdateResponse
 } from '../types/api'
 import type {
@@ -35,16 +35,19 @@ import type {
   AccessibleTable,
   Database,
   RecordCreateData,
+  RecordCreateResponse as FrontendRecordCreateResponse,
   RecordDeleteData,
+  RecordDeleteResponse as FrontendRecordDeleteResponse,
   RecordFilter,
   RecordQueryData,
-  RecordUpdateData
+  RecordUpdateData,
+  RecordUpdateResponse as FrontendRecordUpdateResponse
 } from '../types/frontend'
 
 class DataAccessService {
 
   async getDatabases(): Promise<Database[]> {
-    const response = await apiClient.get<ApiResponse<DatabaseResponse[]>>(
+    const response = await apiClient.get<ApiResponse<DatabaseResult[]>>(
       API_ENDPOINTS.DATA_ACCESS.DATABASES
     )
 
@@ -92,7 +95,7 @@ class DataAccessService {
       size: size.toString()
     })
 
-    let requestBody: RecordFilterSpec | undefined
+    let requestBody: RecordFilterRequest | undefined
     if (filter) {
       requestBody = this.convertToRecordFilterRequest(filter)
     }
@@ -119,7 +122,7 @@ class DataAccessService {
     tableName: string,
     data: RecordCreateData
   ): Promise<RecordCreateResponse> {
-    const requestBody: RecordCreateSpec = {
+    const requestBody: RecordCreateRequest = {
       data: data.data
     }
 
@@ -141,7 +144,7 @@ class DataAccessService {
     tableName: string,
     data: RecordUpdateData
   ): Promise<RecordUpdateResponse> {
-    const requestBody: RecordUpdateSpec = {
+    const requestBody: RecordUpdateRequest = {
       updateData: data.updateData,
       whereConditions: data.whereConditions
     }
@@ -164,7 +167,7 @@ class DataAccessService {
     tableName: string,
     data: RecordDeleteData
   ): Promise<RecordDeleteResponse> {
-    const requestBody: RecordDeleteSpec = {
+    const requestBody: RecordDeleteRequest = {
       whereConditions: data.whereConditions
     }
 
@@ -235,7 +238,7 @@ class DataAccessService {
     }
   }
 
-  private convertToRecordFilterRequest(filter: RecordFilter): RecordFilterSpec {
+  private convertToRecordFilterRequest(filter: RecordFilter): RecordFilterRequest {
     return {
       columnFilters: filter.columnFilters.map(cf => ({
         columnName: cf.columnName,
@@ -251,7 +254,7 @@ class DataAccessService {
     }
   }
 
-  private convertToRecordCreateResponse(apiResult: RecordCreateResponse): RecordCreateResponse {
+  private convertToRecordCreateResponse(apiResult: FrontendRecordCreateResponse): FrontendRecordCreateResponse {
     return {
       createdRecord: apiResult.createdRecord,
       columnTypes: apiResult.columnTypes,
@@ -260,7 +263,7 @@ class DataAccessService {
     }
   }
 
-  private convertToRecordUpdateResponse(apiResult: RecordUpdateResponse): RecordUpdateResponse {
+  private convertToRecordUpdateResponse(apiResult: FrontendRecordUpdateResponse): FrontendRecordUpdateResponse {
     return {
       updatedRecords: apiResult.updatedRecords,
       executionTimeMs: apiResult.executionTimeMs,
@@ -268,7 +271,7 @@ class DataAccessService {
     }
   }
 
-  private convertToRecordDeleteResponse(apiResult: RecordDeleteResponse): RecordDeleteResponse {
+  private convertToRecordDeleteResponse(apiResult: FrontendRecordDeleteResponse): FrontendRecordDeleteResponse {
     return {
       deletedRecords: apiResult.deletedRecords,
       executionTimeMs: apiResult.executionTimeMs,
@@ -276,7 +279,7 @@ class DataAccessService {
     }
   }
 
-  private convertToFrontendDatabase(apiDatabase: DatabaseResponse): Database {
+  private convertToFrontendDatabase(apiDatabase: DatabaseResult): Database {
     return {
       id: apiDatabase.id,
       name: apiDatabase.name,

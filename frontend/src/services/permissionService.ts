@@ -18,17 +18,17 @@ import {API_ENDPOINTS} from '../config/config'
 import apiClient from './apiClient'
 import type {
   ApiResponse,
-  BulkPermissionSpec as ApiBulkPermissionRequest,
-  BulkPermissionResponse as ApiBulkPermissionResult,
-  PermissionImportResponse as ApiPermissionImportResult,
-  PermissionValidationResponse as ApiPermissionValidationResult
+  BulkPermissionRequest as ApiBulkPermissionRequest,
+  BulkPermissionResponse as ApiBulkPermissionResponse,
+  PermissionImportResult as ApiPermissionImportResult,
+  PermissionValidationResult as ApiPermissionValidationResult
 } from '../types/api'
 import type {
   BulkPermissionOptions,
   BulkPermissionResponse,
   PermissionImportOptions,
-  PermissionImportResponse,
-  PermissionValidationResponse
+  PermissionImportResult,
+  PermissionValidationResult
 } from '../types/frontend'
 
 export class PermissionService {
@@ -48,7 +48,7 @@ export class PermissionService {
     connectionId: number,
     file: File,
     options: PermissionImportOptions
-  ): Promise<PermissionImportResponse> {
+  ): Promise<PermissionImportResult> {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('importUsers', options.importUsers.toString())
@@ -76,7 +76,7 @@ export class PermissionService {
   async validatePermissionYaml(
     connectionId: number,
     file: File
-  ): Promise<PermissionValidationResponse> {
+  ): Promise<PermissionValidationResult> {
     const formData = new FormData()
     formData.append('file', file)
 
@@ -97,7 +97,7 @@ export class PermissionService {
     return this.convertToFrontendValidationResult(response.data.data)
   }
 
-  private convertToFrontendImportResult(apiResult: ApiPermissionImportResult): PermissionImportResponse {
+  private convertToFrontendImportResult(apiResult: ApiPermissionImportResult): PermissionImportResult {
     return {
       importedUsers: apiResult.importedUsers,
       importedTemplates: apiResult.importedTemplates,
@@ -109,7 +109,7 @@ export class PermissionService {
     }
   }
 
-  private convertToFrontendValidationResult(apiResult: ApiPermissionValidationResult): PermissionValidationResponse {
+  private convertToFrontendValidationResult(apiResult: ApiPermissionValidationResult): PermissionValidationResult {
     return {
       valid: apiResult.valid,
       message: apiResult.message,
@@ -134,7 +134,7 @@ export class PermissionService {
       description: options.description
     }
 
-    const response = await apiClient.post<ApiResponse<ApiBulkPermissionResult>>(
+    const response = await apiClient.post<ApiResponse<ApiBulkPermissionResponse>>(
       API_ENDPOINTS.PERMISSIONS.BULK_GRANT(connectionId),
       apiRequest
     )
@@ -146,7 +146,7 @@ export class PermissionService {
     return this.convertToFrontendBulkResult(response.data.data)
   }
 
-  private convertToFrontendBulkResult(apiResult: ApiBulkPermissionResult): BulkPermissionResponse {
+  private convertToFrontendBulkResult(apiResult: ApiBulkPermissionResponse): BulkPermissionResponse {
     return {
       processedUsers: apiResult.processedUsers,
       processedTables: apiResult.processedTables,

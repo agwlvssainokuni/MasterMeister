@@ -22,7 +22,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record DatabaseConnectionSpec(
+public record DatabaseConnectionRequest(
         @NotBlank(message = "Name is required", groups = {ValidationGroups.Create.class, ValidationGroups.Update.class})
         String name,
 

@@ -24,16 +24,16 @@ import type {
   BulkPermissionType,
   Database,
   PermissionImportOptions,
-  PermissionImportResponse,
-  PermissionValidationResponse
+  PermissionImportResult,
+  PermissionValidationResult
 } from '../types/frontend'
 
 interface PermissionManagementViewProps {
   connection: Database
   loading: boolean
   onExport: (connectionId: number, description?: string) => Promise<void>
-  onImport: (connectionId: number, file: File, options: PermissionImportOptions) => Promise<PermissionImportResponse>
-  onValidate: (connectionId: number, file: File) => Promise<PermissionValidationResponse>
+  onImport: (connectionId: number, file: File, options: PermissionImportOptions) => Promise<PermissionImportResult>
+  onValidate: (connectionId: number, file: File) => Promise<PermissionValidationResult>
   onBulkGrant?: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResponse>
 }
 
@@ -53,8 +53,8 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
   const [activeTab, setActiveTab] = useState<'quickSetup' | 'export' | 'import'>('quickSetup')
   const [exportDescription, setExportDescription] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [validationResult, setValidationResult] = useState<PermissionValidationResponse | null>(null)
-  const [importResult, setImportResult] = useState<PermissionImportResponse | null>(null)
+  const [validationResult, setValidationResult] = useState<PermissionValidationResult | null>(null)
+  const [importResult, setImportResult] = useState<PermissionImportResult | null>(null)
   const [importOptions, setImportOptions] = useState<PermissionImportOptions>({
     importUsers: true,
     importTemplates: true,

@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * DTO for record update requests from frontend
  */
-public record RecordUpdateSpec(
+public record RecordUpdateRequest(
         @NotNull(message = "Update data is required")
         Map<String, Object> data,
 

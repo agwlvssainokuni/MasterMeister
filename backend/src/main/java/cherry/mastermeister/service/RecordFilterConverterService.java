@@ -16,7 +16,7 @@
 
 package cherry.mastermeister.service;
 
-import cherry.mastermeister.controller.dto.RecordFilterSpec;
+import cherry.mastermeister.controller.dto.RecordFilterRequest;
 import cherry.mastermeister.model.RecordFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +31,9 @@ public class RecordFilterConverterService {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Convert RecordFilterSpec to RecordFilter
+     * Convert RecordFilterRequest to RecordFilter
      */
-    public RecordFilter convertFromRequest(RecordFilterSpec request) {
+    public RecordFilter convertFromRequest(RecordFilterRequest request) {
         if (request == null) {
             return RecordFilter.empty();
         }
@@ -47,7 +47,7 @@ public class RecordFilterConverterService {
     /**
      * Convert column filter requests to model objects
      */
-    private List<RecordFilter.ColumnFilter> convertColumnFilters(List<RecordFilterSpec.ColumnFilterRequest> requests) {
+    private List<RecordFilter.ColumnFilter> convertColumnFilters(List<RecordFilterRequest.ColumnFilterRequest> requests) {
         if (requests == null) {
             return List.of();
         }
@@ -61,7 +61,7 @@ public class RecordFilterConverterService {
     /**
      * Convert single column filter request
      */
-    private RecordFilter.ColumnFilter convertColumnFilter(RecordFilterSpec.ColumnFilterRequest request) {
+    private RecordFilter.ColumnFilter convertColumnFilter(RecordFilterRequest.ColumnFilterRequest request) {
         try {
             RecordFilter.FilterOperator operator = RecordFilter.FilterOperator.valueOf(
                     request.operator().toUpperCase());
@@ -81,7 +81,7 @@ public class RecordFilterConverterService {
     /**
      * Convert sort order requests to model objects
      */
-    private List<RecordFilter.SortOrder> convertSortOrders(List<RecordFilterSpec.SortOrderRequest> requests) {
+    private List<RecordFilter.SortOrder> convertSortOrders(List<RecordFilterRequest.SortOrderRequest> requests) {
         if (requests == null) {
             return List.of();
         }
@@ -95,7 +95,7 @@ public class RecordFilterConverterService {
     /**
      * Convert single sort order request
      */
-    private RecordFilter.SortOrder convertSortOrder(RecordFilterSpec.SortOrderRequest request) {
+    private RecordFilter.SortOrder convertSortOrder(RecordFilterRequest.SortOrderRequest request) {
         try {
             RecordFilter.SortDirection direction = RecordFilter.SortDirection.valueOf(
                     request.direction().toUpperCase());

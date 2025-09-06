@@ -170,7 +170,7 @@ public class DataAccessController {
                 schemaName, tableName, connectionId, page, pageSize);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordQueryResponse result = recordReadService.getRecords(
+        cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
                 userId, connectionId,
                 schemaName, tableName,
                 RecordFilter.empty(),
@@ -192,7 +192,7 @@ public class DataAccessController {
             @PathVariable String tableName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int pageSize,
-            @RequestBody(required = false) RecordFilterSpec filterRequest,
+            @RequestBody(required = false) RecordFilterRequest filterRequest,
             Authentication authentication
     ) {
 
@@ -203,7 +203,7 @@ public class DataAccessController {
         RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordQueryResponse result = recordReadService.getRecords(
+        cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
                 userId, connectionId,
                 schemaName, tableName,
                 filter,
@@ -223,14 +223,14 @@ public class DataAccessController {
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
-            @Valid @RequestBody RecordCreateSpec request,
+            @Valid @RequestBody RecordCreateRequest request,
             Authentication authentication
     ) {
 
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordCreateResponse result = recordCreateService.createRecord(
+        cherry.mastermeister.model.RecordCreateResult result = recordCreateService.createRecord(
                 userId, connectionId,
                 schemaName, tableName,
                 request.data()
@@ -249,14 +249,14 @@ public class DataAccessController {
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
-            @Valid @RequestBody RecordUpdateSpec request,
+            @Valid @RequestBody RecordUpdateRequest request,
             Authentication authentication
     ) {
 
         logger.info("Updating records in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordUpdateResponse result = recordUpdateService.updateRecord(
+        cherry.mastermeister.model.RecordUpdateResult result = recordUpdateService.updateRecord(
                 userId, connectionId,
                 schemaName, tableName,
                 request.data(),
@@ -276,14 +276,14 @@ public class DataAccessController {
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
-            @Valid @RequestBody RecordDeleteSpec request,
+            @Valid @RequestBody RecordDeleteRequest request,
             Authentication authentication
     ) {
 
         logger.info("Deleting records from table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordDeleteResponse result = recordDeleteService.deleteRecord(
+        cherry.mastermeister.model.RecordDeleteResult result = recordDeleteService.deleteRecord(
                 userId, connectionId,
                 schemaName, tableName,
                 request.whereConditions(),
@@ -298,7 +298,7 @@ public class DataAccessController {
      * Convert model RecordDeleteResponse to DTO
      */
     private RecordDeleteResponse convertToRecordDeleteResult(
-            cherry.mastermeister.model.RecordDeleteResponse model
+            cherry.mastermeister.model.RecordDeleteResult model
     ) {
         return new RecordDeleteResponse(
                 model.deletedRecordCount(),
@@ -313,7 +313,7 @@ public class DataAccessController {
      * Convert model RecordUpdateResponse to DTO
      */
     private RecordUpdateResponse convertToRecordUpdateResult(
-            cherry.mastermeister.model.RecordUpdateResponse model
+            cherry.mastermeister.model.RecordUpdateResult model
     ) {
         return new RecordUpdateResponse(
                 model.updatedRecordCount(),
@@ -326,7 +326,7 @@ public class DataAccessController {
      * Convert model RecordCreationResult to DTO
      */
     private cherry.mastermeister.controller.dto.RecordCreateResponse convertToRecordCreateResult(
-            cherry.mastermeister.model.RecordCreateResponse model
+            cherry.mastermeister.model.RecordCreateResult model
     ) {
         return new cherry.mastermeister.controller.dto.RecordCreateResponse(
                 model.createdRecord(),
@@ -340,7 +340,7 @@ public class DataAccessController {
      * Convert model RecordQueryResponse to DTO
      */
     private RecordQueryResponse convertToRecordQueryResultDto(
-            cherry.mastermeister.model.RecordQueryResponse model
+            cherry.mastermeister.model.RecordQueryResult model
     ) {
         // Convert records to readable data only
         List<Map<String, Object>> records = model.records().stream()

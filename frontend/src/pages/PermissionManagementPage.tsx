@@ -27,8 +27,8 @@ import type {
   BulkPermissionResponse,
   Database,
   PermissionImportOptions,
-  PermissionImportResponse,
-  PermissionValidationResponse
+  PermissionImportResult,
+  PermissionValidationResult
 } from '../types/frontend'
 
 export const PermissionManagementPage: React.FC = () => {
@@ -90,7 +90,7 @@ export const PermissionManagementPage: React.FC = () => {
     connectionId: number,
     file: File,
     options: PermissionImportOptions
-  ): Promise<PermissionImportResponse> => {
+  ): Promise<PermissionImportResult> => {
     try {
       setLoading(true)
       const result = await permissionService.importPermissions(connectionId, file, options)
@@ -118,7 +118,7 @@ export const PermissionManagementPage: React.FC = () => {
   const handleValidateYaml = async (
     connectionId: number,
     file: File
-  ): Promise<PermissionValidationResponse> => {
+  ): Promise<PermissionValidationResult> => {
     try {
       setLoading(true)
       const result = await permissionService.validatePermissionYaml(connectionId, file)

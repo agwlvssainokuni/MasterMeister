@@ -21,13 +21,13 @@ import java.util.List;
 /**
  * DTO for record filtering requests from frontend
  */
-public record RecordFilterSpec(
+public record RecordFilterRequest(
         List<ColumnFilterRequest> columnFilters,
         String customWhere,
         List<SortOrderRequest> sortOrders
 ) {
-    public static RecordFilterSpec empty() {
-        return new RecordFilterSpec(List.of(), null, List.of());
+    public static RecordFilterRequest empty() {
+        return new RecordFilterRequest(List.of(), null, List.of());
     }
 
     /**

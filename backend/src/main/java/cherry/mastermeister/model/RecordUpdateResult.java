@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.controller.dto;
+package cherry.mastermeister.model;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
-public record RegisterEmailSpec(
-        @NotBlank(message = "Email is required")
-        @Email(message = "Invalid email format")
-        @Size(max = 100, message = "Email must not exceed 100 characters")
-        String email,
-
-        @Size(max = 5, message = "Language code must not exceed 5 characters")
-        String language
+/**
+ * Model representing record update result
+ */
+public record RecordUpdateResult(
+        int updatedRecordCount,
+        long executionTimeMs,
+        String query
 ) {
 }

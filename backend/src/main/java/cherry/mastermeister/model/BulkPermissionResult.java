@@ -18,7 +18,7 @@ package cherry.mastermeister.model;
 
 import java.util.List;
 
-public record BulkPermissionResponse(
+public record BulkPermissionResult(
         int processedUsers,
         int processedTables,
         int createdPermissions,

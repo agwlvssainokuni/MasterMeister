@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.controller.dto;
+package cherry.mastermeister.model;
 
-import jakarta.validation.constraints.NotBlank;
+import java.util.Map;
 
-public record LogoutSpec(
-        @NotBlank(message = "Refresh token is required")
-        String refreshToken
+/**
+ * Model representing record creation result
+ */
+public record RecordCreateResult(
+        Map<String, Object> createdRecord,
+        Map<String, String> columnTypes,
+        long executionTimeMs,
+        String query
 ) {
 }

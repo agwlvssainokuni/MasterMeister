@@ -17,7 +17,7 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.ApiResponse;
-import cherry.mastermeister.controller.dto.DatabaseConnectionSpec;
+import cherry.mastermeister.controller.dto.DatabaseConnectionRequest;
 import cherry.mastermeister.controller.dto.DatabaseConnectionResponse;
 import cherry.mastermeister.controller.dto.ValidationGroups;
 import cherry.mastermeister.model.DatabaseConnection;
@@ -72,7 +72,7 @@ public class DatabaseController {
     @PostMapping
     @Operation(summary = "Create database connection", description = "Create a new database connection")
     public ApiResponse<DatabaseConnectionResponse> createConnection(
-            @Validated(ValidationGroups.Create.class) @RequestBody DatabaseConnectionSpec request
+            @Validated(ValidationGroups.Create.class) @RequestBody DatabaseConnectionRequest request
     ) {
         DatabaseConnection model = toModel(request);
         DatabaseConnection savedConnection = databaseService.createConnection(model);
@@ -84,7 +84,7 @@ public class DatabaseController {
     @Operation(summary = "Update database connection", description = "Update an existing database connection")
     public ApiResponse<DatabaseConnectionResponse> updateConnection(
             @PathVariable Long id,
-            @Validated(ValidationGroups.Update.class) @RequestBody DatabaseConnectionSpec request
+            @Validated(ValidationGroups.Update.class) @RequestBody DatabaseConnectionRequest request
     ) {
         // 更新時はパスワードが空の場合、既存のパスワードを保持（DatabaseServiceで処理）
         DatabaseConnection model = toModel(request);
@@ -134,7 +134,7 @@ public class DatabaseController {
         return ApiResponse.success(toResult(connection));
     }
 
-    private DatabaseConnection toModel(DatabaseConnectionSpec request) {
+    private DatabaseConnection toModel(DatabaseConnectionRequest request) {
         return new DatabaseConnection(
                 null,
                 request.name(),

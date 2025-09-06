@@ -19,7 +19,7 @@ package cherry.mastermeister.service;
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.model.DatabaseConnection;
-import cherry.mastermeister.model.RecordDeleteResponse;
+import cherry.mastermeister.model.RecordDeleteResult;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
@@ -66,7 +66,7 @@ public class RecordDeleteService {
     /**
      * Delete records with permission validation and referential integrity checks
      */
-    public RecordDeleteResponse deleteRecord(
+    public RecordDeleteResult deleteRecord(
             Long userId, Long connectionId,
             String schemaName, String tableName,
             Map<String, Object> whereConditions,
@@ -132,7 +132,7 @@ public class RecordDeleteService {
 
             long executionTime = System.currentTimeMillis() - startTime;
 
-            RecordDeleteResponse result = new RecordDeleteResponse(
+            RecordDeleteResult result = new RecordDeleteResult(
                     rowsAffected, executionTime, deleteQuery.query(), integrityChecked, warnings);
 
             // Log detailed record deletion success

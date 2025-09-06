@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package cherry.mastermeister.model;
+package cherry.mastermeister.controller.dto;
 
-/**
- * Model representing record update result
- */
-public record RecordUpdateResponse(
-        int updatedRecordCount,
-        long executionTimeMs,
-        String query
+import jakarta.validation.constraints.NotBlank;
+
+public record LogoutRequest(
+        @NotBlank(message = "Refresh token is required")
+        String refreshToken
 ) {
 }

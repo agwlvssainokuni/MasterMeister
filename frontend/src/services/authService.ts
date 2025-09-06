@@ -18,14 +18,14 @@ import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
-  LoginSpec,
+  LoginRequest,
   LoginResponse,
-  LogoutSpec,
-  RefreshTokenSpec,
-  RegisterEmailSpec,
-  RegisterEmailResponse as ApiRegisterEmailResult,
-  RegisterUserSpec,
-  RegisterUserResponse as ApiRegisterUserResult
+  LogoutRequest,
+  RefreshTokenRequest,
+  RegisterEmailRequest,
+  RegisterEmailResponse as ApiRegisterEmailResponse,
+  RegisterUserRequest,
+  RegisterUserResponse as ApiRegisterUserResponse
 } from '../types/api'
 import type {
   AuthState,
@@ -40,7 +40,7 @@ import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthState> {
-    const loginRequest: LoginSpec = {
+    const loginRequest: LoginRequest = {
       email: credentials.email,
       password: credentials.password
     }
@@ -77,7 +77,7 @@ class AuthService {
   async logout(): Promise<void> {
     const refreshToken = localStorage.getItem('refreshToken')
     if (refreshToken) {
-      const logoutRequest: LogoutSpec = {refreshToken}
+      const logoutRequest: LogoutRequest = {refreshToken}
 
       try {
         await apiClient.post<ApiResponse<string>>(
@@ -101,7 +101,7 @@ class AuthService {
       throw new Error('No refresh token available')
     }
 
-    const refreshRequest: RefreshTokenSpec = {
+    const refreshRequest: RefreshTokenRequest = {
       refreshToken
     }
 
@@ -142,12 +142,12 @@ class AuthService {
   }
 
   async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResponse> {
-    const request: RegisterEmailSpec = {
+    const request: RegisterEmailRequest = {
       email: credentials.email,
       language: credentials.language || 'ja',
     }
 
-    const response = await apiClient.post<ApiResponse<ApiRegisterEmailResult>>(
+    const response = await apiClient.post<ApiResponse<ApiRegisterEmailResponse>>(
       API_ENDPOINTS.USERS.REGISTER_EMAIL,
       request
     )
@@ -160,14 +160,14 @@ class AuthService {
   }
 
   async registerUser(credentials: RegisterUserCredentials): Promise<RegisterUserResponse> {
-    const request: RegisterUserSpec = {
+    const request: RegisterUserRequest = {
       token: credentials.token,
       email: credentials.email,
       password: credentials.password,
       language: credentials.language || 'ja',
     }
 
-    const response = await apiClient.post<ApiResponse<ApiRegisterUserResult>>(
+    const response = await apiClient.post<ApiResponse<ApiRegisterUserResponse>>(
       API_ENDPOINTS.USERS.REGISTER,
       request
     )

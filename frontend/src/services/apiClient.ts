@@ -16,7 +16,7 @@
 
 import axios from 'axios'
 import {API_BASE_URL, API_ENDPOINTS} from '../config/config'
-import type {ApiResponse, LoginResponse, RefreshTokenSpec} from "../types/api"
+import type {ApiResponse, LoginResponse, RefreshTokenRequest} from "../types/api"
 import {isTokenExpiringSoon} from '../utils/jwt'
 
 const apiClient = axios.create({
@@ -50,7 +50,7 @@ const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResp
     const response = await axios.post<ApiResponse<LoginResponse>>(
       `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
         refreshToken
-      } as RefreshTokenSpec
+      } as RefreshTokenRequest
     )
 
     const {data} = response.data as ApiResponse<LoginResponse>

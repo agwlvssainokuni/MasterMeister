@@ -20,7 +20,7 @@ import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.exception.PermissionDeniedException;
 import cherry.mastermeister.model.ColumnMetadata;
 import cherry.mastermeister.model.DatabaseConnection;
-import cherry.mastermeister.model.RecordCreateResponse;
+import cherry.mastermeister.model.RecordCreateResult;
 import cherry.mastermeister.model.TableMetadata;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
@@ -64,7 +64,7 @@ public class RecordCreateService {
     /**
      * Create new record with permission validation
      */
-    public RecordCreateResponse createRecord(
+    public RecordCreateResult createRecord(
             Long userId, Long connectionId,
             String schemaName, String tableName,
             Map<String, Object> recordData
@@ -122,7 +122,7 @@ public class RecordCreateService {
 
             long executionTime = System.currentTimeMillis() - startTime;
 
-            RecordCreateResponse result = new RecordCreateResponse(
+            RecordCreateResult result = new RecordCreateResult(
                     createdRecord, columnTypes, executionTime, insertQuery.query());
 
             // Log detailed record creation success

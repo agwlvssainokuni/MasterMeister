@@ -16,32 +16,17 @@
 
 package cherry.mastermeister.controller.dto;
 
-import cherry.mastermeister.enums.BulkPermissionScope;
-import cherry.mastermeister.enums.PermissionType;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.util.List;
+public record RegisterEmailRequest(
+        @NotBlank(message = "Email is required")
+        @Email(message = "Invalid email format")
+        @Size(max = 100, message = "Email must not exceed 100 characters")
+        String email,
 
-/**
- * Request DTO for bulk permission operations
- */
-public record BulkPermissionSpec(
-        @NotNull
-        BulkPermissionScope scope,
-        
-        @NotNull
-        PermissionType permissionType,
-        
-        List<String> userEmails,
-        
-        List<String> schemaNames,
-        
-        List<String> tableNames,
-        
-        boolean includeSystemTables,
-        
-        @Size(max = 500)
-        String description
+        @Size(max = 5, message = "Language code must not exceed 5 characters")
+        String language
 ) {
 }

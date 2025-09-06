@@ -61,7 +61,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginSpec request) {
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.email(), request.password())
@@ -93,7 +93,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ApiResponse<LoginResponse> refresh(@Valid @RequestBody RefreshTokenSpec request) {
+    public ApiResponse<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         try {
             String refreshToken = request.refreshToken();
 
@@ -143,7 +143,7 @@ public class AuthController {
                     responseCode = "400",
                     description = "Invalid refresh token")
     })
-    public ApiResponse<String> logout(@Valid @RequestBody LogoutSpec request) {
+    public ApiResponse<String> logout(@Valid @RequestBody LogoutRequest request) {
         String refreshToken = request.refreshToken();
 
         if (!jwtUtil.isRefreshToken(refreshToken)) {

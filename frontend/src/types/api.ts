@@ -24,7 +24,7 @@ export interface ApiResponse<T> {
 }
 
 // AuthController
-export interface LoginSpec {
+export interface LoginRequest {
   email: string
   password: string
 }
@@ -37,11 +37,11 @@ export interface LoginResponse {
   expiresIn: number
 }
 
-export interface RefreshTokenSpec {
+export interface RefreshTokenRequest {
   refreshToken: string
 }
 
-export interface LogoutSpec {
+export interface LogoutRequest {
   refreshToken: string
 }
 
@@ -65,7 +65,7 @@ export interface RejectUserRequest {
 }
 
 // User Registration - Email First Flow
-export interface RegisterEmailSpec {
+export interface RegisterEmailRequest {
   email: string
   language: string
 }
@@ -74,7 +74,7 @@ export interface RegisterEmailResponse {
   email: string
 }
 
-export interface RegisterUserSpec {
+export interface RegisterUserRequest {
   token: string
   email: string
   password: string
@@ -164,25 +164,25 @@ export interface RecordQueryResponse {
   query: string
 }
 
-export interface ColumnFilterSpec {
+export interface ColumnFilterRequest {
   columnName: string
   operator: string
   value: unknown
   value2?: unknown
 }
 
-export interface SortOrderSpec {
+export interface SortOrderRequest {
   columnName: string
   direction: 'ASC' | 'DESC'
 }
 
-export interface RecordFilterSpec {
-  columnFilters: ColumnFilterSpec[]
+export interface RecordFilterRequest {
+  columnFilters: ColumnFilterRequest[]
   customWhere?: string
-  sortOrders: SortOrderSpec[]
+  sortOrders: SortOrderRequest[]
 }
 
-export interface RecordCreateSpec {
+export interface RecordCreateRequest {
   data: Record<string, unknown>
 }
 
@@ -193,7 +193,7 @@ export interface RecordCreateResponse {
   query: string
 }
 
-export interface RecordUpdateSpec {
+export interface RecordUpdateRequest {
   updateData: Record<string, unknown>
   whereConditions: Record<string, unknown>
 }
@@ -204,7 +204,7 @@ export interface RecordUpdateResponse {
   query: string
 }
 
-export interface RecordDeleteSpec {
+export interface RecordDeleteRequest {
   whereConditions: Record<string, unknown>
 }
 
@@ -229,7 +229,7 @@ export interface DatabaseRequest {
   active: boolean
 }
 
-export interface DatabaseResponse {
+export interface DatabaseResult {
   id: number
   name: string
   dbType: DatabaseType
@@ -245,7 +245,7 @@ export interface DatabaseResponse {
   updatedAt: string
 }
 
-export interface ConnectionTestResponse {
+export interface ConnectionTestResult {
   connected: boolean
   message?: string
   errorDetails?: string
@@ -270,7 +270,7 @@ export interface PermissionImportOptions {
   skipDuplicates?: boolean
 }
 
-export interface PermissionValidationResponse {
+export interface PermissionValidationResult {
   valid: boolean
   message: string
   userCount: number
@@ -278,7 +278,7 @@ export interface PermissionValidationResponse {
   totalPermissions: number
 }
 
-export interface PermissionImportResponse {
+export interface PermissionImportResult {
   importedUsers: number
   importedTemplates: number
   importedPermissions: number
@@ -292,7 +292,7 @@ export interface PermissionImportResponse {
 export type BulkPermissionScope = 'ALL_TABLES' | 'SCHEMA' | 'TABLE_LIST'
 export type BulkPermissionType = 'READ' | 'WRITE' | 'DELETE'
 
-export interface BulkPermissionSpec {
+export interface BulkPermissionRequest {
   scope: BulkPermissionScope
   permissionType: BulkPermissionType
   userEmails: string[]

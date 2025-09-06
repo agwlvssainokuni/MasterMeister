@@ -18,7 +18,7 @@ package cherry.mastermeister.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record LoginSpec(
+public record LoginRequest(
         @NotBlank(message = "Email is required")
         String email,
 

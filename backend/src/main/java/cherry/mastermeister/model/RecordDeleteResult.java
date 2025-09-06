@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Model representing record deletion result
  */
-public record RecordDeleteResponse(
+public record RecordDeleteResult(
         int deletedRecordCount,
         long executionTimeMs,
         String query,
