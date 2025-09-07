@@ -17,18 +17,18 @@
 import apiClient from './apiClient'
 import {API_ENDPOINTS} from '../config/config'
 import type {
-  AccessibleColumnResult,
-  AccessibleTableResult,
+  AccessibleColumnResponse,
+  AccessibleTableResponse,
   ApiResponse,
-  DatabaseResult,
+  DatabaseResponse,
   RecordCreateRequest,
-  RecordCreateResult,
+  RecordCreateResponse as ApiRecordCreateResponse,
   RecordDeleteRequest,
-  RecordDeleteResult,
+  RecordDeleteResponse as ApiRecordDeleteResponse,
   RecordFilterRequest,
-  RecordQueryResult,
+  RecordQueryResponse,
   RecordUpdateRequest,
-  RecordUpdateResult
+  RecordUpdateResponse as ApiRecordUpdateResponse
 } from '../types/api'
 import type {
   AccessibleColumn,
@@ -47,7 +47,7 @@ import type {
 class DataAccessService {
 
   async getDatabases(): Promise<Database[]> {
-    const response = await apiClient.get<ApiResponse<DatabaseResult[]>>(
+    const response = await apiClient.get<ApiResponse<DatabaseResponse[]>>(
       API_ENDPOINTS.DATA_ACCESS.DATABASES
     )
 
@@ -59,7 +59,7 @@ class DataAccessService {
   }
 
   async getAccessibleTables(connectionId: number): Promise<AccessibleTable[]> {
-    const response = await apiClient.get<ApiResponse<AccessibleTableResult[]>>(
+    const response = await apiClient.get<ApiResponse<AccessibleTableResponse[]>>(
       API_ENDPOINTS.DATA_ACCESS.ACCESSIBLE_TABLES(connectionId)
     )
 
@@ -71,7 +71,7 @@ class DataAccessService {
   }
 
   async getTableDetails(connectionId: number, schemaName: string, tableName: string): Promise<AccessibleTable> {
-    const response = await apiClient.get<ApiResponse<AccessibleTableResult>>(
+    const response = await apiClient.get<ApiResponse<AccessibleTableResponse>>(
       API_ENDPOINTS.DATA_ACCESS.TABLE_DETAILS(connectionId, schemaName, tableName)
     )
 
@@ -101,11 +101,11 @@ class DataAccessService {
     }
 
     const response = requestBody
-      ? await apiClient.post<ApiResponse<RecordQueryResult>>(
+      ? await apiClient.post<ApiResponse<RecordQueryResponse>>(
         `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS_FILTER(connectionId, schemaName, tableName)}?${params.toString()}`,
         requestBody
       )
-      : await apiClient.get<ApiResponse<RecordQueryResult>>(
+      : await apiClient.get<ApiResponse<RecordQueryResponse>>(
         `${API_ENDPOINTS.DATA_ACCESS.TABLE_RECORDS(connectionId, schemaName, tableName)}?${params.toString()}`
       )
 
@@ -126,7 +126,7 @@ class DataAccessService {
       data: data.data
     }
 
-    const response = await apiClient.post<ApiResponse<RecordCreateResult>>(
+    const response = await apiClient.post<ApiResponse<ApiRecordCreateResponse>>(
       API_ENDPOINTS.DATA_ACCESS.RECORD_CREATE(connectionId, schemaName, tableName),
       requestBody
     )
@@ -149,7 +149,7 @@ class DataAccessService {
       whereConditions: data.whereConditions
     }
 
-    const response = await apiClient.put<ApiResponse<RecordUpdateResult>>(
+    const response = await apiClient.put<ApiResponse<ApiRecordUpdateResponse>>(
       API_ENDPOINTS.DATA_ACCESS.RECORD_UPDATE(connectionId, schemaName, tableName),
       requestBody
     )
@@ -171,7 +171,7 @@ class DataAccessService {
       whereConditions: data.whereConditions
     }
 
-    const response = await apiClient.post<ApiResponse<RecordDeleteResult>>(
+    const response = await apiClient.post<ApiResponse<ApiRecordDeleteResponse>>(
       API_ENDPOINTS.DATA_ACCESS.RECORD_DELETE(connectionId, schemaName, tableName),
       requestBody
     )
@@ -184,7 +184,7 @@ class DataAccessService {
   }
 
   // Type conversion methods (API → Frontend)
-  private convertToAccessibleTable(apiTable: AccessibleTableResult): AccessibleTable {
+  private convertToAccessibleTable(apiTable: AccessibleTableResponse): AccessibleTable {
     return {
       connectionId: apiTable.connectionId,
       schemaName: apiTable.schemaName,
@@ -203,7 +203,7 @@ class DataAccessService {
     }
   }
 
-  private convertToAccessibleColumn = (apiColumn: AccessibleColumnResult): AccessibleColumn => {
+  private convertToAccessibleColumn = (apiColumn: AccessibleColumnResponse): AccessibleColumn => {
     return {
       columnName: apiColumn.columnName,
       dataType: apiColumn.dataType,
@@ -223,7 +223,7 @@ class DataAccessService {
     }
   }
 
-  private convertToRecordQueryData(apiData: RecordQueryResult): RecordQueryData {
+  private convertToRecordQueryData(apiData: RecordQueryResponse): RecordQueryData {
     return {
       records: apiData.records,
       accessibleColumns: apiData.accessibleColumns.map(this.convertToAccessibleColumn),
@@ -254,7 +254,7 @@ class DataAccessService {
     }
   }
 
-  private convertToRecordCreateResponse(apiResult: RecordCreateResult): RecordCreateResponse {
+  private convertToRecordCreateResponse(apiResult: ApiRecordCreateResponse): RecordCreateResponse {
     return {
       createdRecord: apiResult.createdRecord,
       columnTypes: apiResult.columnTypes,
@@ -263,7 +263,7 @@ class DataAccessService {
     }
   }
 
-  private convertToRecordUpdateResponse(apiResult: RecordUpdateResult): RecordUpdateResponse {
+  private convertToRecordUpdateResponse(apiResult: ApiRecordUpdateResponse): RecordUpdateResponse {
     return {
       updatedRecords: apiResult.updatedRecords,
       executionTimeMs: apiResult.executionTimeMs,
@@ -271,7 +271,7 @@ class DataAccessService {
     }
   }
 
-  private convertToRecordDeleteResponse(apiResult: RecordDeleteResult): RecordDeleteResponse {
+  private convertToRecordDeleteResponse(apiResult: ApiRecordDeleteResponse): RecordDeleteResponse {
     return {
       deletedRecords: apiResult.deletedRecords,
       executionTimeMs: apiResult.executionTimeMs,
@@ -279,7 +279,7 @@ class DataAccessService {
     }
   }
 
-  private convertToFrontendDatabase(apiDatabase: DatabaseResult): Database {
+  private convertToFrontendDatabase(apiDatabase: DatabaseResponse): Database {
     return {
       id: apiDatabase.id,
       name: apiDatabase.name,

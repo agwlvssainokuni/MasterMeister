@@ -19,7 +19,7 @@ import apiClient from './apiClient'
 import type {
   ApiResponse,
   BulkPermissionRequest as ApiBulkPermissionRequest,
-  BulkPermissionResult as ApiBulkPermissionResult,
+  BulkPermissionResponse as ApiBulkPermissionResult,
   PermissionImportResult as ApiPermissionImportResult,
   PermissionValidationResult as ApiPermissionValidationResult
 } from '../types/api'

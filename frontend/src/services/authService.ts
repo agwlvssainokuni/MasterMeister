@@ -19,13 +19,13 @@ import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
   LoginRequest,
-  LoginResult,
+  LoginResponse,
   LogoutRequest,
   RefreshTokenRequest,
   RegisterEmailRequest,
-  RegisterEmailResult as ApiRegisterEmailResult,
+  RegisterEmailResponse as ApiRegisterEmailResult,
   RegisterUserRequest,
-  RegisterUserResult as ApiRegisterUserResult
+  RegisterUserResponse as ApiRegisterUserResult
 } from '../types/api'
 import type {
   AuthState,
@@ -45,7 +45,7 @@ class AuthService {
       password: credentials.password
     }
 
-    const response = await apiClient.post<ApiResponse<LoginResult>>(
+    const response = await apiClient.post<ApiResponse<LoginResponse>>(
       API_ENDPOINTS.AUTH.LOGIN,
       loginRequest
     )
@@ -106,7 +106,7 @@ class AuthService {
     }
 
     try {
-      const response = await apiClient.post<ApiResponse<LoginResult>>(
+      const response = await apiClient.post<ApiResponse<LoginResponse>>(
         API_ENDPOINTS.AUTH.REFRESH,
         refreshRequest
       )

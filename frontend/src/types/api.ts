@@ -29,7 +29,7 @@ export interface LoginRequest {
   password: string
 }
 
-export interface LoginResult {
+export interface LoginResponse {
   accessToken: string
   refreshToken: string
   email: string
@@ -46,7 +46,7 @@ export interface LogoutRequest {
 }
 
 // AdminController
-export interface UserSummaryResult {
+export interface UserSummaryResponse {
   id: number
   email: string
   status: string
@@ -70,7 +70,7 @@ export interface RegisterEmailRequest {
   language: string
 }
 
-export interface RegisterEmailResult {
+export interface RegisterEmailResponse {
   email: string
 }
 
@@ -81,13 +81,13 @@ export interface RegisterUserRequest {
   language: string
 }
 
-export interface RegisterUserResult {
+export interface RegisterUserResponse {
   userId: number
   email: string
 }
 
 // DataAccessController
-export interface AccessibleTableResult {
+export interface AccessibleTableResponse {
   connectionId: number
   schemaName: string
   tableName: string
@@ -101,10 +101,10 @@ export interface AccessibleTableResult {
   canAdmin: boolean
   canModifyData: boolean
   canPerformCrud: boolean
-  columns: AccessibleColumnResult[]
+  columns: AccessibleColumnResponse[]
 }
 
-export interface AccessibleColumnResult {
+export interface AccessibleColumnResponse {
   columnName: string
   dataType: string
   columnSize?: number
@@ -122,23 +122,23 @@ export interface AccessibleColumnResult {
   canAdmin: boolean
 }
 
-export interface SchemaMetadataResult {
+export interface SchemaMetadataResponse {
   connectionId: number
   databaseName: string
   schemas: string[]
-  tables: TableMetadataResult[]
+  tables: TableMetadataResponse[]
   lastUpdatedAt: string
 }
 
-export interface TableMetadataResult {
+export interface TableMetadataResponse {
   schema: string
   tableName: string
   tableType: string
   comment?: string
-  columns: ColumnMetadataResult[]
+  columns: ColumnMetadataResponse[]
 }
 
-export interface ColumnMetadataResult {
+export interface ColumnMetadataResponse {
   columnName: string
   dataType: string
   columnSize?: number
@@ -151,9 +151,9 @@ export interface ColumnMetadataResult {
   ordinalPosition: number
 }
 
-export interface RecordQueryResult {
+export interface RecordQueryResponse {
   records: Record<string, unknown>[]
-  accessibleColumns: AccessibleColumnResult[]
+  accessibleColumns: AccessibleColumnResponse[]
   totalRecords: number
   currentPage: number
   pageSize: number
@@ -186,7 +186,7 @@ export interface RecordCreateRequest {
   data: Record<string, unknown>
 }
 
-export interface RecordCreateResult {
+export interface RecordCreateResponse {
   createdRecord: Record<string, unknown>
   columnTypes: Record<string, string>
   executionTimeMs: number
@@ -198,7 +198,7 @@ export interface RecordUpdateRequest {
   whereConditions: Record<string, unknown>
 }
 
-export interface RecordUpdateResult {
+export interface RecordUpdateResponse {
   updatedRecords: number
   executionTimeMs: number
   query: string
@@ -208,7 +208,7 @@ export interface RecordDeleteRequest {
   whereConditions: Record<string, unknown>
 }
 
-export interface RecordDeleteResult {
+export interface RecordDeleteResponse {
   deletedRecords: number
   executionTimeMs: number
   query: string
@@ -229,7 +229,7 @@ export interface DatabaseRequest {
   active: boolean
 }
 
-export interface DatabaseResult {
+export interface DatabaseResponse {
   id: number
   name: string
   dbType: DatabaseType
@@ -245,7 +245,7 @@ export interface DatabaseResult {
   updatedAt: string
 }
 
-export interface ConnectionTestResult {
+export interface ConnectionTestResponse {
   connected: boolean
   message?: string
   errorDetails?: string
@@ -302,7 +302,7 @@ export interface BulkPermissionRequest {
   description?: string
 }
 
-export interface BulkPermissionResult {
+export interface BulkPermissionResponse {
   processedUsers: number
   processedTables: number
   createdPermissions: number
@@ -310,7 +310,7 @@ export interface BulkPermissionResult {
   errors: string[]
 }
 
-export interface SchemaUpdateLogResult {
+export interface SchemaUpdateLogResponse {
   id: number
   connectionId: number
   operation: SchemaUpdateOperation
