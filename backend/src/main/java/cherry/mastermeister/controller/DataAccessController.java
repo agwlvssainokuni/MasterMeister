@@ -166,10 +166,10 @@ public class DataAccessController {
                 schemaName, tableName, connectionId, page, pageSize);
 
         Long userId = getUserId(authentication);
-        RecordQueryResult result = recordReadService.getRecords(
+        RecordReadResult result = recordReadService.getRecords(
                 userId, connectionId,
                 schemaName, tableName,
-                RecordFilter.empty(),
+                RecordReadCommand.empty(),
                 page, pageSize
         );
 
@@ -196,10 +196,10 @@ public class DataAccessController {
                 schemaName, tableName, connectionId, page, pageSize,
                 filterRequest != null ? "present" : "none");
 
-        RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
+        RecordReadCommand filter = recordFilterConverterService.convertFromRequest(filterRequest);
 
         Long userId = getUserId(authentication);
-        RecordQueryResult result = recordReadService.getRecords(
+        RecordReadResult result = recordReadService.getRecords(
                 userId, connectionId,
                 schemaName, tableName,
                 filter,
@@ -336,7 +336,7 @@ public class DataAccessController {
      * Convert model RecordQueryResponse to DTO
      */
     private RecordQueryResponse convertToRecordQueryResultDto(
-            RecordQueryResult model
+            RecordReadResult model
     ) {
         // Convert records to readable data only
         List<Map<String, Object>> records = model.records().stream()

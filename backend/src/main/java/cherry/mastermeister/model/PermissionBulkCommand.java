@@ -21,7 +21,7 @@ import cherry.mastermeister.enums.PermissionType;
 
 import java.util.List;
 
-public record BulkPermissionRequest(
+public record PermissionBulkCommand(
         BulkPermissionScope scope,
         PermissionType permissionType,
         List<String> userEmails,

@@ -18,7 +18,7 @@ package cherry.mastermeister.service;
 
 import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.model.AccessibleColumn;
-import cherry.mastermeister.model.RecordFilter;
+import cherry.mastermeister.model.RecordReadCommand;
 import cherry.mastermeister.util.SqlEscapeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class QueryBuilderService {
     public QueryResult buildSelectQuery(
             String schemaName, String tableName,
             List<AccessibleColumn> columns,
-            RecordFilter filter,
+            RecordReadCommand filter,
             int page, int pageSize,
             DatabaseType dbType
     ) {
@@ -86,7 +86,7 @@ public class QueryBuilderService {
      */
     public QueryResult buildCountQuery(
             String schemaName, String tableName,
-            RecordFilter filter,
+            RecordReadCommand filter,
             DatabaseType dbType
     ) {
         StringBuilder query = new StringBuilder();
@@ -109,7 +109,7 @@ public class QueryBuilderService {
      * Build WHERE clause from filter conditions
      */
     private String buildWhereClause(
-            RecordFilter filter,
+            RecordReadCommand filter,
             Map<String, Object> parameters,
             DatabaseType dbType
     ) {
@@ -118,7 +118,7 @@ public class QueryBuilderService {
         // Column-specific filters
         if (filter.columnFilters() != null) {
             for (int i = 0; i < filter.columnFilters().size(); i++) {
-                RecordFilter.ColumnFilter columnFilter = filter.columnFilters().get(i);
+                RecordReadCommand.ColumnFilter columnFilter = filter.columnFilters().get(i);
                 String condition = buildColumnCondition(columnFilter, parameters, i, dbType);
                 if (condition != null && !condition.isEmpty()) {
                     conditions.add(condition);
@@ -138,7 +138,7 @@ public class QueryBuilderService {
      * Build condition for single column filter
      */
     private String buildColumnCondition(
-            RecordFilter.ColumnFilter columnFilter,
+            RecordReadCommand.ColumnFilter columnFilter,
             Map<String, Object> parameters,
             int index,
             DatabaseType dbType
@@ -214,7 +214,7 @@ public class QueryBuilderService {
      * Build ORDER BY clause
      */
     private String buildOrderByClause(
-            RecordFilter filter,
+            RecordReadCommand filter,
             DatabaseType dbType
     ) {
         return filter.sortOrders().stream()

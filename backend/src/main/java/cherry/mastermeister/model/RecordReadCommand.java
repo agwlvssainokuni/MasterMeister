@@ -21,13 +21,13 @@ import java.util.List;
 /**
  * Model representing filtering conditions for record queries
  */
-public record RecordFilter(
+public record RecordReadCommand(
         List<ColumnFilter> columnFilters,
         String customWhere,
         List<SortOrder> sortOrders
 ) {
-    public static RecordFilter empty() {
-        return new RecordFilter(List.of(), null, List.of());
+    public static RecordReadCommand empty() {
+        return new RecordReadCommand(List.of(), null, List.of());
     }
 
     public boolean hasFilters() {

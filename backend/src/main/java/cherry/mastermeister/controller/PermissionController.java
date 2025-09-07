@@ -21,7 +21,8 @@ import cherry.mastermeister.controller.dto.BulkPermissionRequest;
 import cherry.mastermeister.controller.dto.BulkPermissionResponse;
 import cherry.mastermeister.controller.dto.PermissionExportData;
 import cherry.mastermeister.enums.DuplicateHandling;
-import cherry.mastermeister.model.BulkPermissionResult;
+import cherry.mastermeister.model.PermissionBulkResult;
+import cherry.mastermeister.model.PermissionBulkCommand;
 import cherry.mastermeister.service.PermissionBulkService;
 import cherry.mastermeister.service.PermissionYamlService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,7 +67,7 @@ public class PermissionController {
                 connectionId, request.permissionType(), request.scope());
 
         // Convert DTO to Model
-        cherry.mastermeister.model.BulkPermissionRequest modelRequest = new cherry.mastermeister.model.BulkPermissionRequest(
+        PermissionBulkCommand modelRequest = new PermissionBulkCommand(
                 request.scope(),
                 request.permissionType(),
                 request.userEmails(),
@@ -76,7 +77,7 @@ public class PermissionController {
                 request.description()
         );
 
-        BulkPermissionResult modelResponse = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
+        PermissionBulkResult modelResponse = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
 
         // Convert Model to DTO
         BulkPermissionResponse dtoResponse = new BulkPermissionResponse(

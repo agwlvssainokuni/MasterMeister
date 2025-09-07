@@ -20,7 +20,7 @@ import cherry.mastermeister.entity.RegistrationTokenEntity;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.exception.UserRegistrationException;
 import cherry.mastermeister.model.RegistrationToken;
-import cherry.mastermeister.model.UserRegistration;
+import cherry.mastermeister.model.UserRegistrationResult;
 import cherry.mastermeister.repository.RegistrationTokenRepository;
 import cherry.mastermeister.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -130,7 +130,7 @@ class UserRegistrationServiceTest {
         savedUser.setEmail(email);
         when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
 
-        UserRegistration result = userRegistrationService.registerUser(token, email, password, language);
+        UserRegistrationResult result = userRegistrationService.registerUser(token, email, password, language);
 
         assertNotNull(result);
         assertEquals(1L, result.id());

@@ -16,17 +16,8 @@
 
 package cherry.mastermeister.model;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
-import java.time.LocalDateTime;
-
-public record UserRegistration(
-        @Nullable Long id,
-        @Nonnull String email,
-        @Nonnull String password,
-        @Nullable String preferredLanguage,
-        @Nullable LocalDateTime createdAt,
-        @Nullable LocalDateTime updatedAt
+public record TokenRefreshResult(
+        String accessToken,
+        String refreshToken
 ) {
 }

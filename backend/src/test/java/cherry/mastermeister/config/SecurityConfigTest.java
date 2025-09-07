@@ -24,7 +24,7 @@ import cherry.mastermeister.repository.AuditLogRepository;
 import cherry.mastermeister.repository.RefreshTokenRepository;
 import cherry.mastermeister.repository.UserRepository;
 import cherry.mastermeister.service.AuditLogService;
-import cherry.mastermeister.service.RefreshTokenService;
+import cherry.mastermeister.service.TokenRefreshService;
 import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.util.JwtUtil;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         SecurityConfig.class,
         JwtUtil.class,
         UserDetailsServiceImpl.class,
-        RefreshTokenService.class,
+        TokenRefreshService.class,
         AuditLogService.class
 })
 class SecurityConfigTest {

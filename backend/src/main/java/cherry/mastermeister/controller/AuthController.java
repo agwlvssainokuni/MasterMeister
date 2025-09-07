@@ -17,9 +17,9 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.*;
-import cherry.mastermeister.model.TokenPair;
+import cherry.mastermeister.model.TokenRefreshResult;
 import cherry.mastermeister.service.AuditLogService;
-import cherry.mastermeister.service.RefreshTokenService;
+import cherry.mastermeister.service.TokenRefreshService;
 import cherry.mastermeister.service.UserDetailsServiceImpl;
 import cherry.mastermeister.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,20 +43,20 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenRefreshService tokenRefreshService;
     private final AuditLogService auditLogService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             UserDetailsServiceImpl userDetailsService,
-            RefreshTokenService refreshTokenService,
+            TokenRefreshService tokenRefreshService,
             AuditLogService auditLogService
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
-        this.refreshTokenService = refreshTokenService;
+        this.tokenRefreshService = tokenRefreshService;
         this.auditLogService = auditLogService;
     }
 
@@ -69,7 +69,7 @@ public class AuthController {
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String accessToken = jwtUtil.generateAccessToken(userDetails);
-            String refreshToken = refreshTokenService.createRefreshToken(userDetails);
+            String refreshToken = tokenRefreshService.createRefreshToken(userDetails);
 
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
 
@@ -104,12 +104,12 @@ public class AuthController {
             String userUuid = jwtUtil.extractUserUuid(refreshToken);
             UserDetails userDetails = userDetailsService.loadUserByUserUuid(userUuid);
 
-            TokenPair tokenPair = refreshTokenService.refreshTokens(refreshToken, userDetails);
+            TokenRefreshResult tokenRefreshResult = tokenRefreshService.refreshTokens(refreshToken, userDetails);
             String role = userDetails.getAuthorities().iterator().next().getAuthority().substring(5);
 
             LoginResponse result = new LoginResponse(
-                    tokenPair.accessToken(),
-                    tokenPair.refreshToken(),
+                    tokenRefreshResult.accessToken(),
+                    tokenRefreshResult.refreshToken(),
                     userDetails.getUsername(),
                     role,
                     jwtUtil.getAccessTokenExpiration()
@@ -155,7 +155,7 @@ public class AuthController {
         String username = userDetailsService.loadUserByUserUuid(userUuid).getUsername();
 
         if (tokenId != null) {
-            refreshTokenService.revokeRefreshToken(tokenId);
+            tokenRefreshService.revokeRefreshToken(tokenId);
         }
 
         // ログアウト成功のログ記録

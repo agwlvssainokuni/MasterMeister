@@ -17,7 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.RefreshTokenEntity;
-import cherry.mastermeister.model.TokenPair;
+import cherry.mastermeister.model.TokenRefreshResult;
 import cherry.mastermeister.repository.RefreshTokenRepository;
 import cherry.mastermeister.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,13 +32,13 @@ import java.util.UUID;
 
 @Service
 @Transactional
-public class RefreshTokenService {
+public class TokenRefreshService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final int maxUsageCount;
 
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository,
+    public TokenRefreshService(RefreshTokenRepository refreshTokenRepository,
                                JwtUtil jwtUtil,
                                @Value("${mm.security.jwt.refresh-token.max-usage-count:10}") int maxUsageCount) {
         this.refreshTokenRepository = refreshTokenRepository;
@@ -90,7 +90,7 @@ public class RefreshTokenService {
         return jwtUtil.validateToken(token, userDetails);
     }
 
-    public TokenPair refreshTokens(String refreshTokenString, UserDetails userDetails) {
+    public TokenRefreshResult refreshTokens(String refreshTokenString, UserDetails userDetails) {
         if (!validateRefreshToken(refreshTokenString, userDetails)) {
             throw new IllegalArgumentException("Invalid refresh token");
         }
@@ -107,7 +107,7 @@ public class RefreshTokenService {
         String newAccessToken = jwtUtil.generateAccessToken(userDetails);
         String newRefreshToken = createRefreshToken(userDetails);
 
-        return new TokenPair(newAccessToken, newRefreshToken);
+        return new TokenRefreshResult(newAccessToken, newRefreshToken);
     }
 
     public void revokeRefreshToken(String tokenId) {

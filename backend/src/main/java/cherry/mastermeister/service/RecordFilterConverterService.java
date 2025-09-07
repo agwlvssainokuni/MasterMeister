@@ -17,7 +17,7 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.controller.dto.RecordFilterRequest;
-import cherry.mastermeister.model.RecordFilter;
+import cherry.mastermeister.model.RecordReadCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,21 +33,21 @@ public class RecordFilterConverterService {
     /**
      * Convert RecordFilterRequest to RecordFilter
      */
-    public RecordFilter convertFromRequest(RecordFilterRequest request) {
+    public RecordReadCommand convertFromRequest(RecordFilterRequest request) {
         if (request == null) {
-            return RecordFilter.empty();
+            return RecordReadCommand.empty();
         }
 
-        List<RecordFilter.ColumnFilter> columnFilters = convertColumnFilters(request.columnFilters());
-        List<RecordFilter.SortOrder> sortOrders = convertSortOrders(request.sortOrders());
+        List<RecordReadCommand.ColumnFilter> columnFilters = convertColumnFilters(request.columnFilters());
+        List<RecordReadCommand.SortOrder> sortOrders = convertSortOrders(request.sortOrders());
 
-        return new RecordFilter(columnFilters, request.customWhere(), sortOrders);
+        return new RecordReadCommand(columnFilters, request.customWhere(), sortOrders);
     }
 
     /**
      * Convert column filter requests to model objects
      */
-    private List<RecordFilter.ColumnFilter> convertColumnFilters(List<RecordFilterRequest.ColumnFilterRequest> requests) {
+    private List<RecordReadCommand.ColumnFilter> convertColumnFilters(List<RecordFilterRequest.ColumnFilterRequest> requests) {
         if (requests == null) {
             return List.of();
         }
@@ -61,12 +61,12 @@ public class RecordFilterConverterService {
     /**
      * Convert single column filter request
      */
-    private RecordFilter.ColumnFilter convertColumnFilter(RecordFilterRequest.ColumnFilterRequest request) {
+    private RecordReadCommand.ColumnFilter convertColumnFilter(RecordFilterRequest.ColumnFilterRequest request) {
         try {
-            RecordFilter.FilterOperator operator = RecordFilter.FilterOperator.valueOf(
+            RecordReadCommand.FilterOperator operator = RecordReadCommand.FilterOperator.valueOf(
                     request.operator().toUpperCase());
 
-            return new RecordFilter.ColumnFilter(
+            return new RecordReadCommand.ColumnFilter(
                     request.columnName(),
                     operator,
                     request.value(),
@@ -81,7 +81,7 @@ public class RecordFilterConverterService {
     /**
      * Convert sort order requests to model objects
      */
-    private List<RecordFilter.SortOrder> convertSortOrders(List<RecordFilterRequest.SortOrderRequest> requests) {
+    private List<RecordReadCommand.SortOrder> convertSortOrders(List<RecordFilterRequest.SortOrderRequest> requests) {
         if (requests == null) {
             return List.of();
         }
@@ -95,12 +95,12 @@ public class RecordFilterConverterService {
     /**
      * Convert single sort order request
      */
-    private RecordFilter.SortOrder convertSortOrder(RecordFilterRequest.SortOrderRequest request) {
+    private RecordReadCommand.SortOrder convertSortOrder(RecordFilterRequest.SortOrderRequest request) {
         try {
-            RecordFilter.SortDirection direction = RecordFilter.SortDirection.valueOf(
+            RecordReadCommand.SortDirection direction = RecordReadCommand.SortDirection.valueOf(
                     request.direction().toUpperCase());
 
-            return new RecordFilter.SortOrder(request.columnName(), direction);
+            return new RecordReadCommand.SortOrder(request.columnName(), direction);
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid sort direction: {}", request.direction());
             return null;

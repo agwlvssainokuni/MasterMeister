@@ -18,7 +18,7 @@ package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.*;
 import cherry.mastermeister.model.RegistrationToken;
-import cherry.mastermeister.model.UserRegistration;
+import cherry.mastermeister.model.UserRegistrationResult;
 import cherry.mastermeister.service.UserRegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -55,7 +55,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<RegisterUserResponse>> registerUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {
-        UserRegistration registration = userRegistrationService.registerUser(
+        UserRegistrationResult registration = userRegistrationService.registerUser(
                 request.token(),
                 request.email(),
                 request.password(),

@@ -16,8 +16,17 @@
 
 package cherry.mastermeister.model;
 
-public record TokenPair(
-        String accessToken,
-        String refreshToken
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import java.time.LocalDateTime;
+
+public record UserRegistrationResult(
+        @Nullable Long id,
+        @Nonnull String email,
+        @Nonnull String password,
+        @Nullable String preferredLanguage,
+        @Nullable LocalDateTime createdAt,
+        @Nullable LocalDateTime updatedAt
 ) {
 }

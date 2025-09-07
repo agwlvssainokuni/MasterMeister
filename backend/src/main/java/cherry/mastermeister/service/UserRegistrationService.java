@@ -22,7 +22,7 @@ import cherry.mastermeister.enums.UserRole;
 import cherry.mastermeister.enums.UserStatus;
 import cherry.mastermeister.exception.UserRegistrationException;
 import cherry.mastermeister.model.RegistrationToken;
-import cherry.mastermeister.model.UserRegistration;
+import cherry.mastermeister.model.UserRegistrationResult;
 import cherry.mastermeister.repository.RegistrationTokenRepository;
 import cherry.mastermeister.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,7 +92,7 @@ public class UserRegistrationService {
     }
 
     // Step 3: Register user with token + password
-    public UserRegistration registerUser(String token, String email, String password, String language) {
+    public UserRegistrationResult registerUser(String token, String email, String password, String language) {
         // Stream APIでトークン検証（セキュリティ: 常に同じエラーメッセージ）
         RegistrationTokenEntity tokenEntity = registrationTokenRepository.findByToken(token)
                 .filter(RegistrationTokenEntity::isValid)
@@ -133,8 +133,8 @@ public class UserRegistrationService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
-    private UserRegistration toModel(UserEntity entity) {
-        return new UserRegistration(
+    private UserRegistrationResult toModel(UserEntity entity) {
+        return new UserRegistrationResult(
                 entity.getId(),
                 entity.getEmail(),
                 entity.getPassword(),
