@@ -16,16 +16,16 @@
 
 package cherry.mastermeister.controller.dto;
 
-import java.util.List;
-
-/**
- * Result DTO for bulk permission operations
- */
-public record BulkPermissionResult(
-        int processedUsers,
-        int processedTables,
-        int createdPermissions,
-        int skippedExisting,
-        List<String> errors
+public record ColumnMetadataResponse(
+        String columnName,
+        String dataType,
+        Integer columnSize,
+        Integer decimalDigits,
+        Boolean nullable,
+        String defaultValue,
+        String comment,
+        Boolean primaryKey,
+        Boolean autoIncrement,
+        Integer ordinalPosition
 ) {
 }

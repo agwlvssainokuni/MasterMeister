@@ -17,7 +17,7 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.ApiResponse;
-import cherry.mastermeister.controller.dto.UserSummaryResult;
+import cherry.mastermeister.controller.dto.UserSummaryResponse;
 import cherry.mastermeister.model.UserSummary;
 import cherry.mastermeister.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,10 +54,10 @@ public class AdminController {
                     responseCode = "403",
                     description = "Access denied - admin role required")
     })
-    public ApiResponse<List<UserSummaryResult>> getPendingUsers() {
+    public ApiResponse<List<UserSummaryResponse>> getPendingUsers() {
         List<UserSummary> pendingUsers = userService.getPendingUsers();
-        List<UserSummaryResult> results = pendingUsers.stream()
-                .map(this::toResult)
+        List<UserSummaryResponse> results = pendingUsers.stream()
+                .map(this::toResponse)
                 .toList();
 
         return ApiResponse.success(results);
@@ -111,8 +111,8 @@ public class AdminController {
         return ApiResponse.success("User rejected successfully");
     }
 
-    private UserSummaryResult toResult(UserSummary userSummary) {
-        return new UserSummaryResult(
+    private UserSummaryResponse toResponse(UserSummary userSummary) {
+        return new UserSummaryResponse(
                 userSummary.id(),
                 userSummary.email(),
                 userSummary.status().name(),

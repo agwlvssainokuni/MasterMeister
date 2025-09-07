@@ -17,10 +17,6 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.*;
-import cherry.mastermeister.controller.dto.RecordCreateResult;
-import cherry.mastermeister.controller.dto.RecordDeleteResult;
-import cherry.mastermeister.controller.dto.RecordQueryResult;
-import cherry.mastermeister.controller.dto.RecordUpdateResult;
 import cherry.mastermeister.exception.UserNotFoundException;
 import cherry.mastermeister.model.*;
 import cherry.mastermeister.service.*;
@@ -84,13 +80,13 @@ public class DataAccessController {
             summary = "Get available databases",
             description = "Get list of active database connections available to the user"
     )
-    public ApiResponse<List<DatabaseConnectionResult>> getAvailableDatabases() {
+    public ApiResponse<List<DatabaseConnectionResponse>> getAvailableDatabases() {
         logger.info("Getting available databases for current user");
 
         List<DatabaseConnection> databases = databaseService.getAllConnections();
 
-        List<DatabaseConnectionResult> databaseResults = databases.stream()
-                .map(this::convertToDatabaseConnectionResult)
+        List<DatabaseConnectionResponse> databaseResults = databases.stream()
+                .map(this::convertToDatabaseConnectionResponse)
                 .collect(Collectors.toList());
 
         return ApiResponse.success(databaseResults);
@@ -101,7 +97,7 @@ public class DataAccessController {
             summary = "Get all tables with permission info",
             description = "Get all table metadata with user permission information for each table"
     )
-    public ApiResponse<List<AccessibleTableResult>> getAccessibleTables(
+    public ApiResponse<List<AccessibleTableResponse>> getAccessibleTables(
             @PathVariable Long connectionId,
             Authentication authentication
     ) {
@@ -115,7 +111,7 @@ public class DataAccessController {
         );
 
         // Convert to DTOs with permission information (without column details for performance)
-        List<AccessibleTableResult> accessibleTables = tables.stream()
+        List<AccessibleTableResponse> accessibleTables = tables.stream()
                 .map(table -> convertAccessibleTableToDto(
                         userId, table,
                         false
@@ -130,7 +126,7 @@ public class DataAccessController {
             summary = "Get table details",
             description = "Get detailed information for a specific table"
     )
-    public ApiResponse<AccessibleTableResult> getTableDetails(
+    public ApiResponse<AccessibleTableResponse> getTableDetails(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -144,7 +140,7 @@ public class DataAccessController {
                 userId, connectionId,
                 schemaName, tableName
         );
-        AccessibleTableResult result = convertAccessibleTableToDto(
+        AccessibleTableResponse result = convertAccessibleTableToDto(
                 userId, accessibleTable,
                 true
         );
@@ -157,7 +153,7 @@ public class DataAccessController {
             summary = "Get table records",
             description = "Get records from table with column-level permission filtering"
     )
-    public ApiResponse<RecordQueryResult> getTableRecords(
+    public ApiResponse<RecordQueryResponse> getTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -170,14 +166,14 @@ public class DataAccessController {
                 schemaName, tableName, connectionId, page, pageSize);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
+        RecordQueryResult result = recordReadService.getRecords(
                 userId, connectionId,
                 schemaName, tableName,
                 RecordFilter.empty(),
                 page, pageSize
         );
 
-        RecordQueryResult dto = convertToRecordQueryResultDto(result);
+        RecordQueryResponse dto = convertToRecordQueryResultDto(result);
         return ApiResponse.success(dto);
     }
 
@@ -186,7 +182,7 @@ public class DataAccessController {
             summary = "Filter table records",
             description = "Get filtered records from table with column-level permission filtering"
     )
-    public ApiResponse<RecordQueryResult> filterTableRecords(
+    public ApiResponse<RecordQueryResponse> filterTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -203,14 +199,14 @@ public class DataAccessController {
         RecordFilter filter = recordFilterConverterService.convertFromRequest(filterRequest);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordQueryResult result = recordReadService.getRecords(
+        RecordQueryResult result = recordReadService.getRecords(
                 userId, connectionId,
                 schemaName, tableName,
                 filter,
                 page, pageSize
         );
 
-        RecordQueryResult dto = convertToRecordQueryResultDto(result);
+        RecordQueryResponse dto = convertToRecordQueryResultDto(result);
         return ApiResponse.success(dto);
     }
 
@@ -219,7 +215,7 @@ public class DataAccessController {
             summary = "Create table record",
             description = "Create a new record in table with column-level permission validation"
     )
-    public ResponseEntity<ApiResponse<RecordCreateResult>> createTableRecord(
+    public ResponseEntity<ApiResponse<RecordCreateResponse>> createTableRecord(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -230,13 +226,13 @@ public class DataAccessController {
         logger.info("Creating record in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordCreateResult result = recordCreateService.createRecord(
+        RecordCreateResult result = recordCreateService.createRecord(
                 userId, connectionId,
                 schemaName, tableName,
                 request.data()
         );
 
-        RecordCreateResult dto = convertToRecordCreateResult(result);
+        RecordCreateResponse dto = convertToRecordCreateResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(dto));
     }
 
@@ -245,7 +241,7 @@ public class DataAccessController {
             summary = "Update table records",
             description = "Update records in table with column-level permission validation and transaction management"
     )
-    public ApiResponse<RecordUpdateResult> updateTableRecords(
+    public ApiResponse<RecordUpdateResponse> updateTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -256,14 +252,14 @@ public class DataAccessController {
         logger.info("Updating records in table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordUpdateResult result = recordUpdateService.updateRecord(
+        RecordUpdateResult result = recordUpdateService.updateRecord(
                 userId, connectionId,
                 schemaName, tableName,
                 request.data(),
                 request.whereConditions()
         );
 
-        RecordUpdateResult dto = convertToRecordUpdateResult(result);
+        RecordUpdateResponse dto = convertToRecordUpdateResponse(result);
         return ApiResponse.success(dto);
     }
 
@@ -272,7 +268,7 @@ public class DataAccessController {
             summary = "Delete table records",
             description = "Delete records from table with referential integrity checks and column-level permission validation"
     )
-    public ApiResponse<RecordDeleteResult> deleteTableRecords(
+    public ApiResponse<RecordDeleteResponse> deleteTableRecords(
             @PathVariable Long connectionId,
             @PathVariable String schemaName,
             @PathVariable String tableName,
@@ -283,24 +279,24 @@ public class DataAccessController {
         logger.info("Deleting records from table {}.{} on connection: {}", schemaName, tableName, connectionId);
 
         Long userId = getUserId(authentication);
-        cherry.mastermeister.model.RecordDeleteResult result = recordDeleteService.deleteRecord(
+        RecordDeleteResult result = recordDeleteService.deleteRecord(
                 userId, connectionId,
                 schemaName, tableName,
                 request.whereConditions(),
                 request.skipReferentialIntegrityCheck()
         );
 
-        RecordDeleteResult dto = convertToRecordDeleteResult(result);
+        RecordDeleteResponse dto = convertToRecordDeleteResponse(result);
         return ApiResponse.success(dto);
     }
 
     /**
-     * Convert model RecordDeleteResult to DTO
+     * Convert model RecordDeleteResponse to DTO
      */
-    private RecordDeleteResult convertToRecordDeleteResult(
-            cherry.mastermeister.model.RecordDeleteResult model
+    private RecordDeleteResponse convertToRecordDeleteResponse(
+            RecordDeleteResult model
     ) {
-        return new RecordDeleteResult(
+        return new RecordDeleteResponse(
                 model.deletedRecordCount(),
                 model.executionTimeMs(),
                 model.query(),
@@ -310,12 +306,12 @@ public class DataAccessController {
     }
 
     /**
-     * Convert model RecordUpdateResult to DTO
+     * Convert model RecordUpdateResponse to DTO
      */
-    private RecordUpdateResult convertToRecordUpdateResult(
-            cherry.mastermeister.model.RecordUpdateResult model
+    private RecordUpdateResponse convertToRecordUpdateResponse(
+            RecordUpdateResult model
     ) {
-        return new RecordUpdateResult(
+        return new RecordUpdateResponse(
                 model.updatedRecordCount(),
                 model.executionTimeMs(),
                 model.query()
@@ -323,12 +319,12 @@ public class DataAccessController {
     }
 
     /**
-     * Convert model RecordCreationResult to DTO
+     * Convert model RecordCreationResponse to DTO
      */
-    private cherry.mastermeister.controller.dto.RecordCreateResult convertToRecordCreateResult(
-            cherry.mastermeister.model.RecordCreateResult model
+    private RecordCreateResponse convertToRecordCreateResponse(
+            RecordCreateResult model
     ) {
-        return new cherry.mastermeister.controller.dto.RecordCreateResult(
+        return new RecordCreateResponse(
                 model.createdRecord(),
                 model.columnTypes(),
                 model.executionTimeMs(),
@@ -337,10 +333,10 @@ public class DataAccessController {
     }
 
     /**
-     * Convert model RecordQueryResult to DTO
+     * Convert model RecordQueryResponse to DTO
      */
-    private RecordQueryResult convertToRecordQueryResultDto(
-            cherry.mastermeister.model.RecordQueryResult model
+    private RecordQueryResponse convertToRecordQueryResultDto(
+            RecordQueryResult model
     ) {
         // Convert records to readable data only
         List<Map<String, Object>> records = model.records().stream()
@@ -348,11 +344,11 @@ public class DataAccessController {
                 .collect(Collectors.toList());
 
         // Convert column metadata
-        List<AccessibleColumnResult> columns = model.accessibleColumns().stream()
-                .map(this::convertAccessibleColumnToResult)
+        List<AccessibleColumnResponse> columns = model.accessibleColumns().stream()
+                .map(this::convertAccessibleColumnToResponse)
                 .collect(Collectors.toList());
 
-        return new RecordQueryResult(
+        return new RecordQueryResponse(
                 records,
                 columns,
                 model.totalRecords(),
@@ -367,9 +363,9 @@ public class DataAccessController {
     }
 
     /**
-     * Convert AccessibleTable to AccessibleTableResult DTO
+     * Convert AccessibleTable to AccessibleTableResponse DTO
      */
-    private AccessibleTableResult convertAccessibleTableToDto(
+    private AccessibleTableResponse convertAccessibleTableToDto(
             Long userId,
             AccessibleTable accessibleTable,
             boolean includeColumns
@@ -380,25 +376,25 @@ public class DataAccessController {
                 .collect(Collectors.toSet());
 
         // Use columns from AccessibleTable if available, or fetch if requested
-        List<AccessibleColumnResult> columnResults;
+        List<AccessibleColumnResponse> columnResponse;
         if (includeColumns) {
             if (accessibleTable.columns() != null) {
-                // Convert AccessibleColumn to AccessibleColumnResult
-                columnResults = accessibleTable.columns().stream()
-                        .map(this::convertAccessibleColumnToResult)
+                // Convert AccessibleColumn to AccessibleColumnResponse
+                columnResponse = accessibleTable.columns().stream()
+                        .map(this::convertAccessibleColumnToResponse)
                         .collect(Collectors.toList());
             } else {
                 // Fetch columns if not included in AccessibleTable
-                columnResults = getColumnsWithPermissions(
+                columnResponse = getColumnsWithPermissions(
                         userId, accessibleTable.connectionId(),
                         accessibleTable.schemaName(), accessibleTable.tableName()
                 );
             }
         } else {
-            columnResults = List.of(); // Empty list for performance when not needed
+            columnResponse = List.of(); // Empty list for performance when not needed
         }
 
-        return new AccessibleTableResult(
+        return new AccessibleTableResponse(
                 accessibleTable.connectionId(),
                 accessibleTable.schemaName(),
                 accessibleTable.tableName(),
@@ -412,17 +408,17 @@ public class DataAccessController {
                 accessibleTable.canAdmin(),
                 accessibleTable.canModifyData(),
                 accessibleTable.canPerformCrud(),
-                columnResults
+                columnResponse
         );
     }
 
     /**
-     * Convert DatabaseConnection model to DatabaseConnectionResult DTO
+     * Convert DatabaseConnection model to DatabaseConnectionResponse DTO
      */
-    private DatabaseConnectionResult convertToDatabaseConnectionResult(
-            cherry.mastermeister.model.DatabaseConnection connection
+    private DatabaseConnectionResponse convertToDatabaseConnectionResponse(
+            DatabaseConnection connection
     ) {
-        return new DatabaseConnectionResult(
+        return new DatabaseConnectionResponse(
                 connection.id(),
                 connection.name(),
                 connection.dbType(),
@@ -442,7 +438,7 @@ public class DataAccessController {
     /**
      * Get columns with permission information for AccessibleTable conversion
      */
-    private List<AccessibleColumnResult> getColumnsWithPermissions(
+    private List<AccessibleColumnResponse> getColumnsWithPermissions(
             Long userId, Long connectionId,
             String schemaName, String tableName
     ) {
@@ -453,7 +449,7 @@ public class DataAccessController {
         );
 
         return accessibleTable.columns().stream()
-                .map(this::convertAccessibleColumnToResult)
+                .map(this::convertAccessibleColumnToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -468,15 +464,15 @@ public class DataAccessController {
     }
 
     /**
-     * Convert AccessibleColumn to AccessibleColumnResult
+     * Convert AccessibleColumn to AccessibleColumnResponse
      */
-    private AccessibleColumnResult convertAccessibleColumnToResult(AccessibleColumn column) {
+    private AccessibleColumnResponse convertAccessibleColumnToResponse(AccessibleColumn column) {
         // Convert permissions to string set
         Set<String> permissionStrings = column.permissions().stream()
                 .map(Enum::name)
                 .collect(Collectors.toSet());
 
-        return new AccessibleColumnResult(
+        return new AccessibleColumnResponse(
                 column.columnName(),
                 column.dataType(),
                 column.columnSize(),

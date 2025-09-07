@@ -17,7 +17,7 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.ApiResponse;
-import cherry.mastermeister.controller.dto.HealthResult;
+import cherry.mastermeister.controller.dto.HealthResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,8 +37,8 @@ public class HealthController {
      * @return ヘルスチェック結果
      */
     @GetMapping("/health")
-    public ApiResponse<HealthResult> health() {
-        HealthResult result = new HealthResult(
+    public ApiResponse<HealthResponse> health() {
+        HealthResponse result = new HealthResponse(
                 "UP",
                 LocalDateTime.now(),
                 "MasterMeister"

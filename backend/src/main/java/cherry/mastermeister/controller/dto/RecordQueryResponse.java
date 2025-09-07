@@ -16,7 +16,22 @@
 
 package cherry.mastermeister.controller.dto;
 
-public record RegisterEmailResult(
-        String email
+import java.util.List;
+import java.util.Map;
+
+/**
+ * DTO for record query results with pagination and metadata
+ */
+public record RecordQueryResponse(
+        List<Map<String, Object>> records,
+        List<AccessibleColumnResponse> accessibleColumns,
+        long totalRecords,
+        int currentPage,
+        int pageSize,
+        long totalPages,
+        boolean hasNextPage,
+        boolean hasPreviousPage,
+        long executionTimeMs,
+        String query
 ) {
 }

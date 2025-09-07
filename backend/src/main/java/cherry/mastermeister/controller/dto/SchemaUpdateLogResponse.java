@@ -16,11 +16,21 @@
 
 package cherry.mastermeister.controller.dto;
 
-public record LoginResult(
-        String accessToken,
-        String refreshToken,
-        String email,
-        String role,
-        long expiresIn
+import cherry.mastermeister.enums.SchemaUpdateOperation;
+
+import java.time.LocalDateTime;
+
+public record SchemaUpdateLogResponse(
+        Long id,
+        Long connectionId,
+        SchemaUpdateOperation operation,
+        String userEmail,
+        Long executionTimeMs,
+        Boolean success,
+        String errorMessage,
+        Integer tablesCount,
+        Integer columnsCount,
+        String details,
+        LocalDateTime createdAt
 ) {
 }

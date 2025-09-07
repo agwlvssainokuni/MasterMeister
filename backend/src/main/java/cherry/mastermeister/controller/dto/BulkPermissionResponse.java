@@ -16,16 +16,16 @@
 
 package cherry.mastermeister.controller.dto;
 
-public record ColumnMetadataResult(
-        String columnName,
-        String dataType,
-        Integer columnSize,
-        Integer decimalDigits,
-        Boolean nullable,
-        String defaultValue,
-        String comment,
-        Boolean primaryKey,
-        Boolean autoIncrement,
-        Integer ordinalPosition
+import java.util.List;
+
+/**
+ * Result DTO for bulk permission operations
+ */
+public record BulkPermissionResponse(
+        int processedUsers,
+        int processedTables,
+        int createdPermissions,
+        int skippedExisting,
+        List<String> errors
 ) {
 }

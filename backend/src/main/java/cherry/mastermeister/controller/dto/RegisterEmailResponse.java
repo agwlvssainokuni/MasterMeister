@@ -16,9 +16,7 @@
 
 package cherry.mastermeister.controller.dto;
 
-public record RegistrationTokenValidationResult(
-        boolean valid,
-        String email,
-        String message
+public record RegisterEmailResponse(
+        String email
 ) {
 }

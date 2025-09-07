@@ -16,12 +16,11 @@
 
 package cherry.mastermeister.controller.dto;
 
-/**
- * DTO for record update results
- */
-public record RecordUpdateResult(
-        int updatedRecordCount,
-        long executionTimeMs,
-        String query
+public record LoginResponse(
+        String accessToken,
+        String refreshToken,
+        String email,
+        String role,
+        long expiresIn
 ) {
 }

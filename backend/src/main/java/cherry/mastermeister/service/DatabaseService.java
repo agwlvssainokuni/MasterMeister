@@ -17,9 +17,9 @@
 package cherry.mastermeister.service;
 
 import cherry.mastermeister.entity.DatabaseConnectionEntity;
+import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.exception.DatabaseNotFoundException;
 import cherry.mastermeister.model.DatabaseConnection;
-import cherry.mastermeister.enums.DatabaseType;
 import cherry.mastermeister.repository.DatabaseConnectionRepository;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

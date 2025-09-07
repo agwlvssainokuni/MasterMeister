@@ -16,22 +16,9 @@
 
 package cherry.mastermeister.controller.dto;
 
-import java.util.List;
-import java.util.Map;
-
-/**
- * DTO for record query results with pagination and metadata
- */
-public record RecordQueryResult(
-        List<Map<String, Object>> records,
-        List<AccessibleColumnResult> accessibleColumns,
-        long totalRecords,
-        int currentPage,
-        int pageSize,
-        long totalPages,
-        boolean hasNextPage,
-        boolean hasPreviousPage,
-        long executionTimeMs,
-        String query
+public record RegistrationTokenValidationResponse(
+        boolean valid,
+        String email,
+        String message
 ) {
 }

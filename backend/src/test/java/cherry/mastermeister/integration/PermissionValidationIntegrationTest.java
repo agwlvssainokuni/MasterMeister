@@ -107,8 +107,6 @@ public class PermissionValidationIntegrationTest {
         SecurityContextHolder.clearContext();
     }
 
-
-
     @Test
     @Disabled("SqlPermissionFilter tests excluded")
     void testSqlPermissionFiltering() {
@@ -182,7 +180,6 @@ public class PermissionValidationIntegrationTest {
         SqlValidationResult deleteResult2 = sqlPermissionFilter.validateSqlQuery(sql2, normalUser.getId(), testConnection.getId());
         assertFalse(deleteResult2.isAllowed());
     }
-
 
     private void createPermission(
             UserEntity user, PermissionScope scope, PermissionType permissionType,

@@ -16,21 +16,16 @@
 
 package cherry.mastermeister.controller.dto;
 
-import cherry.mastermeister.enums.SchemaUpdateOperation;
+import java.util.List;
 
-import java.time.LocalDateTime;
-
-public record SchemaUpdateLogResult(
-        Long id,
-        Long connectionId,
-        SchemaUpdateOperation operation,
-        String userEmail,
-        Long executionTimeMs,
-        Boolean success,
-        String errorMessage,
-        Integer tablesCount,
-        Integer columnsCount,
-        String details,
-        LocalDateTime createdAt
+/**
+ * DTO for record deletion results
+ */
+public record RecordDeleteResponse(
+        int deletedRecordCount,
+        long executionTimeMs,
+        String query,
+        boolean referentialIntegrityChecked,
+        List<String> warnings
 ) {
 }

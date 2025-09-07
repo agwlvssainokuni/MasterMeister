@@ -17,7 +17,11 @@
 package cherry.mastermeister.controller;
 
 import cherry.mastermeister.controller.dto.ApiResponse;
+import cherry.mastermeister.controller.dto.BulkPermissionRequest;
+import cherry.mastermeister.controller.dto.BulkPermissionResponse;
+import cherry.mastermeister.controller.dto.PermissionExportData;
 import cherry.mastermeister.enums.DuplicateHandling;
+import cherry.mastermeister.model.BulkPermissionResult;
 import cherry.mastermeister.service.PermissionBulkService;
 import cherry.mastermeister.service.PermissionYamlService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,9 +58,9 @@ public class PermissionController {
 
     @PostMapping("/{connectionId}/bulk-grant")
     @Operation(summary = "Bulk grant permissions", description = "Grant permissions to multiple users across multiple tables")
-    public ApiResponse<cherry.mastermeister.controller.dto.BulkPermissionResult> bulkGrantPermissions(
+    public ApiResponse<BulkPermissionResponse> bulkGrantPermissions(
             @PathVariable Long connectionId,
-            @Valid @RequestBody cherry.mastermeister.controller.dto.BulkPermissionRequest request
+            @Valid @RequestBody BulkPermissionRequest request
     ) {
         logger.info("Starting bulk permission grant for connection ID: {}, type: {}, scope: {}",
                 connectionId, request.permissionType(), request.scope());
@@ -72,21 +76,21 @@ public class PermissionController {
                 request.description()
         );
 
-        cherry.mastermeister.model.BulkPermissionResult modelResult = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
+        BulkPermissionResult modelResponse = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
 
         // Convert Model to DTO
-        cherry.mastermeister.controller.dto.BulkPermissionResult dtoResult = new cherry.mastermeister.controller.dto.BulkPermissionResult(
-                modelResult.processedUsers(),
-                modelResult.processedTables(),
-                modelResult.createdPermissions(),
-                modelResult.skippedExisting(),
-                modelResult.errors()
+        BulkPermissionResponse dtoResponse = new BulkPermissionResponse(
+                modelResponse.processedUsers(),
+                modelResponse.processedTables(),
+                modelResponse.createdPermissions(),
+                modelResponse.skippedExisting(),
+                modelResponse.errors()
         );
 
         logger.info("Bulk permission grant completed: {} permissions created, {} errors",
-                dtoResult.createdPermissions(), dtoResult.errors().size());
+                dtoResponse.createdPermissions(), dtoResponse.errors().size());
 
-        return ApiResponse.success(dtoResult);
+        return ApiResponse.success(dtoResponse);
     }
 
     @GetMapping("/{connectionId}/export")
@@ -144,7 +148,7 @@ public class PermissionController {
 
     @PostMapping("/{connectionId}/validate")
     @Operation(summary = "Validate YAML", description = "Validate YAML permission configuration without importing")
-    public ApiResponse<ValidationResult> validateYaml(
+    public ApiResponse<ValidationResponse> validateYaml(
             @PathVariable Long connectionId,
             @RequestParam("file") MultipartFile file
     ) {
@@ -157,7 +161,7 @@ public class PermissionController {
 
         try {
             String yamlContent = new String(file.getBytes(), StandardCharsets.UTF_8);
-            ValidationResult result = validateYamlContent(yamlContent);
+            ValidationResponse result = validateYamlContent(yamlContent);
 
             return ApiResponse.success(result);
         } catch (IOException e) {
@@ -168,7 +172,7 @@ public class PermissionController {
     /**
      * Validate YAML content structure
      */
-    private ValidationResult validateYamlContent(String yamlContent) {
+    private ValidationResponse validateYamlContent(String yamlContent) {
         try {
             // Use a simple approach - try to parse and count elements
             com.fasterxml.jackson.databind.ObjectMapper yamlMapper =
@@ -176,8 +180,8 @@ public class PermissionController {
                             new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
             yamlMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
-            cherry.mastermeister.controller.dto.PermissionExportData data =
-                    yamlMapper.readValue(yamlContent, cherry.mastermeister.controller.dto.PermissionExportData.class);
+            PermissionExportData data =
+                    yamlMapper.readValue(yamlContent, PermissionExportData.class);
 
             int userCount = data.users() != null ? data.users().size() : 0;
             int templateCount = data.templates() != null ? data.templates().size() : 0;
@@ -195,17 +199,17 @@ public class PermissionController {
                         .sum();
             }
 
-            return new ValidationResult(true, "YAML structure is valid", userCount, templateCount, totalPermissions);
+            return new ValidationResponse(true, "YAML structure is valid", userCount, templateCount, totalPermissions);
 
         } catch (Exception e) {
-            return new ValidationResult(false, "Invalid YAML structure: " + e.getMessage(), 0, 0, 0);
+            return new ValidationResponse(false, "Invalid YAML structure: " + e.getMessage(), 0, 0, 0);
         }
     }
 
     /**
      * Validation result record
      */
-    public record ValidationResult(
+    public record ValidationResponse(
             boolean valid,
             String message,
             int userCount,

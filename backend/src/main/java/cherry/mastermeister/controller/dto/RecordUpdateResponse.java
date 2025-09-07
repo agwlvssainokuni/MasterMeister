@@ -16,16 +16,12 @@
 
 package cherry.mastermeister.controller.dto;
 
-import java.util.List;
-
 /**
- * DTO for record deletion results
+ * DTO for record update results
  */
-public record RecordDeleteResult(
-        int deletedRecordCount,
+public record RecordUpdateResponse(
+        int updatedRecordCount,
         long executionTimeMs,
-        String query,
-        boolean referentialIntegrityChecked,
-        List<String> warnings
+        String query
 ) {
 }
