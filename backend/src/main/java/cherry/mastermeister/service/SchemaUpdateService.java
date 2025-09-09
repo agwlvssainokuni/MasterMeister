@@ -23,10 +23,6 @@ import cherry.mastermeister.model.*;
 import cherry.mastermeister.repository.SchemaUpdateLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,22 +56,64 @@ public class SchemaUpdateService {
         this.auditLogService = auditLogService;
     }
 
+    /**
+     * Get schema metadata with optional cache behavior.
+     *
+     * @param connectionId Database connection ID
+     * @param forceRefresh If true, bypass cache and read from database
+     * @param userEmail    User email for audit logging
+     * @return Schema metadata
+     */
     @Transactional
-    public SchemaMetadata executeSchemaRead(Long connectionId) {
-        return executeWithLogging(connectionId, SchemaUpdateOperation.READ_SCHEMA,
-                () -> readAndRefreshSchema(connectionId));
+    public SchemaMetadata getSchema(
+            Long connectionId,
+            boolean forceRefresh,
+            String userEmail
+    ) {
+        if (forceRefresh) {
+            logger.info("Force refreshing schema metadata for connection ID: {}", connectionId);
+            return executeWithLogging(
+                    connectionId,
+                    SchemaUpdateOperation.REFRESH_SCHEMA,
+                    () -> readAndRefreshSchema(connectionId),
+                    userEmail
+            );
+        }
+
+        logger.info("Getting schema metadata for connection ID: {} (cache-first approach)", connectionId);
+
+        // Try to get cached data first
+        Optional<SchemaMetadata> cachedSchema = getStoredSchemaMetadata(connectionId);
+        if (cachedSchema.isPresent()) {
+            logger.debug("Returning cached schema metadata for connection ID: {}", connectionId);
+            return cachedSchema.get();
+        }
+
+        // If no cached data, read from database and cache it
+        logger.info("No cached schema found for connection ID: {}, reading from database", connectionId);
+        return executeWithLogging(
+                connectionId,
+                SchemaUpdateOperation.READ_SCHEMA,
+                () -> readAndRefreshSchema(connectionId),
+                userEmail
+        );
     }
 
+    /**
+     * Get schema metadata with cache-first approach.
+     * Returns cached data if available, otherwise reads from database and caches it.
+     */
     @Transactional
-    public SchemaMetadata executeSchemaRefresh(Long connectionId) {
-        return executeWithLogging(connectionId, SchemaUpdateOperation.REFRESH_SCHEMA,
-                () -> readAndRefreshSchema(connectionId));
+    public SchemaMetadata getSchema(Long connectionId, String userEmail) {
+        return getSchema(connectionId, false, userEmail);
     }
 
+    /**
+     * Force refresh schema metadata from database, bypassing cache.
+     */
     @Transactional
-    public Optional<SchemaMetadata> getStoredSchema(Long connectionId) {
-        // This doesn't need logging as it's just a read operation
-        return getStoredSchemaMetadata(connectionId);
+    public SchemaMetadata refreshSchema(Long connectionId, String userEmail) {
+        return getSchema(connectionId, true, userEmail);
     }
 
     @Transactional(readOnly = true)
@@ -89,14 +127,6 @@ public class SchemaUpdateService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SchemaUpdateLog> getConnectionOperationHistory(Long connectionId, Pageable pageable) {
-        logger.debug("Retrieving paginated operation history for connection ID: {}", connectionId);
-
-        return schemaUpdateLogRepository.findByConnectionIdOrderByCreatedAtDesc(connectionId, pageable)
-                .map(this::toModel);
-    }
-
-    @Transactional(readOnly = true)
     public List<SchemaUpdateLog> getFailedOperations(Long connectionId) {
         logger.debug("Retrieving failed operations for connection ID: {}", connectionId);
 
@@ -106,21 +136,12 @@ public class SchemaUpdateService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public long getSuccessfulOperationsCount(Long connectionId) {
-        return schemaUpdateLogRepository.countSuccessfulOperationsByConnection(connectionId);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<SchemaUpdateLog> getUserOperationHistory(String userEmail, Pageable pageable) {
-        logger.debug("Retrieving operation history for user: {}", userEmail);
-
-        return schemaUpdateLogRepository.findByUserEmailOrderByCreatedAtDesc(userEmail, pageable)
-                .map(this::toModel);
-    }
-
-    private <T> T executeWithLogging(Long connectionId, SchemaUpdateOperation operation, Supplier<T> schemaOperation) {
-        String userEmail = getCurrentUserEmail();
+    private <T> T executeWithLogging(
+            Long connectionId,
+            SchemaUpdateOperation operation,
+            Supplier<T> schemaOperation,
+            String userEmail
+    ) {
         LocalDateTime startTime = LocalDateTime.now();
         long startTimeMs = System.currentTimeMillis();
 
@@ -181,14 +202,6 @@ public class SchemaUpdateService {
         }
     }
 
-    private String getCurrentUserEmail() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getName() != null) {
-            return authentication.getName();
-        }
-        return "system";
-    }
-
     // Schema reading methods integrated from SchemaReaderService
     public SchemaMetadata readAndRefreshSchema(Long connectionId) {
         logger.info("Reading and refreshing schema metadata for connection ID: {}", connectionId);
@@ -223,7 +236,10 @@ public class SchemaUpdateService {
         return schemaMetadataService.getSchemaMetadata(connectionId);
     }
 
-    private List<String> readSchemas(DatabaseMetaData metaData, DatabaseType dbType) throws SQLException {
+    private List<String> readSchemas(
+            DatabaseMetaData metaData,
+            DatabaseType dbType
+    ) throws SQLException {
         List<String> schemas = new ArrayList<>();
 
         switch (dbType) {
@@ -265,7 +281,11 @@ public class SchemaUpdateService {
         return schemas;
     }
 
-    private List<TableMetadata> readTables(DatabaseMetaData metaData, DatabaseConnection connection, List<String> schemas) throws SQLException {
+    private List<TableMetadata> readTables(
+            DatabaseMetaData metaData,
+            DatabaseConnection connection,
+            List<String> schemas
+    ) throws SQLException {
         List<TableMetadata> tables = new ArrayList<>();
         String[] tableTypes = {"TABLE", "VIEW"};
 
@@ -289,8 +309,13 @@ public class SchemaUpdateService {
         return tables;
     }
 
-    private List<ColumnMetadata> readColumns(DatabaseMetaData metaData, String catalog, String schema,
-                                             String tableName, DatabaseType dbType) throws SQLException {
+    private List<ColumnMetadata> readColumns(
+            DatabaseMetaData metaData,
+            String catalog,
+            String schema,
+            String tableName,
+            DatabaseType dbType
+    ) throws SQLException {
         List<ColumnMetadata> columns = new ArrayList<>();
         Set<String> primaryKeys = readPrimaryKeys(metaData, catalog, schema, tableName);
 
@@ -323,7 +348,12 @@ public class SchemaUpdateService {
                 .toList();
     }
 
-    private Set<String> readPrimaryKeys(DatabaseMetaData metaData, String catalog, String schema, String tableName) throws SQLException {
+    private Set<String> readPrimaryKeys(
+            DatabaseMetaData metaData,
+            String catalog,
+            String schema,
+            String tableName
+    ) throws SQLException {
         Set<String> primaryKeys = new HashSet<>();
 
         try (ResultSet rs = metaData.getPrimaryKeys(catalog, schema, tableName)) {
@@ -335,7 +365,10 @@ public class SchemaUpdateService {
         return primaryKeys;
     }
 
-    private boolean isSystemSchema(String schema, DatabaseType dbType) {
+    private boolean isSystemSchema(
+            String schema,
+            DatabaseType dbType
+    ) {
         if (schema == null) return true;
 
         return switch (dbType) {
@@ -353,14 +386,21 @@ public class SchemaUpdateService {
         };
     }
 
-    private String getCatalogForSchema(DatabaseType dbType, String schema, String databaseName) {
+    private String getCatalogForSchema(
+            DatabaseType dbType,
+            String schema,
+            String databaseName
+    ) {
         return switch (dbType) {
             case MYSQL, MARIADB -> schema; // schema IS catalog in MySQL/MariaDB
             case POSTGRESQL, H2 -> databaseName; // use database name as catalog
         };
     }
 
-    private String getSchemaParam(DatabaseType dbType, String schema) {
+    private String getSchemaParam(
+            DatabaseType dbType,
+            String schema
+    ) {
         return switch (dbType) {
             case MYSQL, MARIADB -> null; // don't use schema parameter for MySQL/MariaDB
             case POSTGRESQL, H2 -> schema; // use schema parameter

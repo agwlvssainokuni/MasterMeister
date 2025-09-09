@@ -63,20 +63,7 @@ export const SchemaManagementPage: React.FC = () => {
     setOperationHistory([])
     setError(null)
 
-    await Promise.all([
-      loadCachedSchema(connection.id),
-      loadOperationHistory(connection.id)
-    ])
-  }
-
-  const loadCachedSchema = async (connectionId: number) => {
-    try {
-      const schemaData = await schemaService.getCachedSchema(connectionId)
-      setSchema(schemaData)
-    } catch (err) {
-      console.log('No cached schema found:', err)
-      // This is expected if schema hasn't been read yet
-    }
+    await loadOperationHistory(connection.id)
   }
 
   const loadOperationHistory = async (connectionId: number) => {
@@ -95,7 +82,7 @@ export const SchemaManagementPage: React.FC = () => {
       setLoading(true)
       setError(null)
 
-      const schemaData = await schemaService.readSchema(selectedConnection.id)
+      const schemaData = await schemaService.getSchema(selectedConnection.id)
       setSchema(schemaData)
 
       addNotification({

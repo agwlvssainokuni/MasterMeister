@@ -28,10 +28,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/schema")
@@ -50,36 +50,30 @@ public class SchemaController {
     }
 
     @GetMapping("/{connectionId}")
-    @Operation(summary = "Read schema metadata", description = "Read schema metadata for a database connection")
-    public ApiResponse<SchemaMetadataResponse> readSchema(@PathVariable Long connectionId) {
-        logger.info("Reading schema metadata for connection ID: {}", connectionId);
+    @Operation(summary = "Get schema metadata", description = "Get schema metadata for a database connection. Returns cached data if available, otherwise reads from database.")
+    public ApiResponse<SchemaMetadataResponse> getSchema(
+            @PathVariable Long connectionId,
+            Authentication authentication
+    ) {
+        logger.info("Getting schema metadata for connection ID: {}", connectionId);
 
-        SchemaMetadata schema = schemaUpdateService.executeSchemaRead(connectionId);
+        String userEmail = getUserEmail(authentication);
+        SchemaMetadata schema = schemaUpdateService.getSchema(connectionId, userEmail);
         SchemaMetadataResponse result = toDto(schema);
 
         return ApiResponse.success(result);
     }
 
-    @GetMapping("/{connectionId}/cached")
-    @Operation(summary = "Get cached schema metadata", description = "Get cached schema metadata from storage")
-    public ApiResponse<SchemaMetadataResponse> getCachedSchema(@PathVariable Long connectionId) {
-        logger.info("Getting cached schema metadata for connection ID: {}", connectionId);
-
-        Optional<SchemaMetadata> schema = schemaUpdateService.getStoredSchema(connectionId);
-        if (schema.isEmpty()) {
-            throw new RuntimeException("Cached schema not found for connection: " + connectionId);
-        }
-
-        SchemaMetadataResponse result = toDto(schema.get());
-        return ApiResponse.success(result);
-    }
-
     @PostMapping("/{connectionId}/refresh")
     @Operation(summary = "Refresh schema metadata", description = "Force refresh schema metadata from database")
-    public ApiResponse<SchemaMetadataResponse> refreshSchema(@PathVariable Long connectionId) {
+    public ApiResponse<SchemaMetadataResponse> refreshSchema(
+            @PathVariable Long connectionId,
+            Authentication authentication
+    ) {
         logger.info("Refreshing schema metadata for connection ID: {}", connectionId);
 
-        SchemaMetadata schema = schemaUpdateService.executeSchemaRefresh(connectionId);
+        String userEmail = getUserEmail(authentication);
+        SchemaMetadata schema = schemaUpdateService.refreshSchema(connectionId, userEmail);
         SchemaMetadataResponse result = toDto(schema);
 
         return ApiResponse.success(result);
@@ -87,7 +81,9 @@ public class SchemaController {
 
     @GetMapping("/{connectionId}/history")
     @Operation(summary = "Get operation history", description = "Get schema operation history for a connection")
-    public ApiResponse<List<SchemaUpdateLogResponse>> getOperationHistory(@PathVariable Long connectionId) {
+    public ApiResponse<List<SchemaUpdateLogResponse>> getOperationHistory(
+            @PathVariable Long connectionId
+    ) {
         logger.info("Getting operation history for connection ID: {}", connectionId);
 
         List<SchemaUpdateLog> history = schemaUpdateService.getConnectionOperationHistory(connectionId);
@@ -98,7 +94,9 @@ public class SchemaController {
 
     @GetMapping("/{connectionId}/failures")
     @Operation(summary = "Get failed operations", description = "Get failed schema operations for a connection")
-    public ApiResponse<List<SchemaUpdateLogResponse>> getFailedOperations(@PathVariable Long connectionId) {
+    public ApiResponse<List<SchemaUpdateLogResponse>> getFailedOperations(
+            @PathVariable Long connectionId
+    ) {
         logger.info("Getting failed operations for connection ID: {}", connectionId);
 
         List<SchemaUpdateLog> failures = schemaUpdateService.getFailedOperations(connectionId);
@@ -156,5 +154,12 @@ public class SchemaController {
                 model.details(),
                 model.createdAt()
         );
+    }
+
+    private String getUserEmail(Authentication authentication) {
+        if (authentication != null && authentication.getName() != null) {
+            return authentication.getName();
+        }
+        return "system";
     }
 }

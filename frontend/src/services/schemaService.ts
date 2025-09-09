@@ -32,25 +32,13 @@ import type {
 
 class SchemaService {
 
-  async readSchema(connectionId: number): Promise<SchemaMetadata> {
+  async getSchema(connectionId: number): Promise<SchemaMetadata> {
     const response = await apiClient.get<ApiResponse<SchemaMetadataResponse>>(
-      API_ENDPOINTS.SCHEMA.READ(connectionId)
+      API_ENDPOINTS.SCHEMA.GET(connectionId)
     )
 
     if (!response.data.ok || !response.data.data) {
-      throw new Error('Failed to read schema metadata')
-    }
-
-    return this.convertToFrontendSchema(response.data.data)
-  }
-
-  async getCachedSchema(connectionId: number): Promise<SchemaMetadata> {
-    const response = await apiClient.get<ApiResponse<SchemaMetadataResponse>>(
-      API_ENDPOINTS.SCHEMA.GET_CACHED(connectionId)
-    )
-
-    if (!response.data.ok || !response.data.data) {
-      throw new Error('Failed to get cached schema metadata')
+      throw new Error('Failed to get schema metadata')
     }
 
     return this.convertToFrontendSchema(response.data.data)

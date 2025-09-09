@@ -77,8 +77,7 @@ export const API_ENDPOINTS = {
     DEACTIVATE: (id: number) => `/admin/databases/${id}/deactivate`
   },
   SCHEMA: {
-    READ: (connectionId: number) => `/admin/schema/${connectionId}`,
-    GET_CACHED: (connectionId: number) => `/admin/schema/${connectionId}/cached`,
+    GET: (connectionId: number) => `/admin/schema/${connectionId}`,
     REFRESH: (connectionId: number) => `/admin/schema/${connectionId}/refresh`,
     HISTORY: (connectionId: number) => `/admin/schema/${connectionId}/history`,
     FAILURES: (connectionId: number) => `/admin/schema/${connectionId}/failures`

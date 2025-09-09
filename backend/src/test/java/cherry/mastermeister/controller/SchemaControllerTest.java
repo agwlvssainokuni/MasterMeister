@@ -74,7 +74,7 @@ class SchemaControllerTest {
                 1L, "testdb", List.of("PUBLIC"), List.of(table), LocalDateTime.now()
         );
 
-        when(schemaUpdateService.executeSchemaRead(1L)).thenReturn(schema);
+        when(schemaUpdateService.getSchema(1L, "user")).thenReturn(schema);
 
         // Execute and verify
         mockMvc.perform(get("/api/admin/schema/1")

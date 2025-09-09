@@ -17,14 +17,10 @@
 package cherry.mastermeister.repository;
 
 import cherry.mastermeister.entity.SchemaUpdateLogEntity;
-import cherry.mastermeister.enums.SchemaUpdateOperation;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -32,17 +28,6 @@ public interface SchemaUpdateLogRepository extends JpaRepository<SchemaUpdateLog
 
     List<SchemaUpdateLogEntity> findByConnectionIdOrderByCreatedAtDesc(Long connectionId);
 
-    Page<SchemaUpdateLogEntity> findByConnectionIdOrderByCreatedAtDesc(Long connectionId, Pageable pageable);
-
-    List<SchemaUpdateLogEntity> findByOperationAndCreatedAtAfterOrderByCreatedAtDesc(
-            SchemaUpdateOperation operation, LocalDateTime after);
-
     @Query("SELECT s FROM SchemaUpdateLogEntity s WHERE s.connectionId = :connectionId AND s.success = false ORDER BY s.createdAt DESC")
     List<SchemaUpdateLogEntity> findFailedOperationsByConnection(Long connectionId);
-
-    @Query("SELECT COUNT(s) FROM SchemaUpdateLogEntity s WHERE s.connectionId = :connectionId AND s.success = true")
-    long countSuccessfulOperationsByConnection(Long connectionId);
-
-    @Query("SELECT s FROM SchemaUpdateLogEntity s WHERE s.userEmail = :userEmail ORDER BY s.createdAt DESC")
-    Page<SchemaUpdateLogEntity> findByUserEmailOrderByCreatedAtDesc(String userEmail, Pageable pageable);
 }
