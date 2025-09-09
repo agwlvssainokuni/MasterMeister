@@ -30,6 +30,29 @@
   margin-bottom: var(--spacing-xl);
 }
 
+/* Card Selection State */
+.schema-page .card {
+  border: 2px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
+  cursor: pointer;
+}
+
+.schema-page .card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border);
+}
+
+.schema-page .card-selected {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-lg);
+  background-color: var(--color-primary-lighter);
+}
+
+.schema-page .card-selected:hover {
+  border-color: var(--color-primary-hover);
+}
+
 /* Card Details Layout */
 .schema-page .card-details-grid {
   display: grid;
@@ -55,21 +78,6 @@
   margin-left: var(--spacing-md);
 }
 
-/* Selected Indicator */
-.schema-page .selected-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm);
-  background-color: var(--color-success-subtle);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-sm);
-  color: var(--color-success);
-}
-
-.schema-page .indicator-icon {
-  font-weight: var(--font-weight-bold);
-}
 
 /* Schema Content */
 .schema-page .schema-content {

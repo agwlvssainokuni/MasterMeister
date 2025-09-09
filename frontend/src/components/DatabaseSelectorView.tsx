@@ -105,15 +105,6 @@ export const DatabaseSelectorView: React.FC<DatabaseSelectorViewProps> = (
                 </div>
               </div>
             </div>
-
-            {selectedConnection?.id === connection.id && (
-              <div className="card-footer">
-                <div className="selected-indicator">
-                  <span className="indicator-icon">✓</span>
-                  <span className="indicator-text">{t(`${i18nPrefix}.connectionSelected`)}</span>
-                </div>
-              </div>
-            )}
           </div>
         ))}
       </div>
