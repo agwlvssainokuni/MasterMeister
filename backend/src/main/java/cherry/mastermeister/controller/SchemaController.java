@@ -27,11 +27,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/schema")
@@ -50,18 +52,23 @@ public class SchemaController {
     }
 
     @GetMapping("/{connectionId}")
-    @Operation(summary = "Get schema metadata", description = "Get schema metadata for a database connection. Returns cached data if available, otherwise reads from database.")
-    public ApiResponse<SchemaMetadataResponse> getSchema(
+    @Operation(summary = "Get cached schema metadata", description = "Get cached schema metadata for a database connection. Returns 204 No Content if no cache exists.")
+    public ResponseEntity<ApiResponse<SchemaMetadataResponse>> getSchema(
             @PathVariable Long connectionId,
             Authentication authentication
     ) {
-        logger.info("Getting schema metadata for connection ID: {}", connectionId);
+        logger.info("Getting cached schema metadata for connection ID: {}", connectionId);
 
         String userEmail = getUserEmail(authentication);
-        SchemaMetadata schema = schemaUpdateService.getSchema(connectionId, userEmail);
-        SchemaMetadataResponse result = toDto(schema);
+        Optional<SchemaMetadata> schemaOpt = schemaUpdateService.getSchema(connectionId);
 
-        return ApiResponse.success(result);
+        if (schemaOpt.isEmpty()) {
+            logger.debug("No cached schema found for connection ID: {}, returning 204 No Content", connectionId);
+            return ResponseEntity.noContent().build();
+        }
+
+        SchemaMetadataResponse result = toDto(schemaOpt.get());
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @PostMapping("/{connectionId}/refresh")

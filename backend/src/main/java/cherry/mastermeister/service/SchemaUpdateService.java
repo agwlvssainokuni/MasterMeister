@@ -57,63 +57,58 @@ public class SchemaUpdateService {
     }
 
     /**
-     * Get schema metadata with optional cache behavior.
-     *
-     * @param connectionId Database connection ID
-     * @param forceRefresh If true, bypass cache and read from database
-     * @param userEmail    User email for audit logging
-     * @return Schema metadata
+     * Get cached schema metadata only.
+     * Returns cached data if available, empty Optional if no cache exists.
      */
-    @Transactional
-    public SchemaMetadata getSchema(
-            Long connectionId,
-            boolean forceRefresh,
-            String userEmail
+    @Transactional(readOnly = true)
+    public Optional<SchemaMetadata> getSchema(
+            Long connectionId
     ) {
-        if (forceRefresh) {
-            logger.info("Force refreshing schema metadata for connection ID: {}", connectionId);
-            return executeWithLogging(
-                    connectionId,
-                    SchemaUpdateOperation.REFRESH_SCHEMA,
-                    () -> readAndRefreshSchema(connectionId),
-                    userEmail
-            );
-        }
-
-        logger.info("Getting schema metadata for connection ID: {} (cache-first approach)", connectionId);
-
-        // Try to get cached data first
-        Optional<SchemaMetadata> cachedSchema = getStoredSchemaMetadata(connectionId);
-        if (cachedSchema.isPresent()) {
-            logger.debug("Returning cached schema metadata for connection ID: {}", connectionId);
-            return cachedSchema.get();
-        }
-
-        // If no cached data, read from database and cache it
-        logger.info("No cached schema found for connection ID: {}, reading from database", connectionId);
-        return executeWithLogging(
-                connectionId,
-                SchemaUpdateOperation.READ_SCHEMA,
-                () -> readAndRefreshSchema(connectionId),
-                userEmail
+        logger.info("Getting cached schema metadata for connection ID: {}", connectionId);
+        return schemaMetadataService.getSchemaMetadata(
+                connectionId
         );
     }
 
     /**
-     * Get schema metadata with cache-first approach.
-     * Returns cached data if available, otherwise reads from database and caches it.
+     * Refresh schema metadata from database, bypassing cache.
+     * Reads from database and caches the result.
      */
     @Transactional
-    public SchemaMetadata getSchema(Long connectionId, String userEmail) {
-        return getSchema(connectionId, false, userEmail);
-    }
+    public SchemaMetadata refreshSchema(
+            Long connectionId,
+            String userEmail
+    ) {
+        logger.info("Refreshing schema metadata for connection ID: {}", connectionId);
+        return executeWithLogging(
+                connectionId,
+                userEmail,
+                () -> {
+                    DatabaseConnection connection = databaseService.getConnection(connectionId);
+                    DataSource dataSource = databaseService.getDataSource(connectionId);
 
-    /**
-     * Force refresh schema metadata from database, bypassing cache.
-     */
-    @Transactional
-    public SchemaMetadata refreshSchema(Long connectionId, String userEmail) {
-        return getSchema(connectionId, true, userEmail);
+                    try (Connection conn = dataSource.getConnection()) {
+                        DatabaseMetaData metaData = conn.getMetaData();
+
+                        List<String> schemas = readSchemas(metaData, connection.dbType());
+                        List<TableMetadata> tables = readTables(metaData, connection, schemas);
+
+                        SchemaMetadata schemaMetadata = new SchemaMetadata(
+                                connectionId,
+                                connection.databaseName(),
+                                schemas,
+                                tables,
+                                LocalDateTime.now()
+                        );
+
+                        // Save the schema metadata to the database
+                        return schemaMetadataService.saveSchemaMetadata(schemaMetadata);
+                    } catch (SQLException e) {
+                        logger.error("Failed to read schema metadata for connection ID: {}", connectionId, e);
+                        throw new RuntimeException("Schema reading failed", e);
+                    }
+                }
+        );
     }
 
     @Transactional(readOnly = true)
@@ -138,21 +133,20 @@ public class SchemaUpdateService {
 
     private <T> T executeWithLogging(
             Long connectionId,
-            SchemaUpdateOperation operation,
-            Supplier<T> schemaOperation,
-            String userEmail
+            String userEmail,
+            Supplier<T> schemaOperation
     ) {
         LocalDateTime startTime = LocalDateTime.now();
         long startTimeMs = System.currentTimeMillis();
 
         SchemaUpdateLogEntity logEntity = new SchemaUpdateLogEntity();
         logEntity.setConnectionId(connectionId);
-        logEntity.setOperation(operation);
+        logEntity.setOperation(SchemaUpdateOperation.REFRESH_SCHEMA);
         logEntity.setUserEmail(userEmail);
         logEntity.setCreatedAt(startTime);
 
         try {
-            logger.info("Executing {} for connection ID: {} by user: {}", operation, connectionId, userEmail);
+            logger.info("Executing {} for connection ID: {} by user: {}", SchemaUpdateOperation.REFRESH_SCHEMA, connectionId, userEmail);
 
             T result = schemaOperation.get();
             long executionTime = System.currentTimeMillis() - startTimeMs;
@@ -173,10 +167,10 @@ public class SchemaUpdateService {
 
             schemaUpdateLogRepository.save(logEntity);
             logger.info("Successfully executed {} for connection ID: {} in {}ms",
-                    operation, connectionId, executionTime);
+                    SchemaUpdateOperation.REFRESH_SCHEMA, connectionId, executionTime);
 
             // Log admin action
-            auditLogService.logSchemaOperation(userEmail, operation.name(), connectionId, true,
+            auditLogService.logSchemaOperation(userEmail, SchemaUpdateOperation.REFRESH_SCHEMA.name(), connectionId, true,
                     logEntity.getDetails(), null);
 
             return result;
@@ -192,48 +186,14 @@ public class SchemaUpdateService {
 
             schemaUpdateLogRepository.save(logEntity);
             logger.error("Failed to execute {} for connection ID: {} in {}ms",
-                    operation, connectionId, executionTime, e);
+                    SchemaUpdateOperation.REFRESH_SCHEMA, connectionId, executionTime, e);
 
             // Log admin action failure
-            auditLogService.logSchemaOperation(userEmail, operation.name(), connectionId, false,
+            auditLogService.logSchemaOperation(userEmail, SchemaUpdateOperation.REFRESH_SCHEMA.name(), connectionId, false,
                     logEntity.getDetails(), e.getMessage());
 
             throw e;
         }
-    }
-
-    // Schema reading methods integrated from SchemaReaderService
-    public SchemaMetadata readAndRefreshSchema(Long connectionId) {
-        logger.info("Reading and refreshing schema metadata for connection ID: {}", connectionId);
-
-        DatabaseConnection connection = databaseService.getConnection(connectionId);
-        DataSource dataSource = databaseService.getDataSource(connectionId);
-
-        try (Connection conn = dataSource.getConnection()) {
-            DatabaseMetaData metaData = conn.getMetaData();
-
-            List<String> schemas = readSchemas(metaData, connection.dbType());
-            List<TableMetadata> tables = readTables(metaData, connection, schemas);
-
-            SchemaMetadata schemaMetadata = new SchemaMetadata(
-                    connectionId,
-                    connection.databaseName(),
-                    schemas,
-                    tables,
-                    LocalDateTime.now()
-            );
-
-            // Save the schema metadata to the database
-            return schemaMetadataService.saveSchemaMetadata(schemaMetadata);
-        } catch (SQLException e) {
-            logger.error("Failed to read schema metadata for connection ID: {}", connectionId, e);
-            throw new RuntimeException("Schema reading failed", e);
-        }
-    }
-
-    public Optional<SchemaMetadata> getStoredSchemaMetadata(Long connectionId) {
-        logger.debug("Retrieving stored schema metadata for connection ID: {}", connectionId);
-        return schemaMetadataService.getSchemaMetadata(connectionId);
     }
 
     private List<String> readSchemas(
@@ -299,7 +259,7 @@ public class SchemaUpdateService {
                     String tableType = rs.getString("TABLE_TYPE");
                     String comment = rs.getString("REMARKS");
 
-                    List<ColumnMetadata> columns = readColumns(metaData, catalog, schemaParam, tableName, connection.dbType());
+                    List<ColumnMetadata> columns = readColumns(metaData, catalog, schemaParam, tableName);
 
                     tables.add(new TableMetadata(schema, tableName, tableType, comment, columns));
                 }
@@ -313,8 +273,7 @@ public class SchemaUpdateService {
             DatabaseMetaData metaData,
             String catalog,
             String schema,
-            String tableName,
-            DatabaseType dbType
+            String tableName
     ) throws SQLException {
         List<ColumnMetadata> columns = new ArrayList<>();
         Set<String> primaryKeys = readPrimaryKeys(metaData, catalog, schema, tableName);

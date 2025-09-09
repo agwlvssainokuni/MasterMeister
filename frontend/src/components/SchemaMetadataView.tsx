@@ -14,28 +14,26 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import type { Database, SchemaMetadata, TableMetadata } from '../types/frontend'
+import React, {useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import type {SchemaMetadata, TableMetadata} from '../types/frontend'
 
 interface SchemaMetadataViewProps {
-  connection: Database
   schema: SchemaMetadata | null
   loading: boolean
   error: string | null
-  onReadSchema: () => void
   onRefreshSchema: () => void
 }
 
-export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = ({
-  connection,
-  schema,
-  loading,
-  error,
-  onReadSchema,
-  onRefreshSchema
-}) => {
-  const { t } = useTranslation()
+export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
+  {
+    schema,
+    loading,
+    error,
+    onRefreshSchema
+  }
+) => {
+  const {t} = useTranslation()
   const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -61,7 +59,7 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = ({
 
   const getTableKey = (table: TableMetadata) => `${table.schema}.${table.tableName}`
 
-  const filteredTables = schema?.tables.filter(table => 
+  const filteredTables = schema?.tables.filter(table =>
     table.tableName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     table.schema.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (table.comment && table.comment.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -79,25 +77,7 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = ({
   return (
     <div className="schema-metadata-view">
       <div className="schema-header">
-        <div className="schema-info">
-          <h3>{connection.databaseName}</h3>
-          <p className="schema-description">
-            {t('schema.connectionInfo', { 
-              host: connection.host,
-              port: connection.port,
-              type: connection.dbType
-            })}
-          </p>
-        </div>
-        
         <div className="schema-actions">
-          <button
-            className="button button-secondary"
-            onClick={onReadSchema}
-            disabled={loading}
-          >
-            {loading ? t('schema.reading') : t('schema.actions.read')}
-          </button>
           <button
             className="button button-primary"
             onClick={onRefreshSchema}
@@ -134,7 +114,7 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = ({
                 <span className="stat-label">{t('schema.columnsCount')}</span>
               </div>
             </div>
-            
+
             <div className="last-updated">
               <span className="update-label">{t('schema.lastUpdated')}</span>
               <span className="update-time">{formatDate(schema.lastUpdatedAt)}</span>
@@ -157,15 +137,15 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = ({
                 <h4 className="schema-group-title">
                   {schemaName} <span className="table-count">({tables.length})</span>
                 </h4>
-                
+
                 <div className="tables-list">
                   {tables.map(table => {
                     const tableKey = getTableKey(table)
                     const isExpanded = expandedTables.has(tableKey)
-                    
+
                     return (
                       <div key={tableKey} className="table-item">
-                        <div 
+                        <div
                           className="table-header"
                           onClick={() => toggleTableExpansion(tableKey)}
                         >
@@ -173,20 +153,20 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = ({
                             <span className="table-name">{table.tableName}</span>
                             <span className="table-type">{table.tableType}</span>
                             <span className="columns-count">
-                              {t('schema.columnsInTable', { count: table.columns.length })}
+                              {t('schema.columnsInTable', {count: table.columns.length})}
                             </span>
                           </div>
                           <div className="expand-icon">
                             {isExpanded ? '▼' : '▶'}
                           </div>
                         </div>
-                        
+
                         {table.comment && (
                           <div className="table-comment">
                             {table.comment}
                           </div>
                         )}
-                        
+
                         {isExpanded && (
                           <div className="columns-list">
                             <div className="columns-header">
@@ -237,10 +217,10 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = ({
           <p>{t('schema.noSchemaDataDescription')}</p>
           <button
             className="button button-primary"
-            onClick={onReadSchema}
+            onClick={onRefreshSchema}
             disabled={loading}
           >
-            {loading ? t('schema.reading') : t('schema.actions.readFirst')}
+            {loading ? t('schema.refreshing') : t('schema.actions.refresh')}
           </button>
         </div>
       )}

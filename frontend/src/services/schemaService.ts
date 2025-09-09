@@ -32,16 +32,29 @@ import type {
 
 class SchemaService {
 
-  async getSchema(connectionId: number): Promise<SchemaMetadata> {
-    const response = await apiClient.get<ApiResponse<SchemaMetadataResponse>>(
-      API_ENDPOINTS.SCHEMA.GET(connectionId)
-    )
+  async getSchema(connectionId: number): Promise<SchemaMetadata | null> {
+    try {
+      const response = await apiClient.get<ApiResponse<SchemaMetadataResponse>>(
+        API_ENDPOINTS.SCHEMA.GET(connectionId)
+      )
 
-    if (!response.data.ok || !response.data.data) {
-      throw new Error('Failed to get schema metadata')
+      // 204 No Content - キャッシュなし
+      if (response.status === 204) {
+        return null
+      }
+
+      if (!response.data.ok || !response.data.data) {
+        throw new Error('Failed to get schema metadata')
+      }
+
+      return this.convertToFrontendSchema(response.data.data)
+    } catch (error: any) {
+      // 204は正常状態なので、他のHTTPエラーのみをthrow
+      if (error.response?.status === 204) {
+        return null
+      }
+      throw error
     }
-
-    return this.convertToFrontendSchema(response.data.data)
   }
 
   async refreshSchema(connectionId: number): Promise<SchemaMetadata> {

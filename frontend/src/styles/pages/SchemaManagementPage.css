@@ -78,6 +78,11 @@
   margin-left: var(--spacing-md);
 }
 
+/* Schema Actions */
+.schema-page .schema-actions {
+  display: flex;
+  gap: var(--spacing-md);
+}
 
 /* Schema Content */
 .schema-page .schema-content {

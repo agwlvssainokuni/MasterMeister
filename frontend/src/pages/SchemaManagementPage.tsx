@@ -63,7 +63,30 @@ export const SchemaManagementPage: React.FC = () => {
     setOperationHistory([])
     setError(null)
 
-    await loadOperationHistory(connection.id)
+    await Promise.all([
+      loadSchema(connection.id),
+      loadOperationHistory(connection.id)
+    ])
+  }
+
+  const loadSchema = async (connectionId: number) => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const schemaData = await schemaService.getSchema(connectionId)
+      if (schemaData) {
+        setSchema(schemaData)
+      } else {
+        // キャッシュなし（204）の場合は何もしない
+        console.log('No cached schema found for connection ID:', connectionId)
+      }
+    } catch (err) {
+      console.error('Error loading schema:', err)
+      // 実際のエラーの場合は何もしない（エラーを表示しない）
+    } finally {
+      setLoading(false)
+    }
   }
 
   const loadOperationHistory = async (connectionId: number) => {
@@ -72,37 +95,6 @@ export const SchemaManagementPage: React.FC = () => {
       setOperationHistory(history)
     } catch (err) {
       console.error('Error loading operation history:', err)
-    }
-  }
-
-  const handleReadSchema = async () => {
-    if (!selectedConnection) return
-
-    try {
-      setLoading(true)
-      setError(null)
-
-      const schemaData = await schemaService.getSchema(selectedConnection.id)
-      setSchema(schemaData)
-
-      addNotification({
-        type: 'success',
-        message: t('schema.messages.readSuccess', {
-          database: schemaData.databaseName,
-          tablesCount: schemaData.tables.length
-        })
-      })
-
-      await loadOperationHistory(selectedConnection.id)
-    } catch (err) {
-      console.error('Error reading schema:', err)
-      setError(err instanceof Error ? err.message : 'Failed to read schema')
-      addNotification({
-        type: 'error',
-        message: err instanceof Error ? err.message : t('schema.messages.readError')
-      })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -208,11 +200,9 @@ export const SchemaManagementPage: React.FC = () => {
           <div className="tab-content">
             {activeTab === 'schema' && (
               <SchemaMetadataView
-                connection={selectedConnection}
                 schema={schema}
                 loading={loading}
                 error={error}
-                onReadSchema={handleReadSchema}
                 onRefreshSchema={handleRefreshSchema}
               />
             )}

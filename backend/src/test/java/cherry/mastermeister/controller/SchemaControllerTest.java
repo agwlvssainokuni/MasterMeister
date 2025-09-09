@@ -35,6 +35,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -74,7 +75,7 @@ class SchemaControllerTest {
                 1L, "testdb", List.of("PUBLIC"), List.of(table), LocalDateTime.now()
         );
 
-        when(schemaUpdateService.getSchema(1L, "user")).thenReturn(schema);
+        when(schemaUpdateService.getSchema(1L)).thenReturn(Optional.of(schema));
 
         // Execute and verify
         mockMvc.perform(get("/api/admin/schema/1")
@@ -102,6 +103,17 @@ class SchemaControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testReadSchemaNotCached() throws Exception {
+        when(schemaUpdateService.getSchema(1L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/admin/schema/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
     }
 
     @Test
