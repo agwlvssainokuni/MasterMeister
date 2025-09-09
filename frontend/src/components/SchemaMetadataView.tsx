@@ -16,6 +16,7 @@
 
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
+import {FaKey, FaLock} from 'react-icons/fa'
 import type {SchemaMetadata, TableMetadata} from '../types/frontend'
 
 interface SchemaMetadataViewProps {
@@ -34,8 +35,9 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
   }
 ) => {
   const {t} = useTranslation()
-  const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set())
+  const [selectedTable, setSelectedTable] = useState<TableMetadata | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeDetailTab, setActiveDetailTab] = useState<'columns' | 'table'>('columns')
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('ja-JP', {
@@ -47,17 +49,153 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
     }).format(date)
   }
 
-  const toggleTableExpansion = (tableKey: string) => {
-    const newExpanded = new Set(expandedTables)
-    if (newExpanded.has(tableKey)) {
-      newExpanded.delete(tableKey)
-    } else {
-      newExpanded.add(tableKey)
-    }
-    setExpandedTables(newExpanded)
+  const handleTableSelect = (table: TableMetadata) => {
+    setSelectedTable(table)
+    // テーブル選択時はカラム情報タブに戻す
+    setActiveDetailTab('columns')
   }
 
-  const getTableKey = (table: TableMetadata) => `${table.schema}.${table.tableName}`
+  const renderTableMetadata = (table: TableMetadata) => {
+    return (
+      <div className="metadata-view">
+        <div className="table-info-header">
+          <h3>{table.tableName}</h3>
+        </div>
+        
+        <div className="detail-tabs">
+          <ul className="tabs-list">
+            <li className={`tab-item ${activeDetailTab === 'columns' ? 'active' : ''}`}>
+              <button
+                type="button"
+                className="tab-button"
+                onClick={() => setActiveDetailTab('columns')}
+              >
+                {t('schema.columnInformation')}
+              </button>
+            </li>
+            <li className={`tab-item ${activeDetailTab === 'table' ? 'active' : ''}`}>
+              <button
+                type="button"
+                className="tab-button"
+                onClick={() => setActiveDetailTab('table')}
+              >
+                {t('schema.tableInformation')}
+              </button>
+            </li>
+          </ul>
+        </div>
+        
+        <div className="detail-tab-content">
+          {activeDetailTab === 'columns' && (
+            <div className="column-metadata-section">
+              <div className="table-container">
+                <table className="table metadata-table table-striped">
+                  <thead className="metadata-table-header">
+                    <tr>
+                      <th className="column-name-header">{t('metadata.columnName')}</th>
+                      <th className="data-type-header">{t('metadata.dataType')}</th>
+                      <th className="nullable-header">{t('metadata.nullable')}</th>
+                      <th className="default-value-header">{t('metadata.defaultValue')}</th>
+                      <th className="primary-key-header">{t('metadata.primaryKey')}</th>
+                      <th className="comment-header">{t('metadata.comment')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="metadata-table-body">
+                    {table.columns.map((column, index) => (
+                      <tr key={column.columnName} className={index % 2 === 0 ? 'even' : 'odd'}>
+                        <td className="column-name-cell">
+                          <div className="column-name-info">
+                            <span className="column-name">{column.columnName}</span>
+                            {column.primaryKey && (
+                              <span className="pk-badge" title={t('metadata.primaryKey')}>
+                                <FaKey/>
+                              </span>
+                            )}
+                            {!column.nullable && (
+                              <span className="not-null-badge" title={t('metadata.notNull')}>
+                                <FaLock/>
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="data-type-cell">
+                          <code className="data-type">
+                            {column.dataType}
+                            {column.columnSize && `(${column.columnSize})`}
+                          </code>
+                        </td>
+                        <td className="nullable-cell">
+                          <span className={`nullable-badge ${column.nullable ? 'nullable' : 'not-nullable'}`}>
+                            {column.nullable ? t('common.yes') : t('common.no')}
+                          </span>
+                        </td>
+                        <td className="default-value-cell">
+                          {column.defaultValue ? (
+                            <code className="default-value">{column.defaultValue}</code>
+                          ) : (
+                            <span className="no-default">—</span>
+                          )}
+                        </td>
+                        <td className="primary-key-cell">
+                          <span className={`pk-badge ${column.primaryKey ? 'is-pk' : 'not-pk'}`}>
+                            {column.primaryKey ? (
+                              <><FaKey/> {t('common.yes')}</>
+                            ) : (
+                              t('common.no')
+                            )}
+                          </span>
+                        </td>
+                        <td className="comment-cell">
+                          {column.comment ? (
+                            <span className="comment-text">{column.comment}</span>
+                          ) : (
+                            <span className="no-comment">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          
+          {activeDetailTab === 'table' && (
+            <div className="table-metadata-section">
+              <div className="table-container">
+                <table className="table metadata-table table-striped">
+                  <tbody className="metadata-table-body">
+                    <tr className="even">
+                      <td className="meta-label">{t('schema.schemaName')}</td>
+                      <td className="meta-value">{table.schema}</td>
+                    </tr>
+                    <tr className="odd">
+                      <td className="meta-label">{t('schema.tableName')}</td>
+                      <td className="meta-value">{table.tableName}</td>
+                    </tr>
+                    <tr className="even">
+                      <td className="meta-label">{t('schema.tableType')}</td>
+                      <td className="meta-value">{table.tableType}</td>
+                    </tr>
+                    <tr className="odd">
+                      <td className="meta-label">{t('schema.columnCount')}</td>
+                      <td className="meta-value">{table.columns.length}</td>
+                    </tr>
+                    <tr className="even">
+                      <td className="meta-label">{t('metadata.comment')}</td>
+                      <td className="meta-value">
+                        {table.comment ? table.comment : <span className="no-comment">—</span>}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const filteredTables = schema?.tables.filter(table =>
     table.tableName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -131,83 +269,57 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
             />
           </div>
 
-          <div className="tables-view">
-            {Object.entries(groupedTables).map(([schemaName, tables]) => (
-              <div key={schemaName} className="schema-group">
-                <h4 className="schema-group-title">
-                  {schemaName} <span className="table-count">({tables.length})</span>
-                </h4>
+          <div className="schema-layout">
+            <div className="tables-sidebar">
+              <div className="tables-view">
+                {Object.entries(groupedTables).map(([schemaName, tables]) => (
+                  <div key={schemaName} className="schema-group">
+                    <h4 className="schema-group-title">
+                      {schemaName} <span className="table-count">({tables.length})</span>
+                    </h4>
 
-                <div className="tables-list">
-                  {tables.map(table => {
-                    const tableKey = getTableKey(table)
-                    const isExpanded = expandedTables.has(tableKey)
-
-                    return (
-                      <div key={tableKey} className="table-item">
+                    <div className="tables-list">
+                      {tables.map(table => (
                         <div
-                          className="table-header"
-                          onClick={() => toggleTableExpansion(tableKey)}
+                          key={`${table.schema}.${table.tableName}`}
+                          className={`table-item ${selectedTable?.tableName === table.tableName && selectedTable?.schema === table.schema ? 'selected' : ''}`}
+                          onClick={() => handleTableSelect(table)}
                         >
-                          <div className="table-info">
-                            <span className="table-name">{table.tableName}</span>
-                            <span className="table-type">{table.tableType}</span>
-                            <span className="columns-count">
-                              {t('schema.columnsInTable', {count: table.columns.length})}
-                            </span>
-                          </div>
-                          <div className="expand-icon">
-                            {isExpanded ? '▼' : '▶'}
-                          </div>
-                        </div>
-
-                        {table.comment && (
-                          <div className="table-comment">
-                            {table.comment}
-                          </div>
-                        )}
-
-                        {isExpanded && (
-                          <div className="columns-list">
-                            <div className="columns-header">
-                              <span className="column-name-header">{t('schema.columnName')}</span>
-                              <span className="column-type-header">{t('schema.dataType')}</span>
-                              <span className="column-attrs-header">{t('schema.attributes')}</span>
-                            </div>
-                            {table.columns.map(column => (
-                              <div key={column.columnName} className="column-item">
-                                <div className="column-name">
-                                  {column.columnName}
-                                  {column.primaryKey && <span className="pk-badge">PK</span>}
-                                </div>
-                                <div className="column-type">
-                                  {column.dataType}
-                                  {column.columnSize && `(${column.columnSize})`}
-                                </div>
-                                <div className="column-attrs">
-                                  {!column.nullable && <span className="not-null-badge">NOT NULL</span>}
-                                  {column.autoIncrement && <span className="auto-inc-badge">AUTO</span>}
-                                  {column.defaultValue && (
-                                    <span className="default-badge">
-                                      DEFAULT: {column.defaultValue}
-                                    </span>
-                                  )}
-                                </div>
-                                {column.comment && (
-                                  <div className="column-comment">
-                                    {column.comment}
-                                  </div>
-                                )}
+                          <div className="table-header">
+                            <div className="table-info">
+                              <span className="table-name">{table.tableName}</span>
+                              <div className="table-meta-row">
+                                <span className="columns-count">
+                                  {t('schema.columnsInTable', {count: table.columns.length})}
+                                </span>
+                                <span className="table-type">{table.tableType}</span>
                               </div>
-                            ))}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
+                          {table.comment && (
+                            <div className="table-comment">
+                              {table.comment}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="table-detail-panel">
+              {selectedTable ? (
+                renderTableMetadata(selectedTable)
+              ) : (
+                <div className="no-table-selected">
+                  <div className="empty-icon">📋</div>
+                  <h3>{t('schema.selectTable')}</h3>
+                  <p>{t('schema.selectTableDescription')}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -215,13 +327,6 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
           <div className="empty-icon">📊</div>
           <h3>{t('schema.noSchemaData')}</h3>
           <p>{t('schema.noSchemaDataDescription')}</p>
-          <button
-            className="button button-primary"
-            onClick={onRefreshSchema}
-            disabled={loading}
-          >
-            {loading ? t('schema.refreshing') : t('schema.actions.refresh')}
-          </button>
         </div>
       )}
     </div>
