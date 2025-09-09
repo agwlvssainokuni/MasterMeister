@@ -41,6 +41,7 @@
   --color-text-muted-dark: #888888;
 
   --color-border: #e0e0e0;
+  --color-border-light: #e5e7eb;
   --color-border-dark: #404040;
 
   --color-danger: #b91c1c;
@@ -49,6 +50,7 @@
   --color-success: #28a745;
   --color-success-dark: #1e7e34;
   --color-success-lighter: rgba(40, 167, 69, 0.1);
+  --color-success-subtle: rgba(40, 167, 69, 0.1);
   --color-warning: #ffc107;
   --color-warning-light: #fff3cd;
   --color-warning-dark: #e0a800;
@@ -67,6 +69,7 @@
   --font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
   --font-size-md: 1rem;
   --font-size-lg: 1.125rem;
   --font-size-xl: 1.25rem;

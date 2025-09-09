@@ -180,7 +180,6 @@ export const SchemaManagementPage: React.FC = () => {
         selectedConnection={selectedConnection}
         onConnectionSelect={handleConnectionSelect}
         i18nPrefix="schema"
-        showTestStatus={true}
       />
       {selectedConnection && (
         <div className="schema-content">

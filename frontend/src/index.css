@@ -42,6 +42,8 @@
 /* ページスタイル */
 @import './styles/pages/UserManagementPage.css';
 @import './styles/pages/DatabaseManagementPage.css';
+@import './styles/pages/SchemaManagementPage.css';
+@import './styles/pages/PermissionManagementPage.css';
 @import './styles/pages/DataAccessPage.css';
 
 @import './App.css';

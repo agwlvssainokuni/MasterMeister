@@ -23,7 +23,6 @@ interface DatabaseSelectorViewProps {
   selectedConnection: Database | null
   onConnectionSelect: (connection: Database) => void
   i18nPrefix: 'permissions' | 'schema'
-  showTestStatus?: boolean
   className?: string
 }
 
@@ -33,7 +32,6 @@ export const DatabaseSelectorView: React.FC<DatabaseSelectorViewProps> = (
     selectedConnection,
     onConnectionSelect,
     i18nPrefix,
-    showTestStatus = false,
     className = ''
   }
 ) => {
@@ -54,20 +52,15 @@ export const DatabaseSelectorView: React.FC<DatabaseSelectorViewProps> = (
     }
   }
 
-  const getConnectionStatusIcon = (connection: Database) => {
-    if (!showTestStatus) return null
-    if (connection.testResult === true) return '✅'
-    if (connection.testResult === false) return '❌'
-    return '⏳'
-  }
-
   if (connections.length === 0) {
     return (
       <div className={`database-selector ${className}`}>
-        <div className="empty-state">
-          <div className="empty-icon">🔗</div>
-          <h3>{t(`${i18nPrefix}.noActiveConnections`)}</h3>
-          <p>{t(`${i18nPrefix}.noActiveConnectionsDescription`)}</p>
+        <div className="card">
+          <div className="card-body empty-state-card">
+            <div className="empty-state-icon">🔗</div>
+            <h3 className="empty-state-title">{t(`${i18nPrefix}.noActiveConnections`)}</h3>
+            <p className="empty-state-description">{t(`${i18nPrefix}.noActiveConnectionsDescription`)}</p>
+          </div>
         </div>
       </div>
     )
@@ -78,44 +71,47 @@ export const DatabaseSelectorView: React.FC<DatabaseSelectorViewProps> = (
       <h3 className="selector-title">{t(`${i18nPrefix}.selectConnection`)}</h3>
       <p className="selector-description">{t(`${i18nPrefix}.selectConnectionDescription`)}</p>
 
-      <div className="connection-cards">
+      <div className="card-grid">
         {connections.map(connection => (
           <div
             key={connection.id}
-            className={`connection-card ${selectedConnection?.id === connection.id ? 'selected' : ''}`}
+            className={`card ${selectedConnection?.id === connection.id ? 'card-selected' : ''}`}
             onClick={() => onConnectionSelect(connection)}
           >
             <div className="card-header">
-              <div className="connection-info">
-                <h4 className="connection-name">{connection.name}</h4>
-                <span className="connection-type">
-                  {getDatabaseTypeLabel(connection.dbType)}
-                </span>
-              </div>
-              {showTestStatus && (
-                <div className="connection-status">
-                  <span className="status-icon">
-                    {getConnectionStatusIcon(connection)}
-                  </span>
+              <div>
+                <h3 className="card-title">{connection.name}</h3>
+                <div className="card-subtitle-row">
+                  <p className="card-subtitle">
+                    {getDatabaseTypeLabel(connection.dbType)}
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
 
-            <div className="card-details">
-              <div className="detail-item">
-                <span className="detail-label">{t('databases.fields.host')}</span>
-                <span className="detail-value">{connection.host}:{connection.port}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">{t('databases.fields.database')}</span>
-                <span className="detail-value">{connection.databaseName}</span>
+            <div className="card-body">
+              <div className="card-details-grid">
+                <div className="detail-row">
+                  <span className="detail-label">
+                    {t('databases.fields.host')}
+                  </span>
+                  <span className="detail-value">{connection.host}:{connection.port}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">
+                    {t('databases.fields.database')}
+                  </span>
+                  <span className="detail-value">{connection.databaseName}</span>
+                </div>
               </div>
             </div>
 
             {selectedConnection?.id === connection.id && (
-              <div className="selected-indicator">
-                <span className="indicator-icon">✓</span>
-                <span className="indicator-text">{t(`${i18nPrefix}.connectionSelected`)}</span>
+              <div className="card-footer">
+                <div className="selected-indicator">
+                  <span className="indicator-icon">✓</span>
+                  <span className="indicator-text">{t(`${i18nPrefix}.connectionSelected`)}</span>
+                </div>
               </div>
             )}
           </div>
