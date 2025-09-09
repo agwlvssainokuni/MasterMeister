@@ -16,7 +16,7 @@
 
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {FaKey, FaLock} from 'react-icons/fa'
+import {FaDatabase, FaExclamationTriangle, FaKey, FaLock, FaSearch, FaTable, FaTimes} from 'react-icons/fa'
 import type {SchemaMetadata, TableMetadata} from '../types/frontend'
 
 interface SchemaMetadataViewProps {
@@ -61,7 +61,7 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
         <div className="table-info-header">
           <h3>{table.tableName}</h3>
         </div>
-        
+
         <div className="detail-tabs">
           <ul className="tabs-list">
             <li className={`tab-item ${activeDetailTab === 'columns' ? 'active' : ''}`}>
@@ -84,59 +84,59 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
             </li>
           </ul>
         </div>
-        
+
         <div className="detail-tab-content">
           {activeDetailTab === 'columns' && (
             <div className="column-metadata-section">
               <div className="table-container">
                 <table className="table metadata-table table-striped">
                   <thead className="metadata-table-header">
-                    <tr>
-                      <th className="column-name-header">{t('metadata.columnName')}</th>
-                      <th className="data-type-header">{t('metadata.dataType')}</th>
-                      <th className="nullable-header">{t('metadata.nullable')}</th>
-                      <th className="default-value-header">{t('metadata.defaultValue')}</th>
-                      <th className="primary-key-header">{t('metadata.primaryKey')}</th>
-                      <th className="comment-header">{t('metadata.comment')}</th>
-                    </tr>
+                  <tr>
+                    <th className="column-name-header">{t('metadata.columnName')}</th>
+                    <th className="data-type-header">{t('metadata.dataType')}</th>
+                    <th className="nullable-header">{t('metadata.nullable')}</th>
+                    <th className="default-value-header">{t('metadata.defaultValue')}</th>
+                    <th className="primary-key-header">{t('metadata.primaryKey')}</th>
+                    <th className="comment-header">{t('metadata.comment')}</th>
+                  </tr>
                   </thead>
                   <tbody className="metadata-table-body">
-                    {table.columns.map((column, index) => (
-                      <tr key={column.columnName} className={index % 2 === 0 ? 'even' : 'odd'}>
-                        <td className="column-name-cell">
-                          <div className="column-name-info">
-                            <span className="column-name">{column.columnName}</span>
-                            {column.primaryKey && (
-                              <span className="pk-badge" title={t('metadata.primaryKey')}>
+                  {table.columns.map((column, index) => (
+                    <tr key={column.columnName} className={index % 2 === 0 ? 'even' : 'odd'}>
+                      <td className="column-name-cell">
+                        <div className="column-name-info">
+                          <span className="column-name">{column.columnName}</span>
+                          {column.primaryKey && (
+                            <span className="pk-badge" title={t('metadata.primaryKey')}>
                                 <FaKey/>
                               </span>
-                            )}
-                            {!column.nullable && (
-                              <span className="not-null-badge" title={t('metadata.notNull')}>
+                          )}
+                          {!column.nullable && (
+                            <span className="not-null-badge" title={t('metadata.notNull')}>
                                 <FaLock/>
                               </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="data-type-cell">
-                          <code className="data-type">
-                            {column.dataType}
-                            {column.columnSize && `(${column.columnSize})`}
-                          </code>
-                        </td>
-                        <td className="nullable-cell">
+                          )}
+                        </div>
+                      </td>
+                      <td className="data-type-cell">
+                        <code className="data-type">
+                          {column.dataType}
+                          {column.columnSize && `(${column.columnSize})`}
+                        </code>
+                      </td>
+                      <td className="nullable-cell">
                           <span className={`nullable-badge ${column.nullable ? 'nullable' : 'not-nullable'}`}>
                             {column.nullable ? t('common.yes') : t('common.no')}
                           </span>
-                        </td>
-                        <td className="default-value-cell">
-                          {column.defaultValue ? (
-                            <code className="default-value">{column.defaultValue}</code>
-                          ) : (
-                            <span className="no-default">—</span>
-                          )}
-                        </td>
-                        <td className="primary-key-cell">
+                      </td>
+                      <td className="default-value-cell">
+                        {column.defaultValue ? (
+                          <code className="default-value">{column.defaultValue}</code>
+                        ) : (
+                          <span className="no-default">—</span>
+                        )}
+                      </td>
+                      <td className="primary-key-cell">
                           <span className={`pk-badge ${column.primaryKey ? 'is-pk' : 'not-pk'}`}>
                             {column.primaryKey ? (
                               <><FaKey/> {t('common.yes')}</>
@@ -144,49 +144,49 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
                               t('common.no')
                             )}
                           </span>
-                        </td>
-                        <td className="comment-cell">
-                          {column.comment ? (
-                            <span className="comment-text">{column.comment}</span>
-                          ) : (
-                            <span className="no-comment">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                      </td>
+                      <td className="comment-cell">
+                        {column.comment ? (
+                          <span className="comment-text">{column.comment}</span>
+                        ) : (
+                          <span className="no-comment">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                   </tbody>
                 </table>
               </div>
             </div>
           )}
-          
+
           {activeDetailTab === 'table' && (
             <div className="table-metadata-section">
               <div className="table-container">
                 <table className="table metadata-table table-striped">
                   <tbody className="metadata-table-body">
-                    <tr className="even">
-                      <td className="meta-label">{t('schema.schemaName')}</td>
-                      <td className="meta-value">{table.schema}</td>
-                    </tr>
-                    <tr className="odd">
-                      <td className="meta-label">{t('schema.tableName')}</td>
-                      <td className="meta-value">{table.tableName}</td>
-                    </tr>
-                    <tr className="even">
-                      <td className="meta-label">{t('schema.tableType')}</td>
-                      <td className="meta-value">{table.tableType}</td>
-                    </tr>
-                    <tr className="odd">
-                      <td className="meta-label">{t('schema.columnCount')}</td>
-                      <td className="meta-value">{table.columns.length}</td>
-                    </tr>
-                    <tr className="even">
-                      <td className="meta-label">{t('metadata.comment')}</td>
-                      <td className="meta-value">
-                        {table.comment ? table.comment : <span className="no-comment">—</span>}
-                      </td>
-                    </tr>
+                  <tr className="even">
+                    <td className="meta-label">{t('schema.schemaName')}</td>
+                    <td className="meta-value">{table.schema}</td>
+                  </tr>
+                  <tr className="odd">
+                    <td className="meta-label">{t('schema.tableName')}</td>
+                    <td className="meta-value">{table.tableName}</td>
+                  </tr>
+                  <tr className="even">
+                    <td className="meta-label">{t('schema.tableType')}</td>
+                    <td className="meta-value">{table.tableType}</td>
+                  </tr>
+                  <tr className="odd">
+                    <td className="meta-label">{t('schema.columnCount')}</td>
+                    <td className="meta-value">{table.columns.length}</td>
+                  </tr>
+                  <tr className="even">
+                    <td className="meta-label">{t('metadata.comment')}</td>
+                    <td className="meta-value">
+                      {table.comment ? table.comment : <span className="no-comment">—</span>}
+                    </td>
+                  </tr>
                   </tbody>
                 </table>
               </div>
@@ -228,7 +228,9 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
 
       {error && (
         <div className="error-message">
-          <span className="error-icon">❌</span>
+          <span className="error-icon">
+            <FaExclamationTriangle/>
+          </span>
           <span>{error}</span>
         </div>
       )}
@@ -237,36 +239,47 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
         <div className="schema-content">
           <div className="schema-summary">
             <div className="summary-stats">
-              <div className="stat-item">
-                <span className="stat-value">{schema.schemas.length}</span>
-                <span className="stat-label">{t('schema.schemasCount')}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">{schema.tables.length}</span>
-                <span className="stat-label">{t('schema.tablesCount')}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">
-                  {schema.tables.reduce((sum, table) => sum + table.columns.length, 0)}
-                </span>
-                <span className="stat-label">{t('schema.columnsCount')}</span>
-              </div>
-            </div>
-
-            <div className="last-updated">
-              <span className="update-label">{t('schema.lastUpdated')}</span>
-              <span className="update-time">{formatDate(schema.lastUpdatedAt)}</span>
+              <span className="stat-item">
+                {schema.schemas.length} {t('schema.schemasCount')}
+              </span>
+              <span className="stat-separator">•</span>
+              <span className="stat-item">
+                {schema.tables.length} {t('schema.tablesCount')}
+              </span>
+              <span className="stat-separator">•</span>
+              <span className="stat-item">
+                {schema.tables.reduce((sum, table) => sum + table.columns.length, 0)} {t('schema.columnsCount')}
+              </span>
+              <span className="stat-separator">•</span>
+              <span className="stat-item last-updated">
+                {t('schema.lastUpdated')}: {formatDate(schema.lastUpdatedAt)}
+              </span>
             </div>
           </div>
 
           <div className="schema-search">
-            <input
-              type="text"
-              placeholder={t('schema.searchPlaceholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
+            <div className="search-input-container">
+              <span className="search-icon">
+                <FaSearch/>
+              </span>
+              <input
+                type="text"
+                placeholder={t('schema.searchPlaceholder')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="clear-search-button"
+                  onClick={() => setSearchTerm('')}
+                  title={t('common.clear')}
+                >
+                  <FaTimes/>
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="schema-layout">
@@ -314,7 +327,9 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
                 renderTableMetadata(selectedTable)
               ) : (
                 <div className="no-table-selected">
-                  <div className="empty-icon">📋</div>
+                  <div className="empty-icon">
+                    <FaTable/>
+                  </div>
                   <h3>{t('schema.selectTable')}</h3>
                   <p>{t('schema.selectTableDescription')}</p>
                 </div>
@@ -324,7 +339,9 @@ export const SchemaMetadataView: React.FC<SchemaMetadataViewProps> = (
         </div>
       ) : (
         <div className="no-schema-state">
-          <div className="empty-icon">📊</div>
+          <div className="empty-icon">
+            <FaDatabase/>
+          </div>
           <h3>{t('schema.noSchemaData')}</h3>
           <p>{t('schema.noSchemaDataDescription')}</p>
         </div>

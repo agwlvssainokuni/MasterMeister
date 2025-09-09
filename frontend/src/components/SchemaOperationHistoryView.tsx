@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import type { Database, SchemaUpdateLog } from '../types/frontend'
+import React, {useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {FaBook, FaCog, FaDownload, FaHistory, FaSyncAlt, FaTimes, FaUpload} from 'react-icons/fa'
+import type {Database, SchemaUpdateLog} from '../types/frontend'
 
 interface SchemaOperationHistoryViewProps {
   connection: Database
@@ -25,10 +26,10 @@ interface SchemaOperationHistoryViewProps {
 }
 
 export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProps> = ({
-  operationHistory,
-  onRefresh
-}) => {
-  const { t } = useTranslation()
+                                                                                        operationHistory,
+                                                                                        onRefresh
+                                                                                      }) => {
+  const {t} = useTranslation()
   const [showFailedOnly, setShowFailedOnly] = useState(false)
   const [expandedLogs, setExpandedLogs] = useState<Set<number>>(new Set())
 
@@ -51,23 +52,33 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
 
   const getOperationLabel = (operation: string) => {
     switch (operation) {
-      case 'READ_SCHEMA': return t('schema.operations.readSchema')
-      case 'REFRESH_SCHEMA': return t('schema.operations.refreshSchema')
-      case 'IMPORT_SCHEMA': return t('schema.operations.importSchema')
-      case 'EXPORT_SCHEMA': return t('schema.operations.exportSchema')
-      default: return operation
+      case 'READ_SCHEMA':
+        return t('schema.operations.readSchema')
+      case 'REFRESH_SCHEMA':
+        return t('schema.operations.refreshSchema')
+      case 'IMPORT_SCHEMA':
+        return t('schema.operations.importSchema')
+      case 'EXPORT_SCHEMA':
+        return t('schema.operations.exportSchema')
+      default:
+        return operation
     }
   }
 
   const getOperationIcon = (operation: string, success: boolean) => {
-    if (!success) return '❌'
-    
+    if (!success) return <FaTimes/>
+
     switch (operation) {
-      case 'READ_SCHEMA': return '📖'
-      case 'REFRESH_SCHEMA': return '🔄'
-      case 'IMPORT_SCHEMA': return '📥'
-      case 'EXPORT_SCHEMA': return '📤'
-      default: return '⚙️'
+      case 'READ_SCHEMA':
+        return <FaBook/>
+      case 'REFRESH_SCHEMA':
+        return <FaSyncAlt/>
+      case 'IMPORT_SCHEMA':
+        return <FaUpload/>
+      case 'EXPORT_SCHEMA':
+        return <FaDownload/>
+      default:
+        return <FaCog/>
     }
   }
 
@@ -81,7 +92,7 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
     setExpandedLogs(newExpanded)
   }
 
-  const filteredHistory = showFailedOnly 
+  const filteredHistory = showFailedOnly
     ? operationHistory.filter(log => !log.success)
     : operationHistory
 
@@ -95,14 +106,14 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
           <h3>{t('schema.operationHistory')}</h3>
           <div className="history-stats">
             <span className="stat-success">
-              {t('schema.successfulOperations', { count: successCount })}
+              {t('schema.successfulOperations', {count: successCount})}
             </span>
             <span className="stat-failure">
-              {t('schema.failedOperations', { count: failureCount })}
+              {t('schema.failedOperations', {count: failureCount})}
             </span>
           </div>
         </div>
-        
+
         <div className="history-actions">
           <label className="filter-checkbox">
             <input
@@ -125,10 +136,12 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
 
       {filteredHistory.length === 0 ? (
         <div className="empty-history">
-          <div className="empty-icon">📋</div>
+          <div className="empty-icon">
+            <FaHistory/>
+          </div>
           <h4>{showFailedOnly ? t('schema.noFailedOperations') : t('schema.noOperations')}</h4>
           <p>
-            {showFailedOnly 
+            {showFailedOnly
               ? t('schema.noFailedOperationsDescription')
               : t('schema.noOperationsDescription')
             }
@@ -138,13 +151,13 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
         <div className="history-list">
           {filteredHistory.map(log => {
             const isExpanded = expandedLogs.has(log.id)
-            
+
             return (
               <div
                 key={log.id}
                 className={`history-item ${log.success ? 'success' : 'failure'}`}
               >
-                <div 
+                <div
                   className="history-item-header"
                   onClick={() => toggleLogExpansion(log.id)}
                 >
@@ -157,11 +170,11 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
                         {getOperationLabel(log.operation)}
                       </span>
                       <span className="operation-user">
-                        {t('schema.operationBy', { user: log.userEmail })}
+                        {t('schema.operationBy', {user: log.userEmail})}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="operation-meta">
                     <span className="operation-time">
                       {formatDate(log.createdAt)}
@@ -171,7 +184,7 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
                     </span>
                     {log.tablesCount !== undefined && (
                       <span className="operation-stats">
-                        {t('schema.tablesProcessed', { count: log.tablesCount })}
+                        {t('schema.tablesProcessed', {count: log.tablesCount})}
                       </span>
                     )}
                     <span className="expand-icon">
@@ -179,7 +192,7 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
                     </span>
                   </div>
                 </div>
-                
+
                 {isExpanded && (
                   <div className="history-item-details">
                     {log.errorMessage && (
@@ -188,14 +201,14 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
                         <pre className="error-message">{log.errorMessage}</pre>
                       </div>
                     )}
-                    
+
                     {log.details && (
                       <div className="operation-details-section">
                         <h5>{t('schema.operationDetails')}</h5>
                         <pre className="operation-details-text">{log.details}</pre>
                       </div>
                     )}
-                    
+
                     <div className="operation-metadata">
                       <div className="metadata-row">
                         <span className="metadata-label">{t('schema.operationId')}</span>
