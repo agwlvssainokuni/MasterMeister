@@ -145,36 +145,33 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
 
   return (
     <div className="permission-manager">
-      <div className="manager-header">
-        <h3>{connection.name}</h3>
-        <p className="connection-info">
-          {t('permissions.connectionInfo', {
-            host: connection.host,
-            port: connection.port,
-            type: connection.dbType
-          })} - {connection.databaseName}
-        </p>
-      </div>
-
-      <div className="tab-navigation">
-        <button
-          className={`tab-button ${activeTab === 'quickSetup' ? 'active' : ''}`}
-          onClick={() => setActiveTab('quickSetup')}
-        >
-          ⚡ {t('permissions.tabs.quickSetup')}
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'export' ? 'active' : ''}`}
-          onClick={() => setActiveTab('export')}
-        >
-          📤 {t('permissions.tabs.export')}
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'import' ? 'active' : ''}`}
-          onClick={() => setActiveTab('import')}
-        >
-          📥 {t('permissions.tabs.import')}
-        </button>
+      <div className="tabs">
+        <ul className="tabs-list">
+          <li className={`tab-item ${activeTab === 'quickSetup' ? 'active' : ''}`}>
+            <button
+              className="tab-button"
+              onClick={() => setActiveTab('quickSetup')}
+            >
+              {t('permissions.tabs.quickSetup')}
+            </button>
+          </li>
+          <li className={`tab-item ${activeTab === 'export' ? 'active' : ''}`}>
+            <button
+              className="tab-button"
+              onClick={() => setActiveTab('export')}
+            >
+              {t('permissions.tabs.export')}
+            </button>
+          </li>
+          <li className={`tab-item ${activeTab === 'import' ? 'active' : ''}`}>
+            <button
+              className="tab-button"
+              onClick={() => setActiveTab('import')}
+            >
+              {t('permissions.tabs.import')}
+            </button>
+          </li>
+        </ul>
       </div>
 
       <div className="tab-content">
@@ -408,19 +405,20 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
             )}
 
             {importResult && (
-              <div className={`import-result ${importResult.errors.length > 0 && importResult.importedPermissions === 0 && importResult.updatedPermissions === 0 ? 'error' : 'success'}`}>
+              <div
+                className={`import-result ${importResult.errors.length > 0 && importResult.importedPermissions === 0 && importResult.updatedPermissions === 0 ? 'error' : 'success'}`}>
                 <div className="result-header">
                   <span className="result-icon">
                     {importResult.errors.length > 0 && importResult.importedPermissions === 0 ? '❌' : '✅'}
                   </span>
                   <span className="result-message">
-                    {importResult.errors.length > 0 && importResult.importedPermissions === 0 
+                    {importResult.errors.length > 0 && importResult.importedPermissions === 0
                       ? t('permissions.importFailed')
                       : t('permissions.importCompleted')
                     }
                   </span>
                 </div>
-                
+
                 {(importResult.importedPermissions > 0 || importResult.updatedPermissions > 0) && (
                   <div className="result-stats">
                     <div className="stat-item">
@@ -445,7 +443,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                     </div>
                   </div>
                 )}
-                
+
                 {importResult.errors.length > 0 && (
                   <div className="import-errors">
                     <h6>{t('permissions.importErrors')}</h6>
@@ -456,7 +454,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                     </ul>
                   </div>
                 )}
-                
+
                 {importResult.warnings && importResult.warnings.length > 0 && (
                   <div className="import-warnings">
                     <h6>{t('permissions.importWarnings')}</h6>

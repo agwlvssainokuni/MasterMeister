@@ -190,14 +190,16 @@ export const PermissionManagementPage: React.FC = () => {
             i18nPrefix="permissions"
           />
           {selectedConnection && (
-            <PermissionManagementView
-              connection={selectedConnection}
-              loading={loading}
-              onExport={handleExportPermissions}
-              onImport={handleImportPermissions}
-              onValidate={handleValidateYaml}
-              onBulkGrant={handleBulkGrantPermissions}
-            />
+            <div className="permission-content">
+              <PermissionManagementView
+                connection={selectedConnection}
+                loading={loading}
+                onExport={handleExportPermissions}
+                onImport={handleImportPermissions}
+                onValidate={handleValidateYaml}
+                onBulkGrant={handleBulkGrantPermissions}
+              />
+            </div>
           )}
         </>
       )}
