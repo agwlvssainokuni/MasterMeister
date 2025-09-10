@@ -251,6 +251,7 @@ export interface BulkPermissionResult {
   processedUsers: number
   processedTables: number
   createdPermissions: number
+  updatedPermissions: number
   skippedExisting: number
   errors: string[]
 }

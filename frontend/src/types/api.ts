@@ -306,6 +306,7 @@ export interface BulkPermissionResponse {
   processedUsers: number
   processedTables: number
   createdPermissions: number
+  updatedPermissions: number
   skippedExisting: number
   errors: string[]
 }

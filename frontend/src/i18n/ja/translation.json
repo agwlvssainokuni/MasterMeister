@@ -591,6 +591,7 @@
       "processedUsers": "処理ユーザー数",
       "processedTables": "処理テーブル数",
       "createdPermissions": "作成権限数",
+      "updatedPermissions": "更新権限数",
       "skippedExisting": "スキップ済み権限数",
       "errors": "エラー"
     },

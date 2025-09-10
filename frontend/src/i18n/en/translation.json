@@ -591,6 +591,7 @@
       "processedUsers": "Processed Users",
       "processedTables": "Processed Tables",
       "createdPermissions": "Created Permissions",
+      "updatedPermissions": "Updated Permissions",
       "skippedExisting": "Skipped Existing",
       "errors": "Errors"
     },

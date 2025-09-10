@@ -237,6 +237,10 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
               <span className="stat-label">{t('permissions.bulkResult.createdPermissions')}</span>
             </div>
             <div className="stat-item">
+              <span className="stat-value">{bulkResult.updatedPermissions}</span>
+              <span className="stat-label">{t('permissions.bulkResult.updatedPermissions')}</span>
+            </div>
+            <div className="stat-item">
               <span className="stat-value">{bulkResult.skippedExisting}</span>
               <span className="stat-label">{t('permissions.bulkResult.skippedExisting')}</span>
             </div>

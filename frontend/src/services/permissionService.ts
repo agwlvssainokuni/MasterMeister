@@ -151,6 +151,7 @@ export class PermissionService {
       processedUsers: apiResult.processedUsers,
       processedTables: apiResult.processedTables,
       createdPermissions: apiResult.createdPermissions,
+      updatedPermissions: apiResult.updatedPermissions,
       skippedExisting: apiResult.skippedExisting,
       errors: apiResult.errors
     }
