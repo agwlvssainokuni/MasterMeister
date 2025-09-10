@@ -52,24 +52,6 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
   const [includeSystemTables, setIncludeSystemTables] = useState(false)
   const [bulkResult, setBulkResult] = useState<BulkPermissionResult | null>(null)
 
-  const handleQuickSetup = (type: BulkPermissionType, scope: BulkPermissionScope = 'ALL_TABLES') => {
-    const options: BulkPermissionOptions = {
-      scope,
-      permissionType: type,
-      userEmails: [], // Will be populated by all active users
-      includeSystemTables: false,
-      description: t(`permissions.quickOptions.${type}All.defaultDescription`)
-    }
-
-    onShowConfirmDialog(type, options, async () => {
-      try {
-        const result = await onBulkGrant(connection.id, options)
-        setBulkResult(result)
-      } catch (error) {
-        console.error('Bulk permission setup failed:', error)
-      }
-    })
-  }
 
   const handleCustomSetup = () => {
     const emails = userEmails.split(',').map(email => email.trim()).filter(email => email.length > 0)
@@ -98,39 +80,9 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
 
   return (
     <div className="bulk-permission-setup">
-      <div className="quick-setup-section">
-        <h4>{t('permissions.quickSetupTitle')}</h4>
+      <div className="bulk-setup-section">
         <p className="section-description">
-          {t('permissions.quickSetupDescription')}
-        </p>
-
-        <div className="quick-setup-grid">
-          <button
-            className="quick-setup-card"
-            onClick={() => handleQuickSetup('read' as const)}
-            disabled={loading}
-          >
-            <div className="card-icon">📖</div>
-            <h5>{t('permissions.quickOptions.readAll.title')}</h5>
-            <p>{t('permissions.quickOptions.readAll.description')}</p>
-          </button>
-
-          <button
-            className="quick-setup-card"
-            onClick={() => handleQuickSetup('write' as const)}
-            disabled={loading}
-          >
-            <div className="card-icon">✏️</div>
-            <h5>{t('permissions.quickOptions.writeAll.title')}</h5>
-            <p>{t('permissions.quickOptions.writeAll.description')}</p>
-          </button>
-        </div>
-      </div>
-
-      <div className="custom-setup-section">
-        <h4>{t('permissions.customSetupTitle')}</h4>
-        <p className="section-description">
-          {t('permissions.customSetupDescription')}
+          {t('permissions.bulkSetupDescription')}
         </p>
 
         <div className="setup-form">

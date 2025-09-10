@@ -490,7 +490,7 @@
     "noActiveConnectionsDescription": "Create and activate database connections first to manage permissions",
     "connectionInfo": "{{host}}:{{port}} ({{type}})",
     "tabs": {
-      "quickSetup": "Quick Setup",
+      "bulkSetup": "Bulk Permission Setup",
       "export": "Export",
       "import": "Import"
     },
@@ -538,6 +538,7 @@
     "quickSetupNotAvailable": "Quick setup is not available - bulk permission API not configured",
     "customSetupTitle": "Custom Bulk Permission Setup",
     "customSetupDescription": "Configure specific permission settings for selected users and tables",
+    "bulkSetupDescription": "Configure permissions for specified users in bulk",
     "applying": "Applying...",
     "quickOptions": {
       "readAll": {

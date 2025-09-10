@@ -83,3 +83,8 @@
 .permission-page .permission-content {
   margin-top: var(--spacing-lg);
 }
+
+/* Bulk Permission Setup Section */
+.permission-page .bulk-setup-section {
+  margin-top: var(--spacing-xl);
+}

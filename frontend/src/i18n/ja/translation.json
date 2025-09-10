@@ -490,7 +490,7 @@
     "noActiveConnectionsDescription": "権限を管理するには、まずデータベース接続を作成・有効化してください",
     "connectionInfo": "{{host}}:{{port}} ({{type}})",
     "tabs": {
-      "quickSetup": "クイックセットアップ",
+      "bulkSetup": "一括権限設定",
       "export": "エクスポート",
       "import": "インポート"
     },
@@ -538,6 +538,7 @@
     "quickSetupNotAvailable": "クイックセットアップは利用できません - 一括権限APIが設定されていません",
     "customSetupTitle": "カスタム一括権限設定",
     "customSetupDescription": "選択したユーザーとテーブルに対して特定の権限設定を構成",
+    "bulkSetupDescription": "指定したユーザーに対して権限を一括で設定します",
     "applying": "適用中...",
     "quickOptions": {
       "readAll": {

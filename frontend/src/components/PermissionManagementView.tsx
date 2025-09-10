@@ -50,7 +50,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
   const {t} = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [activeTab, setActiveTab] = useState<'quickSetup' | 'export' | 'import'>('quickSetup')
+  const [activeTab, setActiveTab] = useState<'bulkSetup' | 'export' | 'import'>('bulkSetup')
   const [exportDescription, setExportDescription] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [validationResult, setValidationResult] = useState<PermissionValidationResult | null>(null)
@@ -147,12 +147,12 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
     <div className="permission-manager">
       <div className="tabs">
         <ul className="tabs-list">
-          <li className={`tab-item ${activeTab === 'quickSetup' ? 'active' : ''}`}>
+          <li className={`tab-item ${activeTab === 'bulkSetup' ? 'active' : ''}`}>
             <button
               className="tab-button"
-              onClick={() => setActiveTab('quickSetup')}
+              onClick={() => setActiveTab('bulkSetup')}
             >
-              {t('permissions.tabs.quickSetup')}
+              {t('permissions.tabs.bulkSetup')}
             </button>
           </li>
           <li className={`tab-item ${activeTab === 'export' ? 'active' : ''}`}>
@@ -175,7 +175,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
       </div>
 
       <div className="tab-content">
-        {activeTab === 'quickSetup' && onBulkGrant && (
+        {activeTab === 'bulkSetup' && onBulkGrant && (
           <BulkPermissionSetupView
             connection={connection}
             loading={loading}
@@ -184,7 +184,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
           />
         )}
 
-        {activeTab === 'quickSetup' && !onBulkGrant && (
+        {activeTab === 'bulkSetup' && !onBulkGrant && (
           <div className="feature-notice">
             <span className="notice-icon">⚠️</span>
             <span>{t('permissions.quickSetupNotAvailable')}</span>
