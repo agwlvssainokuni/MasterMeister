@@ -19,7 +19,9 @@ package cherry.mastermeister.service;
 import cherry.mastermeister.entity.DatabaseConnectionEntity;
 import cherry.mastermeister.entity.UserEntity;
 import cherry.mastermeister.entity.UserPermissionEntity;
+import cherry.mastermeister.enums.BulkPermissionScope;
 import cherry.mastermeister.enums.PermissionScope;
+import cherry.mastermeister.enums.PermissionType;
 import cherry.mastermeister.enums.UserStatus;
 import cherry.mastermeister.model.PermissionBulkCommand;
 import cherry.mastermeister.model.PermissionBulkResult;
@@ -65,10 +67,10 @@ public class PermissionBulkService {
 
     public PermissionBulkResult grantBulkPermissions(
             Long connectionId,
-            PermissionBulkCommand request
+            PermissionBulkCommand command
     ) {
-        logger.info("Starting bulk permission grant: connection={}, type={}, scope={}",
-                connectionId, request.permissionType(), request.scope());
+        logger.info("Starting bulk permission grant: connection={}, types={}, scope={}",
+                connectionId, command.permissionTypes(), command.scope());
 
         List<String> errors = new ArrayList<>();
         int processedUsers = 0;
@@ -78,63 +80,118 @@ public class PermissionBulkService {
 
         try {
             // 1. Validate connection exists and is active
-            DatabaseConnectionEntity connection = validateConnection(connectionId);
+            validateConnection(connectionId);
 
             // 2. Get target users
-            List<UserEntity> targetUsers = getTargetUsers(request.userEmails());
+            List<UserEntity> targetUsers = getTargetUsers(command.userEmails());
             if (targetUsers.isEmpty()) {
                 errors.add("No valid users found for permission grant");
                 return new PermissionBulkResult(0, 0, 0, 0, errors);
             }
             processedUsers = targetUsers.size();
 
-            // 3. Get target tables based on scope
-            List<TableMetadata> targetTables = getTargetTables(connectionId, request);
-            if (targetTables.isEmpty()) {
-                errors.add("No tables found matching the specified scope");
-                return new PermissionBulkResult(processedUsers, 0, 0, 0, errors);
-            }
-            processedTables = targetTables.size();
-
-            // 4. Create permissions
+            // 4. Create permissions based on scope
             String currentUserEmail = getCurrentUserEmail();
 
-            for (UserEntity user : targetUsers) {
-                for (TableMetadata table : targetTables) {
-                    try {
-                        // Check if permission already exists
-                        Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findActivePermission(
-                                user.getId(), connectionId, PermissionScope.TABLE, request.permissionType(),
-                                table.schema(), table.tableName(), null
-                        );
-                        boolean exists = existingPermission.isPresent();
+            if (command.scope() == BulkPermissionScope.CONNECTION) {
+                // CONNECTION scope: create connection-level permissions
+                processedTables = 1; // CONNECTION scope counts as one "table"
 
-                        if (exists) {
-                            skippedExisting++;
-                            continue;
+                for (UserEntity user : targetUsers) {
+                    for (PermissionType permissionType : command.permissionTypes()) {
+                        try {
+                            // Check if permission already exists
+                            Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findActivePermission(
+                                    user.getId(), connectionId, PermissionScope.CONNECTION,
+                                    permissionType,
+                                    null, null, null
+                            );
+
+                            if (existingPermission.isPresent()) {
+                                skippedExisting++;
+                                continue;
+                            }
+
+                            // Create new connection-level permission
+                            UserPermissionEntity permission = new UserPermissionEntity();
+                            permission.setUser(user);
+                            permission.setConnectionId(connectionId);
+                            permission.setPermissionType(permissionType);
+                            permission.setScope(PermissionScope.CONNECTION);
+                            permission.setSchemaName(null);
+                            permission.setTableName(null);
+                            permission.setGranted(true);
+                            permission.setComment(command.description());
+                            permission.setGrantedBy(currentUserEmail);
+                            permission.setGrantedAt(LocalDateTime.now());
+
+                            userPermissionRepository.save(permission);
+                            createdPermissions++;
+
+                        } catch (Exception e) {
+                            logger.warn("Failed to create {} permission for user {} on connection: {}",
+                                    permissionType, user.getEmail(), e.getMessage());
+                            errors.add(String.format("Failed to grant %s permission to %s for connection: %s",
+                                    permissionType, user.getEmail(), e.getMessage()));
                         }
+                    }
+                }
+            } else {
+                // SCHEMA and TABLE scope: create table-level permissions
+                List<TableMetadata> targetTables = getTargetTables(connectionId, command);
+                if (targetTables.isEmpty()) {
+                    errors.add("No tables found matching the specified scope");
+                    return new PermissionBulkResult(processedUsers, 0, 0, 0, errors);
+                }
+                processedTables = targetTables.size();
 
-                        // Create new permission
-                        UserPermissionEntity permission = new UserPermissionEntity();
-                        permission.setUser(user);
-                        permission.setConnectionId(connectionId);
-                        permission.setPermissionType(request.permissionType());
-                        permission.setScope(PermissionScope.TABLE);
-                        permission.setSchemaName(table.schema());
-                        permission.setTableName(table.tableName());
-                        permission.setGranted(true);
-                        permission.setComment(request.description());
-                        permission.setGrantedBy(currentUserEmail);
-                        permission.setGrantedAt(LocalDateTime.now());
+                PermissionScope permScope = command.scope() == BulkPermissionScope.SCHEMA
+                        ? PermissionScope.SCHEMA
+                        : PermissionScope.TABLE;
 
-                        userPermissionRepository.save(permission);
-                        createdPermissions++;
+                for (UserEntity user : targetUsers) {
+                    for (TableMetadata table : targetTables) {
+                        for (PermissionType permissionType : command.permissionTypes()) {
+                            try {
+                                // Check if permission already exists
+                                Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findActivePermission(
+                                        user.getId(), connectionId, permScope, permissionType,
+                                        table.schema(), permScope == PermissionScope.TABLE ? table.tableName() : null, null
+                                );
+                                boolean exists = existingPermission.isPresent();
 
-                    } catch (Exception e) {
-                        logger.error("Failed to create permission for user {} on table {}.{}: {}",
-                                user.getEmail(), table.schema(), table.tableName(), e.getMessage());
-                        errors.add(String.format("Failed to grant permission to %s for table %s.%s: %s",
-                                user.getEmail(), table.schema(), table.tableName(), e.getMessage()));
+                                if (exists) {
+                                    skippedExisting++;
+                                    continue;
+                                }
+
+                                // Create new permission
+                                UserPermissionEntity permission = new UserPermissionEntity();
+                                permission.setUser(user);
+                                permission.setConnectionId(connectionId);
+                                permission.setPermissionType(permissionType);
+                                permission.setScope(permScope);
+                                permission.setSchemaName(table.schema());
+                                permission.setTableName(permScope == PermissionScope.TABLE ? table.tableName() : null);
+                                permission.setGranted(true);
+                                permission.setComment(command.description());
+                                permission.setGrantedBy(currentUserEmail);
+                                permission.setGrantedAt(LocalDateTime.now());
+
+                                userPermissionRepository.save(permission);
+                                createdPermissions++;
+
+                            } catch (Exception e) {
+                                logger.warn("Failed to create {} permission for user {} on {}: {}",
+                                        permissionType, user.getEmail(),
+                                        permScope == PermissionScope.TABLE ? (table.schema() + "." + table.tableName()) : table.schema(),
+                                        e.getMessage());
+                                errors.add(String.format("Failed to grant %s permission to %s for %s: %s",
+                                        permissionType, user.getEmail(),
+                                        permScope == PermissionScope.TABLE ? (table.schema() + "." + table.tableName()) : table.schema(),
+                                        e.getMessage()));
+                            }
+                        }
                     }
                 }
             }
@@ -150,7 +207,7 @@ public class PermissionBulkService {
         return new PermissionBulkResult(processedUsers, processedTables, createdPermissions, skippedExisting, errors);
     }
 
-    private DatabaseConnectionEntity validateConnection(
+    private void validateConnection(
             Long connectionId
     ) {
         Optional<DatabaseConnectionEntity> connection = databaseConnectionRepository.findById(connectionId);
@@ -158,12 +215,9 @@ public class PermissionBulkService {
             throw new IllegalArgumentException("Database connection not found: " + connectionId);
         }
 
-        DatabaseConnectionEntity conn = connection.get();
-        if (!conn.isActive()) {
+        if (!connection.get().isActive()) {
             throw new IllegalArgumentException("Database connection is not active: " + connectionId);
         }
-
-        return conn;
     }
 
     private List<UserEntity> getTargetUsers(
@@ -195,7 +249,7 @@ public class PermissionBulkService {
         List<TableMetadata> allTables = schemaMetadata.tables();
 
         switch (request.scope()) {
-            case ALL_TABLES:
+            case CONNECTION:
                 return filterSystemTables(allTables, request.includeSystemTables());
 
             case SCHEMA:
@@ -206,9 +260,9 @@ public class PermissionBulkService {
                         .filter(table -> request.schemaNames().contains(table.schema()))
                         .collect(Collectors.toList());
 
-            case TABLE_LIST:
+            case TABLE:
                 if (request.tableNames() == null || request.tableNames().isEmpty()) {
-                    throw new IllegalArgumentException("Table names must be specified for TABLE_LIST scope");
+                    throw new IllegalArgumentException("Table names must be specified for TABLE scope");
                 }
                 return allTables.stream()
                         .filter(table -> request.tableNames().contains(table.schema() + "." + table.tableName()))

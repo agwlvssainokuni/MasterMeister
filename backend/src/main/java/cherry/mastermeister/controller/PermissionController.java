@@ -63,13 +63,13 @@ public class PermissionController {
             @PathVariable Long connectionId,
             @Valid @RequestBody BulkPermissionRequest request
     ) {
-        logger.info("Starting bulk permission grant for connection ID: {}, type: {}, scope: {}",
-                connectionId, request.permissionType(), request.scope());
+        logger.info("Starting bulk permission grant for connection ID: {}, types: {}, scope: {}",
+                connectionId, request.permissionTypes(), request.scope());
 
         // Convert DTO to Model
         PermissionBulkCommand modelRequest = new PermissionBulkCommand(
                 request.scope(),
-                request.permissionType(),
+                request.permissionTypes(),
                 request.userEmails(),
                 request.schemaNames(),
                 request.tableNames(),

@@ -23,7 +23,7 @@ import java.util.List;
 
 public record PermissionBulkCommand(
         BulkPermissionScope scope,
-        PermissionType permissionType,
+        List<PermissionType> permissionTypes,
         List<String> userEmails,
         List<String> schemaNames,
         List<String> tableNames,

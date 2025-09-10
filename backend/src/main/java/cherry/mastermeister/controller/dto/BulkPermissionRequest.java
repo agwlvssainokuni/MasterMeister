@@ -31,7 +31,8 @@ public record BulkPermissionRequest(
         BulkPermissionScope scope,
         
         @NotNull
-        PermissionType permissionType,
+        @Size(min = 1)
+        List<PermissionType> permissionTypes,
         
         List<String> userEmails,
         

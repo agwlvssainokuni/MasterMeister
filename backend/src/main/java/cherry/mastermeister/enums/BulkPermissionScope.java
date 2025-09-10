@@ -20,7 +20,7 @@ package cherry.mastermeister.enums;
  * Enumeration for bulk permission operation scopes
  */
 public enum BulkPermissionScope {
-    ALL_TABLES,    // All tables in the database
+    CONNECTION,    // Connection-level permissions (all schemas and tables)
     SCHEMA,        // All tables in specific schemas
-    TABLE_LIST     // Specific list of tables
+    TABLE          // Specific list of tables
 }
