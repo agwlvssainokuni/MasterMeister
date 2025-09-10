@@ -16,7 +16,7 @@
 
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {FaBook, FaCog, FaDownload, FaHistory, FaSyncAlt, FaTimes, FaUpload} from 'react-icons/fa'
+import {FaBook, FaCog, FaDownload, FaHistory, FaInfoCircle, FaSyncAlt, FaTimes, FaUpload} from 'react-icons/fa'
 import type {Database, SchemaUpdateLog} from '../types/frontend'
 
 interface SchemaOperationHistoryViewProps {
@@ -31,7 +31,7 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
                                                                                       }) => {
   const {t} = useTranslation()
   const [showFailedOnly, setShowFailedOnly] = useState(false)
-  const [expandedLogs, setExpandedLogs] = useState<Set<number>>(new Set())
+  const [selectedLog, setSelectedLog] = useState<SchemaUpdateLog | null>(null)
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('ja-JP', {
@@ -82,14 +82,12 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
     }
   }
 
-  const toggleLogExpansion = (logId: number) => {
-    const newExpanded = new Set(expandedLogs)
-    if (newExpanded.has(logId)) {
-      newExpanded.delete(logId)
-    } else {
-      newExpanded.add(logId)
-    }
-    setExpandedLogs(newExpanded)
+  const handleShowDetails = (log: SchemaUpdateLog) => {
+    setSelectedLog(log)
+  }
+
+  const handleCloseDetails = () => {
+    setSelectedLog(null)
   }
 
   const filteredHistory = showFailedOnly
@@ -148,94 +146,136 @@ export const SchemaOperationHistoryView: React.FC<SchemaOperationHistoryViewProp
           </p>
         </div>
       ) : (
-        <div className="history-list">
-          {filteredHistory.map(log => {
-            const isExpanded = expandedLogs.has(log.id)
-
-            return (
-              <div
-                key={log.id}
-                className={`history-item ${log.success ? 'success' : 'failure'}`}
-              >
-                <div
-                  className="history-item-header"
-                  onClick={() => toggleLogExpansion(log.id)}
-                >
-                  <div className="operation-info">
+        <div className="table-container">
+          <table className="table history-table table-striped">
+            <thead className="history-table-header">
+            <tr>
+              <th className="history-status-header">{t('common.status')}</th>
+              <th className="history-operation-header">{t('schema.operation')}</th>
+              <th className="history-user-header">{t('schema.user')}</th>
+              <th className="history-time-header">{t('schema.time')}</th>
+              <th className="history-duration-header">{t('schema.duration')}</th>
+              <th className="history-tables-header">{t('schema.tables')}</th>
+              <th className="history-actions-header">{t('common.actions')}</th>
+            </tr>
+            </thead>
+            <tbody className="history-table-body">
+            {filteredHistory.map((log) => (
+              <tr key={log.id} className={log.success ? 'success' : 'failure'}>
+                <td className="status-cell">
                     <span className="operation-icon">
                       {getOperationIcon(log.operation, log.success)}
                     </span>
-                    <div className="operation-details">
-                      <span className="operation-name">
-                        {getOperationLabel(log.operation)}
-                      </span>
-                      <span className="operation-user">
-                        {t('schema.operationBy', {user: log.userEmail})}
-                      </span>
-                    </div>
-                  </div>
+                </td>
+                <td className="operation-cell">
+                  {getOperationLabel(log.operation)}
+                </td>
+                <td className="user-cell">
+                  {log.userEmail}
+                </td>
+                <td className="time-cell">
+                  {formatDate(log.createdAt)}
+                </td>
+                <td className="duration-cell">
+                  {formatDuration(log.executionTimeMs)}
+                </td>
+                <td className="tables-cell">
+                  {log.tablesCount !== undefined ? log.tablesCount : '—'}
+                </td>
+                <td className="actions-cell">
+                  <button
+                    type="button"
+                    className="button button-sm button-secondary"
+                    onClick={() => handleShowDetails(log)}
+                    title={t('schema.viewDetails')}
+                  >
+                    <FaInfoCircle/>
+                  </button>
+                </td>
+              </tr>
+            ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-                  <div className="operation-meta">
-                    <span className="operation-time">
-                      {formatDate(log.createdAt)}
-                    </span>
-                    <span className="operation-duration">
-                      {formatDuration(log.executionTimeMs)}
-                    </span>
-                    {log.tablesCount !== undefined && (
-                      <span className="operation-stats">
-                        {t('schema.tablesProcessed', {count: log.tablesCount})}
-                      </span>
-                    )}
-                    <span className="expand-icon">
-                      {isExpanded ? '▼' : '▶'}
-                    </span>
-                  </div>
+      {/* 詳細ポップアップ */}
+      {selectedLog && (
+        <div className="modal-overlay open" onClick={handleCloseDetails}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">{t('schema.operationDetails')}</h3>
+              <button
+                type="button"
+                className="modal-close"
+                onClick={handleCloseDetails}
+              >
+                <FaTimes/>
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="operation-summary">
+                <div className="summary-row">
+                  <span className="summary-label">{t('schema.operationId')}</span>
+                  <span className="summary-value">{selectedLog.id}</span>
                 </div>
-
-                {isExpanded && (
-                  <div className="history-item-details">
-                    {log.errorMessage && (
-                      <div className="error-details">
-                        <h5>{t('schema.errorDetails')}</h5>
-                        <pre className="error-message">{log.errorMessage}</pre>
-                      </div>
-                    )}
-
-                    {log.details && (
-                      <div className="operation-details-section">
-                        <h5>{t('schema.operationDetails')}</h5>
-                        <pre className="operation-details-text">{log.details}</pre>
-                      </div>
-                    )}
-
-                    <div className="operation-metadata">
-                      <div className="metadata-row">
-                        <span className="metadata-label">{t('schema.operationId')}</span>
-                        <span className="metadata-value">{log.id}</span>
-                      </div>
-                      <div className="metadata-row">
-                        <span className="metadata-label">{t('schema.executionTime')}</span>
-                        <span className="metadata-value">{log.executionTimeMs}ms</span>
-                      </div>
-                      {log.tablesCount !== undefined && (
-                        <div className="metadata-row">
-                          <span className="metadata-label">{t('schema.tablesProcessed')}</span>
-                          <span className="metadata-value">{log.tablesCount}</span>
-                        </div>
-                      )}
-                      {log.columnsCount !== undefined && (
-                        <div className="metadata-row">
-                          <span className="metadata-label">{t('schema.columnsProcessed')}</span>
-                          <span className="metadata-value">{log.columnsCount}</span>
-                        </div>
-                      )}
-                    </div>
+                <div className="summary-row">
+                  <span className="summary-label">{t('schema.operation')}</span>
+                  <span className="summary-value">
+                    <span className="operation-icon">
+                      {getOperationIcon(selectedLog.operation, selectedLog.success)}
+                    </span>
+                    {getOperationLabel(selectedLog.operation)}
+                  </span>
+                </div>
+                <div className="summary-row">
+                  <span className="summary-label">{t('schema.user')}</span>
+                  <span className="summary-value">{selectedLog.userEmail}</span>
+                </div>
+                <div className="summary-row">
+                  <span className="summary-label">{t('schema.executionTime')}</span>
+                  <span className="summary-value">{formatDate(selectedLog.createdAt)}</span>
+                </div>
+                <div className="summary-row">
+                  <span className="summary-label">{t('schema.duration')}</span>
+                  <span className="summary-value">{formatDuration(selectedLog.executionTimeMs)}</span>
+                </div>
+                <div className="summary-row">
+                  <span className="summary-label">{t('common.status')}</span>
+                  <span className={`summary-value status-${selectedLog.success ? 'success' : 'failure'}`}>
+                    {selectedLog.success ? t('common.success') : t('common.error')}
+                  </span>
+                </div>
+                {selectedLog.tablesCount !== undefined && (
+                  <div className="summary-row">
+                    <span className="summary-label">{t('schema.tablesProcessed')}</span>
+                    <span className="summary-value">{selectedLog.tablesCount}</span>
+                  </div>
+                )}
+                {selectedLog.columnsCount !== undefined && (
+                  <div className="summary-row">
+                    <span className="summary-label">{t('schema.columnsProcessed')}</span>
+                    <span className="summary-value">{selectedLog.columnsCount}</span>
                   </div>
                 )}
               </div>
-            )
-          })}
+
+              {selectedLog.details && (
+                <div className="operation-details-section">
+                  <h4>{t('schema.operationDetails')}</h4>
+                  <pre className="operation-details-text">{selectedLog.details}</pre>
+                </div>
+              )}
+
+              {selectedLog.errorMessage && (
+                <div className="error-details-section">
+                  <h4>{t('schema.errorDetails')}</h4>
+                  <pre className="error-message-text">{selectedLog.errorMessage}</pre>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
