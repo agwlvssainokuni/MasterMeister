@@ -63,7 +63,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
   })
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [confirmOptions, setConfirmOptions] = useState<{
-    type: BulkPermissionType
+    types: BulkPermissionType[]
     options: BulkPermissionOptions
     onConfirm: () => void
   } | null>(null)
@@ -123,11 +123,11 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
   }
 
   const handleShowConfirmDialog = (
-    type: BulkPermissionType,
+    types: BulkPermissionType[],
     options: BulkPermissionOptions,
     onConfirm: () => void
   ) => {
-    setConfirmOptions({type, options, onConfirm})
+    setConfirmOptions({types, options, onConfirm})
     setShowConfirmDialog(true)
   }
 
@@ -474,7 +474,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
       {showConfirmDialog && confirmOptions && (
         <BulkPermissionConfirmModal
           isOpen={showConfirmDialog}
-          permissionType={confirmOptions.type}
+          permissionTypes={confirmOptions.types}
           options={confirmOptions.options}
           connectionName={connection.name}
           onConfirm={handleConfirm}

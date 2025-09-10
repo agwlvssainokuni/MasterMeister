@@ -126,7 +126,7 @@ export class PermissionService {
     // Convert frontend type to API type
     const apiRequest: ApiBulkPermissionRequest = {
       scope: options.scope.toUpperCase() as ApiBulkPermissionRequest['scope'],
-      permissionType: options.permissionType.toUpperCase() as ApiBulkPermissionRequest['permissionType'],
+      permissionTypes: options.permissionTypes.map(type => type.toUpperCase()) as ApiBulkPermissionRequest['permissionTypes'],
       userEmails: options.userEmails,
       schemaNames: options.schemaNames,
       tableNames: options.tableNames,

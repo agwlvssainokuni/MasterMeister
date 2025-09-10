@@ -583,9 +583,9 @@
       "delete": "Delete"
     },
     "scopes": {
-      "allTables": "All Tables",
+      "connection": "Connection Level",
       "schema": "Specific Schemas",
-      "tableList": "Specific Tables"
+      "table": "Specific Tables"
     },
     "bulkResult": {
       "processedUsers": "Processed Users",

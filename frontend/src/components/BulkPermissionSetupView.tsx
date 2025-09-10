@@ -29,7 +29,7 @@ interface BulkPermissionSetupViewProps {
   loading: boolean
   onBulkGrant: (connectionId: number, options: BulkPermissionOptions) => Promise<BulkPermissionResult>
   onShowConfirmDialog: (
-    type: BulkPermissionType,
+    types: BulkPermissionType[],
     options: BulkPermissionOptions,
     onConfirm: () => void
   ) => void
@@ -45,9 +45,11 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
 ) => {
   const {t} = useTranslation()
 
-  const [selectedType, setSelectedType] = useState<BulkPermissionType>('read' as const)
-  const [selectedScope, setSelectedScope] = useState<BulkPermissionScope>('ALL_TABLES')
+  const [selectedTypes, setSelectedTypes] = useState<BulkPermissionType[]>(['read'])
+  const [selectedScope, setSelectedScope] = useState<BulkPermissionScope>('CONNECTION')
   const [userEmails, setUserEmails] = useState('')
+  const [schemaNames, setSchemaNames] = useState('')
+  const [tableNames, setTableNames] = useState('')
   const [description, setDescription] = useState('')
   const [includeSystemTables, setIncludeSystemTables] = useState(false)
   const [bulkResult, setBulkResult] = useState<BulkPermissionResult | null>(null)
@@ -55,20 +57,31 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
 
   const handleCustomSetup = () => {
     const emails = userEmails.split(',').map(email => email.trim()).filter(email => email.length > 0)
+    const schemas = schemaNames.split(',').map(s => s.trim()).filter(s => s.length > 0)
+    const tables = tableNames.split(',').map(t => t.trim()).filter(t => t.length > 0)
 
-    if (emails.length === 0) {
+    // Validation based on scope
+    if (selectedScope === 'SCHEMA' && schemas.length === 0) {
+      return
+    }
+    if (selectedScope === 'TABLE' && tables.length === 0) {
+      return
+    }
+    if (selectedTypes.length === 0) {
       return
     }
 
     const options: BulkPermissionOptions = {
       scope: selectedScope,
-      permissionType: selectedType,
+      permissionTypes: selectedTypes,
       userEmails: emails,
+      schemaNames: schemas.length > 0 ? schemas : undefined,
+      tableNames: tables.length > 0 ? tables : undefined,
       includeSystemTables,
-      description: description || t(`permissions.bulkSetup.defaultDescription.${selectedType}`)
+      description: description || `Bulk ${selectedTypes.join(', ')} permissions applied`
     }
 
-    onShowConfirmDialog(selectedType, options, async () => {
+    onShowConfirmDialog(selectedTypes, options, async () => {
       try {
         const result = await onBulkGrant(connection.id, options)
         setBulkResult(result)
@@ -86,33 +99,74 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
         </p>
 
         <div className="setup-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label>{t('permissions.bulkSetup.permissionType')}</label>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value as BulkPermissionType)}
-                className="form-select"
-              >
-                <option value="read">{t('permissions.types.read')}</option>
-                <option value="write">{t('permissions.types.write')}</option>
-                <option value="delete">{t('permissions.types.delete')}</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>{t('permissions.bulkSetup.scope')}</label>
-              <select
-                value={selectedScope}
-                onChange={(e) => setSelectedScope(e.target.value as BulkPermissionScope)}
-                className="form-select"
-              >
-                <option value="ALL_TABLES">{t('permissions.scopes.allTables')}</option>
-                <option value="SCHEMA">{t('permissions.scopes.schema')}</option>
-                <option value="TABLE_LIST">{t('permissions.scopes.tableList')}</option>
-              </select>
+          <div className="form-group">
+            <label>{t('permissions.bulkSetup.permissionType')}</label>
+            <div className="checkbox-group">
+              {(['read', 'write', 'delete'] as BulkPermissionType[]).map(type => (
+                <label key={type} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.includes(type)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedTypes([...selectedTypes, type])
+                      } else {
+                        setSelectedTypes(selectedTypes.filter(t => t !== type))
+                      }
+                    }}
+                  />
+                  <span>{t(`permissions.types.${type}`)}</span>
+                </label>
+              ))}
             </div>
           </div>
+
+          <div className="form-group">
+            <label>{t('permissions.bulkSetup.scope')}</label>
+            <select
+              value={selectedScope}
+              onChange={(e) => setSelectedScope(e.target.value as BulkPermissionScope)}
+              className="form-select"
+            >
+              <option value="CONNECTION">{t('permissions.scopes.connection')}</option>
+              <option value="SCHEMA">{t('permissions.scopes.schema')}</option>
+              <option value="TABLE">{t('permissions.scopes.table')}</option>
+            </select>
+          </div>
+
+          {selectedScope === 'SCHEMA' && (
+            <div className="form-group">
+              <label htmlFor="schema-names">Schema Names</label>
+              <textarea
+                id="schema-names"
+                value={schemaNames}
+                onChange={(e) => setSchemaNames(e.target.value)}
+                placeholder="schema1, schema2, schema3"
+                className="form-textarea"
+                rows={2}
+              />
+              <small className="form-hint">
+                Enter schema names separated by commas
+              </small>
+            </div>
+          )}
+
+          {selectedScope === 'TABLE' && (
+            <div className="form-group">
+              <label htmlFor="table-names">Table Names</label>
+              <textarea
+                id="table-names"
+                value={tableNames}
+                onChange={(e) => setTableNames(e.target.value)}
+                placeholder="schema1.table1, schema2.table2"
+                className="form-textarea"
+                rows={3}
+              />
+              <small className="form-hint">
+                Enter full table names (schema.table) separated by commas
+              </small>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="user-emails">{t('permissions.bulkSetup.userEmails')}</label>
@@ -156,7 +210,9 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
             <button
               className="button button-primary"
               onClick={handleCustomSetup}
-              disabled={loading || userEmails.trim().length === 0}
+              disabled={loading || selectedTypes.length === 0 || 
+                       (selectedScope === 'SCHEMA' && schemaNames.trim().length === 0) ||
+                       (selectedScope === 'TABLE' && tableNames.trim().length === 0)}
             >
               {loading ? t('permissions.applying') : t('permissions.bulkSetup.apply')}
             </button>

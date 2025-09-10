@@ -583,9 +583,9 @@
       "delete": "削除"
     },
     "scopes": {
-      "allTables": "全テーブル",
+      "connection": "接続レベル",
       "schema": "特定スキーマ",
-      "tableList": "特定テーブル"
+      "table": "特定テーブル"
     },
     "bulkResult": {
       "processedUsers": "処理ユーザー数",

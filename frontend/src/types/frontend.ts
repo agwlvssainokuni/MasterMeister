@@ -234,12 +234,12 @@ export interface PermissionImportResult {
 }
 
 // Bulk Permission Types (Frontend)
-export type BulkPermissionScope = 'ALL_TABLES' | 'SCHEMA' | 'TABLE_LIST'
+export type BulkPermissionScope = 'CONNECTION' | 'SCHEMA' | 'TABLE'
 export type BulkPermissionType = 'read' | 'write' | 'delete'
 
 export interface BulkPermissionOptions {
   scope: BulkPermissionScope
-  permissionType: BulkPermissionType
+  permissionTypes: BulkPermissionType[]
   userEmails: string[]
   schemaNames?: string[]
   tableNames?: string[]

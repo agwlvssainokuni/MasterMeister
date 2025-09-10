@@ -20,7 +20,7 @@ import type {BulkPermissionOptions, BulkPermissionType} from '../types/frontend'
 
 interface BulkPermissionConfirmModalProps {
   isOpen: boolean
-  permissionType: BulkPermissionType
+  permissionTypes: BulkPermissionType[]
   options: BulkPermissionOptions
   connectionName: string
   onConfirm: () => void
@@ -30,7 +30,7 @@ interface BulkPermissionConfirmModalProps {
 export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProps> = (
   {
     isOpen,
-    permissionType,
+    permissionTypes,
     options,
     connectionName,
     onConfirm,
@@ -43,7 +43,7 @@ export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProp
     return null
   }
 
-  const isWritePermission = permissionType === 'write' || permissionType === 'delete'
+  const isWritePermission = permissionTypes.includes('write') || permissionTypes.includes('delete')
   const userCount = options.userEmails.length || 'all active'
 
   return (
@@ -65,8 +65,8 @@ export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProp
 
             <div className="detail-row">
               <span className="detail-label">{t('permissions.confirmDialog.permissionType')}:</span>
-              <span className={`detail-value permission-type-${permissionType}`}>
-                {t(`permissions.types.${permissionType}` as const)}
+              <span className="detail-value">
+                {permissionTypes.map(type => t(`permissions.types.${type}` as const)).join(', ')}
               </span>
             </div>
 
@@ -103,7 +103,10 @@ export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProp
                 <span className="warning-icon">🔐</span>
                 <h4>{t('permissions.confirmDialog.securityWarning')}</h4>
               </div>
-              <p>{t(`permissions.confirmDialog.${permissionType}Warning`)}</p>
+              <p>
+                {permissionTypes.includes('write') && t('permissions.confirmDialog.writeWarning')}
+                {permissionTypes.includes('delete') && t('permissions.confirmDialog.deleteWarning')}
+              </p>
               <ul>
                 <li>{t('permissions.confirmDialog.warnings.dataModification')}</li>
                 <li>{t('permissions.confirmDialog.warnings.auditLogging')}</li>
@@ -116,7 +119,7 @@ export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProp
             <p>
               <strong>
                 {t('permissions.confirmDialog.confirmMessage', {
-                  type: t(`permissions.types.${permissionType}` as const),
+                  type: permissionTypes.map(type => t(`permissions.types.${type}` as const)).join(', '),
                   connection: connectionName
                 })}
               </strong>
