@@ -22,6 +22,7 @@ public record PermissionBulkResult(
         int processedUsers,
         int processedTables,
         int createdPermissions,
+        int updatedPermissions,
         int skippedExisting,
         List<String> errors
 ) {

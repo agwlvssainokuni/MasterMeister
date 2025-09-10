@@ -35,6 +35,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -61,7 +62,8 @@ public class PermissionController {
     @Operation(summary = "Bulk grant permissions", description = "Grant permissions to multiple users across multiple tables")
     public ApiResponse<BulkPermissionResponse> bulkGrantPermissions(
             @PathVariable Long connectionId,
-            @Valid @RequestBody BulkPermissionRequest request
+            @Valid @RequestBody BulkPermissionRequest request,
+            Authentication authentication
     ) {
         logger.info("Starting bulk permission grant for connection ID: {}, types: {}, scope: {}",
                 connectionId, request.permissionTypes(), request.scope());
@@ -77,19 +79,21 @@ public class PermissionController {
                 request.description()
         );
 
-        PermissionBulkResult modelResponse = permissionBulkService.grantBulkPermissions(connectionId, modelRequest);
+        String currentUserEmail = authentication != null ? authentication.getName() : "system";
+        PermissionBulkResult modelResponse = permissionBulkService.grantBulkPermissions(connectionId, modelRequest, currentUserEmail);
 
         // Convert Model to DTO
         BulkPermissionResponse dtoResponse = new BulkPermissionResponse(
                 modelResponse.processedUsers(),
                 modelResponse.processedTables(),
                 modelResponse.createdPermissions(),
+                modelResponse.updatedPermissions(),
                 modelResponse.skippedExisting(),
                 modelResponse.errors()
         );
 
-        logger.info("Bulk permission grant completed: {} permissions created, {} errors",
-                dtoResponse.createdPermissions(), dtoResponse.errors().size());
+        logger.info("Bulk permission grant completed: {} permissions created, {} updated, {} errors",
+                dtoResponse.createdPermissions(), dtoResponse.updatedPermissions(), dtoResponse.errors().size());
 
         return ApiResponse.success(dtoResponse);
     }

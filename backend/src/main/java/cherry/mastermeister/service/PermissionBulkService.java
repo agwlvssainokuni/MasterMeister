@@ -32,8 +32,6 @@ import cherry.mastermeister.repository.UserPermissionRepository;
 import cherry.mastermeister.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +65,8 @@ public class PermissionBulkService {
 
     public PermissionBulkResult grantBulkPermissions(
             Long connectionId,
-            PermissionBulkCommand command
+            PermissionBulkCommand command,
+            String currentUserEmail
     ) {
         logger.info("Starting bulk permission grant: connection={}, types={}, scope={}",
                 connectionId, command.permissionTypes(), command.scope());
@@ -76,6 +75,7 @@ public class PermissionBulkService {
         int processedUsers = 0;
         int processedTables = 0;
         int createdPermissions = 0;
+        int updatedPermissions = 0;
         int skippedExisting = 0;
 
         try {
@@ -86,13 +86,11 @@ public class PermissionBulkService {
             List<UserEntity> targetUsers = getTargetUsers(command.userEmails());
             if (targetUsers.isEmpty()) {
                 errors.add("No valid users found for permission grant");
-                return new PermissionBulkResult(0, 0, 0, 0, errors);
+                return new PermissionBulkResult(0, 0, 0, 0, 0, errors);
             }
             processedUsers = targetUsers.size();
 
             // 4. Create permissions based on scope
-            String currentUserEmail = getCurrentUserEmail();
-
             if (command.scope() == BulkPermissionScope.CONNECTION) {
                 // CONNECTION scope: create connection-level permissions
                 processedTables = 1; // CONNECTION scope counts as one "table"
@@ -108,8 +106,20 @@ public class PermissionBulkService {
                             );
 
                             if (existingPermission.isPresent()) {
-                                skippedExisting++;
-                                continue;
+                                UserPermissionEntity existing = existingPermission.get();
+                                if (existing.getGranted()) {
+                                    skippedExisting++;
+                                    continue;
+                                } else {
+                                    // granted=falseをtrueに更新
+                                    existing.setGranted(true);
+                                    existing.setComment(command.description());
+                                    existing.setGrantedBy(currentUserEmail);
+                                    existing.setGrantedAt(LocalDateTime.now());
+                                    userPermissionRepository.save(existing);
+                                    updatedPermissions++;
+                                    continue;
+                                }
                             }
 
                             // Create new connection-level permission
@@ -120,6 +130,7 @@ public class PermissionBulkService {
                             permission.setScope(PermissionScope.CONNECTION);
                             permission.setSchemaName(null);
                             permission.setTableName(null);
+                            permission.setColumnName(null);
                             permission.setGranted(true);
                             permission.setComment(command.description());
                             permission.setGrantedBy(currentUserEmail);
@@ -141,7 +152,7 @@ public class PermissionBulkService {
                 List<TableMetadata> targetTables = getTargetTables(connectionId, command);
                 if (targetTables.isEmpty()) {
                     errors.add("No tables found matching the specified scope");
-                    return new PermissionBulkResult(processedUsers, 0, 0, 0, errors);
+                    return new PermissionBulkResult(processedUsers, 0, 0, 0, 0, errors);
                 }
                 processedTables = targetTables.size();
 
@@ -196,15 +207,15 @@ public class PermissionBulkService {
                 }
             }
 
-            logger.info("Bulk permission grant completed: {} permissions created, {} skipped, {} errors",
-                    createdPermissions, skippedExisting, errors.size());
+            logger.info("Bulk permission grant completed: {} permissions created, {} updated, {} skipped, {} errors",
+                    createdPermissions, updatedPermissions, skippedExisting, errors.size());
 
         } catch (Exception e) {
             logger.error("Bulk permission grant failed", e);
             errors.add("Bulk operation failed: " + e.getMessage());
         }
 
-        return new PermissionBulkResult(processedUsers, processedTables, createdPermissions, skippedExisting, errors);
+        return new PermissionBulkResult(processedUsers, processedTables, createdPermissions, updatedPermissions, skippedExisting, errors);
     }
 
     private void validateConnection(
@@ -298,11 +309,4 @@ public class PermissionBulkService {
                 schema.startsWith("pg_temp");
     }
 
-    private String getCurrentUserEmail() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            return authentication.getName();
-        }
-        return "system";
-    }
 }
