@@ -51,7 +51,6 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
   const [schemaNames, setSchemaNames] = useState('')
   const [tableNames, setTableNames] = useState('')
   const [description, setDescription] = useState('')
-  const [includeSystemTables, setIncludeSystemTables] = useState(false)
   const [bulkResult, setBulkResult] = useState<BulkPermissionResult | null>(null)
 
 
@@ -77,7 +76,6 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
       userEmails: emails,
       schemaNames: schemas.length > 0 ? schemas : undefined,
       tableNames: tables.length > 0 ? tables : undefined,
-      includeSystemTables,
       description: description || `Bulk ${selectedTypes.join(', ')} permissions applied`
     }
 
@@ -195,16 +193,6 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
             />
           </div>
 
-          <div className="form-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={includeSystemTables}
-                onChange={(e) => setIncludeSystemTables(e.target.checked)}
-              />
-              <span>{t('permissions.bulkSetup.includeSystemTables')}</span>
-            </label>
-          </div>
 
           <div className="form-actions">
             <button

@@ -243,7 +243,6 @@ export interface BulkPermissionOptions {
   userEmails: string[]
   schemaNames?: string[]
   tableNames?: string[]
-  includeSystemTables: boolean
   description: string
 }
 

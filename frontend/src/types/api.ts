@@ -298,7 +298,6 @@ export interface BulkPermissionRequest {
   userEmails: string[]
   schemaNames?: string[]
   tableNames?: string[]
-  includeSystemTables?: boolean
   description?: string
 }
 

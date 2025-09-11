@@ -130,7 +130,6 @@ export class PermissionService {
       userEmails: options.userEmails,
       schemaNames: options.schemaNames,
       tableNames: options.tableNames,
-      includeSystemTables: options.includeSystemTables,
       description: options.description
     }
 
