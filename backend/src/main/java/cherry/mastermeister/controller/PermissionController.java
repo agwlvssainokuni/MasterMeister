@@ -21,8 +21,8 @@ import cherry.mastermeister.controller.dto.BulkPermissionRequest;
 import cherry.mastermeister.controller.dto.BulkPermissionResponse;
 import cherry.mastermeister.controller.dto.PermissionExportData;
 import cherry.mastermeister.enums.DuplicateHandling;
-import cherry.mastermeister.model.PermissionBulkResult;
 import cherry.mastermeister.model.PermissionBulkCommand;
+import cherry.mastermeister.model.PermissionBulkResult;
 import cherry.mastermeister.service.PermissionBulkService;
 import cherry.mastermeister.service.PermissionYamlService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -75,7 +75,6 @@ public class PermissionController {
                 request.userEmails(),
                 request.schemaNames(),
                 request.tableNames(),
-                request.includeSystemTables(),
                 request.description()
         );
 

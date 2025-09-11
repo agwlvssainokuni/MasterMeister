@@ -40,8 +40,6 @@ public record BulkPermissionRequest(
         
         List<String> tableNames,
         
-        boolean includeSystemTables,
-        
         @Size(max = 500)
         String description
 ) {

@@ -27,7 +27,6 @@ public record PermissionBulkCommand(
         List<String> userEmails,
         List<String> schemaNames,
         List<String> tableNames,
-        boolean includeSystemTables,
         String description
 ) {
 }

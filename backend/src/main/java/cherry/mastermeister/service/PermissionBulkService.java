@@ -32,6 +32,7 @@ import cherry.mastermeister.repository.UserPermissionRepository;
 import cherry.mastermeister.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +64,10 @@ public class PermissionBulkService {
         this.schemaMetadataService = schemaMetadataService;
     }
 
+    // ==============================================
+    // パブリックAPIメソッド
+    // ==============================================
+
     public PermissionBulkResult grantBulkPermissions(
             Long connectionId,
             PermissionBulkCommand command,
@@ -72,168 +77,60 @@ public class PermissionBulkService {
                 connectionId, command.permissionTypes(), command.scope());
 
         List<String> errors = new ArrayList<>();
-        int processedUsers = 0;
-        int processedTables = 0;
-        int createdPermissions = 0;
-        int updatedPermissions = 0;
-        int skippedExisting = 0;
 
-        try {
-            // 1. Validate connection exists and is active
-            validateConnection(connectionId);
-
-            // 2. Get target users
-            List<UserEntity> targetUsers = getTargetUsers(command.userEmails());
-            if (targetUsers.isEmpty()) {
-                errors.add("No valid users found for permission grant");
-                return new PermissionBulkResult(0, 0, 0, 0, 0, errors);
-            }
-            processedUsers = targetUsers.size();
-
-            // 4. Create permissions based on scope
-            if (command.scope() == BulkPermissionScope.CONNECTION) {
-                // CONNECTION scope: create connection-level permissions
-                processedTables = 1; // CONNECTION scope counts as one "table"
-
-                for (UserEntity user : targetUsers) {
-                    for (PermissionType permissionType : command.permissionTypes()) {
-                        try {
-                            // Check if permission already exists
-                            Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findActivePermission(
-                                    user.getId(), connectionId, PermissionScope.CONNECTION,
-                                    permissionType,
-                                    null, null, null
-                            );
-
-                            if (existingPermission.isPresent()) {
-                                UserPermissionEntity existing = existingPermission.get();
-                                if (existing.getGranted()) {
-                                    skippedExisting++;
-                                    continue;
-                                } else {
-                                    // granted=falseをtrueに更新
-                                    existing.setGranted(true);
-                                    existing.setComment(command.description());
-                                    existing.setGrantedBy(currentUserEmail);
-                                    existing.setGrantedAt(LocalDateTime.now());
-                                    userPermissionRepository.save(existing);
-                                    updatedPermissions++;
-                                    continue;
-                                }
-                            }
-
-                            // Create new connection-level permission
-                            UserPermissionEntity permission = new UserPermissionEntity();
-                            permission.setUser(user);
-                            permission.setConnectionId(connectionId);
-                            permission.setPermissionType(permissionType);
-                            permission.setScope(PermissionScope.CONNECTION);
-                            permission.setSchemaName(null);
-                            permission.setTableName(null);
-                            permission.setColumnName(null);
-                            permission.setGranted(true);
-                            permission.setComment(command.description());
-                            permission.setGrantedBy(currentUserEmail);
-                            permission.setGrantedAt(LocalDateTime.now());
-
-                            userPermissionRepository.save(permission);
-                            createdPermissions++;
-
-                        } catch (Exception e) {
-                            logger.warn("Failed to create {} permission for user {} on connection: {}",
-                                    permissionType, user.getEmail(), e.getMessage());
-                            errors.add(String.format("Failed to grant %s permission to %s for connection: %s",
-                                    permissionType, user.getEmail(), e.getMessage()));
-                        }
-                    }
-                }
-            } else {
-                // SCHEMA and TABLE scope: create table-level permissions
-                List<TableMetadata> targetTables = getTargetTables(connectionId, command);
-                if (targetTables.isEmpty()) {
-                    errors.add("No tables found matching the specified scope");
-                    return new PermissionBulkResult(processedUsers, 0, 0, 0, 0, errors);
-                }
-                processedTables = targetTables.size();
-
-                PermissionScope permScope = command.scope() == BulkPermissionScope.SCHEMA
-                        ? PermissionScope.SCHEMA
-                        : PermissionScope.TABLE;
-
-                for (UserEntity user : targetUsers) {
-                    for (TableMetadata table : targetTables) {
-                        for (PermissionType permissionType : command.permissionTypes()) {
-                            try {
-                                // Check if permission already exists
-                                Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findActivePermission(
-                                        user.getId(), connectionId, permScope, permissionType,
-                                        table.schema(), permScope == PermissionScope.TABLE ? table.tableName() : null, null
-                                );
-                                boolean exists = existingPermission.isPresent();
-
-                                if (exists) {
-                                    skippedExisting++;
-                                    continue;
-                                }
-
-                                // Create new permission
-                                UserPermissionEntity permission = new UserPermissionEntity();
-                                permission.setUser(user);
-                                permission.setConnectionId(connectionId);
-                                permission.setPermissionType(permissionType);
-                                permission.setScope(permScope);
-                                permission.setSchemaName(table.schema());
-                                permission.setTableName(permScope == PermissionScope.TABLE ? table.tableName() : null);
-                                permission.setGranted(true);
-                                permission.setComment(command.description());
-                                permission.setGrantedBy(currentUserEmail);
-                                permission.setGrantedAt(LocalDateTime.now());
-
-                                userPermissionRepository.save(permission);
-                                createdPermissions++;
-
-                            } catch (Exception e) {
-                                logger.warn("Failed to create {} permission for user {} on {}: {}",
-                                        permissionType, user.getEmail(),
-                                        permScope == PermissionScope.TABLE ? (table.schema() + "." + table.tableName()) : table.schema(),
-                                        e.getMessage());
-                                errors.add(String.format("Failed to grant %s permission to %s for %s: %s",
-                                        permissionType, user.getEmail(),
-                                        permScope == PermissionScope.TABLE ? (table.schema() + "." + table.tableName()) : table.schema(),
-                                        e.getMessage()));
-                            }
-                        }
-                    }
-                }
-            }
-
-            logger.info("Bulk permission grant completed: {} permissions created, {} updated, {} skipped, {} errors",
-                    createdPermissions, updatedPermissions, skippedExisting, errors.size());
-
-        } catch (Exception e) {
-            logger.error("Bulk permission grant failed", e);
-            errors.add("Bulk operation failed: " + e.getMessage());
+        // 1. Validate connection exists and is active
+        if (!isConnectionValid(connectionId, errors)) {
+            return new PermissionBulkResult(0, 0, 0, 0, 0, errors);
         }
 
-        return new PermissionBulkResult(processedUsers, processedTables, createdPermissions, updatedPermissions, skippedExisting, errors);
+        // 2. Get target users
+        List<UserEntity> targetUsers = getTargetUsers(command.userEmails());
+        if (targetUsers.isEmpty()) {
+            errors.add("No valid users found for permission grant");
+            return new PermissionBulkResult(0, 0, 0, 0, 0, errors);
+        }
+
+        // 3. Create permissions based on scope
+        PermissionBulkCounts counts;
+        if (command.scope() == BulkPermissionScope.CONNECTION) {
+            counts = grantConnectionLevelPermissions(targetUsers, connectionId, command.permissionTypes(), command.description(), currentUserEmail, errors);
+        } else if (command.scope() == BulkPermissionScope.SCHEMA) {
+            counts = grantSchemaLevelPermissions(targetUsers, connectionId, command.schemaNames(), command.permissionTypes(), command.description(), currentUserEmail, errors);
+        } else {
+            counts = grantTableLevelPermissions(targetUsers, connectionId, command.tableNames(), command.permissionTypes(), command.description(), currentUserEmail, errors);
+        }
+
+        if (counts.processedItems() == 0 && !errors.isEmpty()) {
+            return new PermissionBulkResult(targetUsers.size(), 0, 0, 0, 0, errors);
+        }
+
+        logger.info("Bulk permission grant completed: {} permissions created, {} updated, {} skipped, {} errors",
+                counts.createdPermissions(), counts.updatedPermissions(), counts.skippedExisting(), errors.size());
+
+        return new PermissionBulkResult(targetUsers.size(), counts.processedItems(), counts.createdPermissions(),
+                counts.updatedPermissions(), counts.skippedExisting(), errors);
     }
 
-    private void validateConnection(
-            Long connectionId
-    ) {
+    // ==============================================
+    // 前処理・バリデーション
+    // ==============================================
+
+    private boolean isConnectionValid(Long connectionId, List<String> errors) {
         Optional<DatabaseConnectionEntity> connection = databaseConnectionRepository.findById(connectionId);
         if (connection.isEmpty()) {
-            throw new IllegalArgumentException("Database connection not found: " + connectionId);
+            errors.add("Database connection not found: " + connectionId);
+            return false;
         }
 
         if (!connection.get().isActive()) {
-            throw new IllegalArgumentException("Database connection is not active: " + connectionId);
+            errors.add("Database connection is not active: " + connectionId);
+            return false;
         }
+
+        return true;
     }
 
-    private List<UserEntity> getTargetUsers(
-            List<String> userEmails
-    ) {
+    private List<UserEntity> getTargetUsers(List<String> userEmails) {
         if (userEmails == null || userEmails.isEmpty()) {
             // Return all approved users if no specific emails provided
             return userRepository.findByStatus(UserStatus.APPROVED);
@@ -247,66 +144,358 @@ public class PermissionBulkService {
                 .collect(Collectors.toList());
     }
 
-    private List<TableMetadata> getTargetTables(
-            Long connectionId,
-            PermissionBulkCommand request
-    ) {
+    private List<String> getExistingSchemas(Long connectionId, List<String> schemaNames, List<String> errors) {
+        if (schemaNames == null || schemaNames.isEmpty()) {
+            errors.add("Schema names must be specified for SCHEMA scope");
+            return new ArrayList<>();
+        }
+
         Optional<SchemaMetadata> schemaMetadataOpt = schemaMetadataService.getSchemaMetadata(connectionId);
         if (schemaMetadataOpt.isEmpty()) {
-            throw new IllegalArgumentException("Schema metadata not found for connection: " + connectionId);
+            errors.add("Schema metadata not found for connection: " + connectionId);
+            return new ArrayList<>();
+        }
+
+        SchemaMetadata schemaMetadata = schemaMetadataOpt.get();
+        List<String> existingSchemas = schemaMetadata.schemas();
+
+        return schemaNames.stream()
+                .filter(existingSchemas::contains)
+                .collect(Collectors.toList());
+    }
+
+    private List<TableMetadata> getExistingTables(Long connectionId, List<String> tableNames, List<String> errors) {
+        if (tableNames == null || tableNames.isEmpty()) {
+            errors.add("Table names must be specified for TABLE scope");
+            return new ArrayList<>();
+        }
+
+        Optional<SchemaMetadata> schemaMetadataOpt = schemaMetadataService.getSchemaMetadata(connectionId);
+        if (schemaMetadataOpt.isEmpty()) {
+            errors.add("Schema metadata not found for connection: " + connectionId);
+            return new ArrayList<>();
         }
 
         SchemaMetadata schemaMetadata = schemaMetadataOpt.get();
         List<TableMetadata> allTables = schemaMetadata.tables();
 
-        switch (request.scope()) {
-            case CONNECTION:
-                return filterSystemTables(allTables, request.includeSystemTables());
+        return allTables.stream()
+                .filter(table -> {
+                    String fullTableName = table.schema() + "." + table.tableName();
+                    String tableName = table.tableName();
 
-            case SCHEMA:
-                if (request.schemaNames() == null || request.schemaNames().isEmpty()) {
-                    throw new IllegalArgumentException("Schema names must be specified for SCHEMA scope");
-                }
-                return allTables.stream()
-                        .filter(table -> request.schemaNames().contains(table.schema()))
-                        .collect(Collectors.toList());
-
-            case TABLE:
-                if (request.tableNames() == null || request.tableNames().isEmpty()) {
-                    throw new IllegalArgumentException("Table names must be specified for TABLE scope");
-                }
-                return allTables.stream()
-                        .filter(table -> request.tableNames().contains(table.schema() + "." + table.tableName()))
-                        .collect(Collectors.toList());
-
-            default:
-                throw new IllegalArgumentException("Unknown bulk permission scope: " + request.scope());
-        }
-    }
-
-    private List<TableMetadata> filterSystemTables(
-            List<TableMetadata> tables,
-            boolean includeSystemTables
-    ) {
-        if (includeSystemTables) {
-            return tables;
-        }
-
-        // Filter out common system schemas
-        return tables.stream()
-                .filter(table -> !isSystemSchema(table.schema()))
+                    // "スキーマ名.テーブル名" または "テーブル名" のどちらでもマッチする
+                    return tableNames.contains(fullTableName) || tableNames.contains(tableName);
+                })
                 .collect(Collectors.toList());
     }
 
-    private boolean isSystemSchema(String schemaName) {
-        String schema = schemaName.toLowerCase();
-        return schema.equals("information_schema") ||
-                schema.equals("performance_schema") ||
-                schema.equals("mysql") ||
-                schema.equals("sys") ||
-                schema.equals("pg_catalog") ||
-                schema.equals("pg_toast") ||
-                schema.startsWith("pg_temp");
+    // ==============================================
+    // CONNECTION レベル権限処理
+    // ==============================================
+
+    private PermissionBulkCounts grantConnectionLevelPermissions(
+            List<UserEntity> targetUsers,
+            Long connectionId,
+            List<PermissionType> permissionTypes,
+            String description,
+            String currentUserEmail,
+            List<String> errors
+    ) {
+        int createdPermissions = 0;
+        int updatedPermissions = 0;
+        int skippedExisting = 0;
+
+        for (UserEntity user : targetUsers) {
+            for (PermissionType permissionType : permissionTypes) {
+                PermissionProcessResult result = processConnectionPermission(
+                        user, connectionId, permissionType, description, currentUserEmail, errors
+                );
+                createdPermissions += result.createdPermissions();
+                updatedPermissions += result.updatedPermissions();
+                skippedExisting += result.skippedExisting();
+            }
+        }
+
+        return new PermissionBulkCounts(1, createdPermissions, updatedPermissions, skippedExisting);
+    }
+
+    private PermissionProcessResult processConnectionPermission(
+            UserEntity user,
+            Long connectionId,
+            PermissionType permissionType,
+            String description,
+            String currentUserEmail,
+            List<String> errors
+    ) {
+        // Check if permission already exists (regardless of granted status or expiration)
+        Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findPermissionByScope(
+                user.getId(), connectionId, PermissionScope.CONNECTION,
+                permissionType, null, null, null
+        );
+
+        if (existingPermission.isPresent()) {
+            UserPermissionEntity existing = existingPermission.get();
+            if (existing.getGranted()) {
+                return new PermissionProcessResult(0, 0, 1); // skipped
+            } else {
+                // granted=falseをtrueに更新
+                existing.setGranted(true);
+                existing.setComment(description);
+                existing.setGrantedBy(currentUserEmail);
+                existing.setGrantedAt(LocalDateTime.now());
+                userPermissionRepository.save(existing);
+                return new PermissionProcessResult(0, 1, 0); // updated
+            }
+        }
+
+        // Create new connection-level permission
+        UserPermissionEntity permission = new UserPermissionEntity();
+        permission.setUser(user);
+        permission.setConnectionId(connectionId);
+        permission.setPermissionType(permissionType);
+        permission.setScope(PermissionScope.CONNECTION);
+        permission.setSchemaName(null);
+        permission.setTableName(null);
+        permission.setColumnName(null);
+        permission.setGranted(true);
+        permission.setComment(description);
+        permission.setGrantedBy(currentUserEmail);
+        permission.setGrantedAt(LocalDateTime.now());
+
+        try {
+            userPermissionRepository.save(permission);
+            return new PermissionProcessResult(1, 0, 0); // created
+        } catch (DataIntegrityViolationException e) {
+            logger.warn("Constraint violation creating {} permission for user {} on connection: {}",
+                    permissionType, user.getEmail(), e.getMessage());
+            errors.add(String.format("Failed to grant %s permission to %s for connection due to constraint violation: %s",
+                    permissionType, user.getEmail(), e.getMessage()));
+            return new PermissionProcessResult(0, 0, 0); // error
+        }
+    }
+
+    // ==============================================
+    // SCHEMA レベル権限処理
+    // ==============================================
+
+    private PermissionBulkCounts grantSchemaLevelPermissions(
+            List<UserEntity> targetUsers,
+            Long connectionId,
+            List<String> schemaNames,
+            List<PermissionType> permissionTypes,
+            String description,
+            String currentUserEmail,
+            List<String> errors
+    ) {
+        List<String> existingSchemas = getExistingSchemas(connectionId, schemaNames, errors);
+        if (existingSchemas.isEmpty()) {
+            if (errors.isEmpty()) {
+                errors.add("No existing schemas found matching the specified schema names");
+            }
+            return new PermissionBulkCounts(0, 0, 0, 0);
+        }
+
+        int processedSchemas = existingSchemas.size();
+        int createdPermissions = 0;
+        int updatedPermissions = 0;
+        int skippedExisting = 0;
+
+        for (UserEntity user : targetUsers) {
+            for (String schemaName : existingSchemas) {
+                for (PermissionType permissionType : permissionTypes) {
+                    PermissionProcessResult result = processSchemaPermission(
+                            user, connectionId, permissionType, schemaName, description, currentUserEmail, errors
+                    );
+                    createdPermissions += result.createdPermissions();
+                    updatedPermissions += result.updatedPermissions();
+                    skippedExisting += result.skippedExisting();
+                }
+            }
+        }
+
+        return new PermissionBulkCounts(processedSchemas, createdPermissions, updatedPermissions, skippedExisting);
+    }
+
+    private PermissionProcessResult processSchemaPermission(
+            UserEntity user,
+            Long connectionId,
+            PermissionType permissionType,
+            String schemaName,
+            String description,
+            String currentUserEmail,
+            List<String> errors
+    ) {
+        // Check if permission already exists (regardless of granted status or expiration)
+        Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findPermissionByScope(
+                user.getId(), connectionId, PermissionScope.SCHEMA,
+                permissionType, schemaName, null, null
+        );
+
+        if (existingPermission.isPresent()) {
+            UserPermissionEntity existing = existingPermission.get();
+            if (existing.getGranted()) {
+                return new PermissionProcessResult(0, 0, 1); // skipped
+            } else {
+                // granted=falseをtrueに更新
+                existing.setGranted(true);
+                existing.setComment(description);
+                existing.setGrantedBy(currentUserEmail);
+                existing.setGrantedAt(LocalDateTime.now());
+                userPermissionRepository.save(existing);
+                return new PermissionProcessResult(0, 1, 0); // updated
+            }
+        }
+
+        // Create new schema-level permission
+        UserPermissionEntity permission = new UserPermissionEntity();
+        permission.setUser(user);
+        permission.setConnectionId(connectionId);
+        permission.setPermissionType(permissionType);
+        permission.setScope(PermissionScope.SCHEMA);
+        permission.setSchemaName(schemaName);
+        permission.setTableName(null);
+        permission.setColumnName(null);
+        permission.setGranted(true);
+        permission.setComment(description);
+        permission.setGrantedBy(currentUserEmail);
+        permission.setGrantedAt(LocalDateTime.now());
+
+        try {
+            userPermissionRepository.save(permission);
+            return new PermissionProcessResult(1, 0, 0); // created
+        } catch (DataIntegrityViolationException e) {
+            logger.warn("Constraint violation creating {} permission for user {} on schema {}: {}",
+                    permissionType, user.getEmail(), schemaName, e.getMessage());
+            errors.add(String.format("Failed to grant %s permission to %s for schema %s due to constraint violation: %s",
+                    permissionType, user.getEmail(), schemaName, e.getMessage()));
+            return new PermissionProcessResult(0, 0, 0); // error
+        }
+    }
+
+    // ==============================================
+    // TABLE レベル権限処理
+    // ==============================================
+
+    private PermissionBulkCounts grantTableLevelPermissions(
+            List<UserEntity> targetUsers,
+            Long connectionId,
+            List<String> tableNames,
+            List<PermissionType> permissionTypes,
+            String description,
+            String currentUserEmail,
+            List<String> errors
+    ) {
+        List<TableMetadata> existingTables = getExistingTables(connectionId, tableNames, errors);
+        if (existingTables.isEmpty()) {
+            if (errors.isEmpty()) {
+                errors.add("No existing tables found matching the specified table names");
+            }
+            return new PermissionBulkCounts(0, 0, 0, 0);
+        }
+
+        int processedTables = existingTables.size();
+        int createdPermissions = 0;
+        int updatedPermissions = 0;
+        int skippedExisting = 0;
+
+        for (UserEntity user : targetUsers) {
+            for (TableMetadata table : existingTables) {
+                for (PermissionType permissionType : permissionTypes) {
+                    PermissionProcessResult result = processTablePermission(
+                            user, permissionType, table, connectionId, description, currentUserEmail, errors
+                    );
+                    createdPermissions += result.createdPermissions();
+                    updatedPermissions += result.updatedPermissions();
+                    skippedExisting += result.skippedExisting();
+                }
+            }
+        }
+
+        return new PermissionBulkCounts(processedTables, createdPermissions, updatedPermissions, skippedExisting);
+    }
+
+    private PermissionProcessResult processTablePermission(
+            UserEntity user,
+            PermissionType permissionType,
+            TableMetadata table,
+            Long connectionId,
+            String description,
+            String currentUserEmail,
+            List<String> errors
+    ) {
+        String target = table.schema() + "." + table.tableName();
+
+        // Check if permission already exists (regardless of granted status or expiration)
+        Optional<UserPermissionEntity> existingPermission = userPermissionRepository.findPermissionByScope(
+                user.getId(), connectionId, PermissionScope.TABLE, permissionType,
+                table.schema(), table.tableName(), null
+        );
+
+        if (existingPermission.isPresent()) {
+            UserPermissionEntity existing = existingPermission.get();
+            if (existing.getGranted()) {
+                return new PermissionProcessResult(0, 0, 1); // skipped
+            } else {
+                // granted=falseをtrueに更新
+                existing.setGranted(true);
+                existing.setComment(description);
+                existing.setGrantedBy(currentUserEmail);
+                existing.setGrantedAt(LocalDateTime.now());
+                userPermissionRepository.save(existing);
+                return new PermissionProcessResult(0, 1, 0); // updated
+            }
+        }
+
+        // Create new table-level permission
+        UserPermissionEntity permission = new UserPermissionEntity();
+        permission.setUser(user);
+        permission.setConnectionId(connectionId);
+        permission.setPermissionType(permissionType);
+        permission.setScope(PermissionScope.TABLE);
+        permission.setSchemaName(table.schema());
+        permission.setTableName(table.tableName());
+        permission.setColumnName(null);
+        permission.setGranted(true);
+        permission.setComment(description);
+        permission.setGrantedBy(currentUserEmail);
+        permission.setGrantedAt(LocalDateTime.now());
+
+        try {
+            userPermissionRepository.save(permission);
+            return new PermissionProcessResult(1, 0, 0); // created
+        } catch (DataIntegrityViolationException e) {
+            logger.warn("Constraint violation creating {} permission for user {} on {}: {}",
+                    permissionType, user.getEmail(), target, e.getMessage());
+            errors.add(String.format("Failed to grant %s permission to %s for %s due to constraint violation: %s",
+                    permissionType, user.getEmail(), target, e.getMessage()));
+            return new PermissionProcessResult(0, 0, 0); // error
+        }
+    }
+
+    // ==============================================
+    // データ型定義
+    // ==============================================
+
+    /**
+     * カウント情報を保持するレコード
+     */
+    private record PermissionBulkCounts(
+            int processedItems,
+            int createdPermissions,
+            int updatedPermissions,
+            int skippedExisting
+    ) {
+    }
+
+    /**
+     * 単一権限処理結果を保持するレコード
+     */
+    private record PermissionProcessResult(
+            int createdPermissions,
+            int updatedPermissions,
+            int skippedExisting
+    ) {
     }
 
 }

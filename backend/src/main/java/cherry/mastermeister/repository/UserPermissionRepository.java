@@ -61,6 +61,21 @@ public interface UserPermissionRepository extends JpaRepository<UserPermissionEn
             SELECT p FROM UserPermissionEntity p
             WHERE
                 p.user.id = :userId AND p.connectionId = :connectionId
+                AND p.scope = :scope AND p.permissionType = :permissionType
+                AND ((:schemaName IS NULL AND p.schemaName IS NULL) OR p.schemaName = :schemaName)
+                AND ((:tableName  IS NULL AND p.tableName  IS NULL) OR p.tableName  = :tableName)
+                AND ((:columnName IS NULL AND p.columnName IS NULL) OR p.columnName = :columnName)
+            """)
+    Optional<UserPermissionEntity> findPermissionByScope(
+            Long userId, Long connectionId, PermissionScope scope,
+            PermissionType permissionType,
+            String schemaName, String tableName, String columnName
+    );
+
+    @Query("""
+            SELECT p FROM UserPermissionEntity p
+            WHERE
+                p.user.id = :userId AND p.connectionId = :connectionId
                 AND p.grantedAt <= CURRENT_TIMESTAMP
                 AND (p.expiresAt IS NULL OR p.expiresAt > CURRENT_TIMESTAMP)
                 ORDER BY p.scope ASC, p.schemaName ASC, p.tableName ASC, p.columnName ASC
