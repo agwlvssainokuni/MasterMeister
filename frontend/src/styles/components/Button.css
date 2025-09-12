@@ -101,3 +101,33 @@
 .button-full {
   width: 100%;
 }
+
+/* ファイル選択ボタン（labelをbuttonスタイルに）*/
+.file-input-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family);
+  background-color: var(--color-secondary);
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  line-height: 1;
+  min-width: 200px;
+}
+
+.file-input-label:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
+.file-input-label:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+}

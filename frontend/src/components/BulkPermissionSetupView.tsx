@@ -96,7 +96,7 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
 
         <div className="setup-form">
           <div className="form-group">
-            <label>{t('permissions.bulkSetup.permissionType')}</label>
+            <label className="form-label">{t('permissions.bulkSetup.permissionType')}</label>
             <div className="checkbox-group">
               {(['read', 'write', 'delete'] as BulkPermissionType[]).map(type => (
                 <label key={type} className="checkbox-label">
@@ -118,7 +118,7 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
           </div>
 
           <div className="form-group">
-            <label>{t('permissions.bulkSetup.scope')}</label>
+            <label className="form-label">{t('permissions.bulkSetup.scope')}</label>
             <div className="radio-group">
               {(['CONNECTION', 'SCHEMA', 'TABLE'] as BulkPermissionScope[]).map(scope => (
                 <label key={scope} className="radio-label">
@@ -137,7 +137,7 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
 
           {selectedScope === 'SCHEMA' && (
             <div className="form-group">
-              <label htmlFor="schema-names">{t('permissions.bulkSetup.schemaNames')}</label>
+              <label htmlFor="schema-names" className="form-label">{t('permissions.bulkSetup.schemaNames')}</label>
               <textarea
                 id="schema-names"
                 value={schemaNames}
@@ -154,7 +154,7 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
 
           {selectedScope === 'TABLE' && (
             <div className="form-group">
-              <label htmlFor="table-names">{t('permissions.bulkSetup.tableNames')}</label>
+              <label htmlFor="table-names" className="form-label">{t('permissions.bulkSetup.tableNames')}</label>
               <textarea
                 id="table-names"
                 value={tableNames}
@@ -170,7 +170,7 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
           )}
 
           <div className="form-group">
-            <label htmlFor="user-emails">{t('permissions.bulkSetup.userEmails')}</label>
+            <label htmlFor="user-emails" className="form-label">{t('permissions.bulkSetup.userEmails')}</label>
             <textarea
               id="user-emails"
               value={userEmails}
@@ -185,7 +185,7 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
           </div>
 
           <div className="form-group">
-            <label htmlFor="description">{t('permissions.bulkSetup.description')}</label>
+            <label htmlFor="description" className="form-label">{t('permissions.bulkSetup.description')}</label>
             <input
               id="description"
               type="text"

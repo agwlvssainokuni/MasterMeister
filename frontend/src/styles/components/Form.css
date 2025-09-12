@@ -42,7 +42,7 @@
 .form-label {
   display: block;
   margin-bottom: var(--spacing-sm);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
 }
@@ -159,4 +159,24 @@
   background-color: rgba(220, 53, 69, 0.1);
   border: var(--border-width) solid var(--color-error);
   border-radius: var(--border-radius-sm);
+}
+
+/* ファイル入力要素の非表示 */
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ファイル入力ラッパー */
+.file-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
 }

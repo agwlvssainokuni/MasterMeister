@@ -491,8 +491,8 @@
     "connectionInfo": "{{host}}:{{port}} ({{type}})",
     "tabs": {
       "bulkSetup": "一括権限設定",
-      "export": "エクスポート",
-      "import": "インポート"
+      "export": "権限設定エクスポート",
+      "import": "権限設定インポート"
     },
     "exportTitle": "権限設定エクスポート",
     "exportDescription": "現在の権限設定をYAML設定ファイルとしてダウンロードします",
@@ -631,7 +631,7 @@
       "importSuccess": "{{connection}}の権限をインポートしました: ユーザー{{users}}件、テンプレート{{templates}}件、権限{{permissions}}件",
       "importError": "権限のインポートに失敗しました",
       "validateSuccess": "YAMLファイルは有効です",
-      "validateError": "YAML検証エラー: {{message}}",
+      "validateError": "YAML検証エラー",
       "bulkGrantSuccess": "一括権限を正常に適用しました: ユーザー{{users}}件、テーブル{{tables}}件、権限{{permissions}}件",
       "bulkGrantError": "一括権限の適用に失敗しました"
     }

@@ -16,6 +16,7 @@
 
 import React, {useRef, useState} from 'react'
 import {useTranslation} from 'react-i18next'
+import {IoCheckmarkCircle, IoClose, IoCloseCircle, IoDocument, IoWarning} from 'react-icons/io5'
 import {BulkPermissionSetupView} from './BulkPermissionSetupView'
 import {BulkPermissionConfirmModal} from './BulkPermissionConfirmModal'
 import type {
@@ -186,21 +187,16 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
 
         {activeTab === 'bulkSetup' && !onBulkGrant && (
           <div className="feature-notice">
-            <span className="notice-icon">⚠️</span>
+            <IoWarning className="notice-icon warning-color"/>
             <span>{t('permissions.quickSetupNotAvailable')}</span>
           </div>
         )}
 
         {activeTab === 'export' && (
           <div className="export-section">
-            <h4>{t('permissions.exportTitle')}</h4>
-            <p className="section-description">
-              {t('permissions.exportDescription')}
-            </p>
-
             <div className="export-form">
               <div className="form-group">
-                <label htmlFor="export-description">
+                <label htmlFor="export-description" className="form-label">
                   {t('permissions.exportDescriptionLabel')}
                 </label>
                 <input
@@ -209,7 +205,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                   value={exportDescription}
                   onChange={(e) => setExportDescription(e.target.value)}
                   placeholder={t('permissions.exportDescriptionPlaceholder')}
-                  className="text-input"
+                  className="form-input"
                 />
                 <small className="form-hint">
                   {t('permissions.exportDescriptionHint')}
@@ -221,7 +217,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                 onClick={handleExport}
                 disabled={loading}
               >
-                {loading ? t('permissions.exporting') : t('permissions.actions.export')}
+                {loading ? t('permissions.exporting') : t('permissions.exportTitle')}
               </button>
             </div>
           </div>
@@ -229,11 +225,6 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
 
         {activeTab === 'import' && (
           <div className="import-section">
-            <h4>{t('permissions.importTitle')}</h4>
-            <p className="section-description">
-              {t('permissions.importDescription')}
-            </p>
-
             <div className="file-upload-section">
               <div className="file-input-wrapper">
                 <input
@@ -245,14 +236,16 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                   id="permission-file"
                 />
                 <label htmlFor="permission-file" className="file-input-label">
-                  📄 {selectedFile ? selectedFile.name : t('permissions.selectFile')}
+                  <IoDocument className="file-icon"/>
+                  {selectedFile ? selectedFile.name : t('permissions.selectFile')}
                 </label>
                 {selectedFile && (
                   <button
                     className="button button-secondary button-sm"
                     onClick={clearFile}
                   >
-                    ✕ {t('common.clear')}
+                    <IoClose className="clear-icon"/>
+                    {t('common.clear')}
                   </button>
                 )}
               </div>
@@ -273,11 +266,13 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
             {validationResult && (
               <div className={`validation-result ${validationResult.valid ? 'success' : 'error'}`}>
                 <div className="result-header">
-                  <span className="result-icon">
-                    {validationResult.valid ? '✅' : '❌'}
-                  </span>
+                  {validationResult.valid ? (
+                    <IoCheckmarkCircle className="result-icon success-color"/>
+                  ) : (
+                    <IoCloseCircle className="result-icon error-color"/>
+                  )}
                   <span className="result-message">
-                    {validationResult.message}
+                    {validationResult.valid ? t('permissions.validateSuccess') : t('permissions.validateError')}
                   </span>
                 </div>
                 {validationResult.valid && (
@@ -287,13 +282,18 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                       <span className="stat-label">{t('permissions.userCount')}</span>
                     </div>
                     <div className="stat-item">
-                      <span className="stat-value">{validationResult.templateCount}</span>
-                      <span className="stat-label">{t('permissions.templateCount')}</span>
-                    </div>
-                    <div className="stat-item">
                       <span className="stat-value">{validationResult.totalPermissions}</span>
                       <span className="stat-label">{t('permissions.totalPermissions')}</span>
                     </div>
+                    <div className="stat-item">
+                      <span className="stat-value">{validationResult.templateCount}</span>
+                      <span className="stat-label">{t('permissions.templateCount')}</span>
+                    </div>
+                  </div>
+                )}
+                {validationResult.message && (
+                  <div className="api-message">
+                    {validationResult.message}
                   </div>
                 )}
               </div>
@@ -301,55 +301,55 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
 
             {validationResult?.valid && (
               <div className="import-options">
-                <h5>{t('permissions.importOptions')}</h5>
+                <label className="form-label">{t('permissions.importOptions')}</label>
 
                 <div className="options-grid">
-                  <label className="checkbox-option">
-                    <input
-                      type="checkbox"
-                      checked={importOptions.importUsers}
-                      onChange={(e) => setImportOptions(prev => ({
-                        ...prev,
-                        importUsers: e.target.checked
-                      }))}
-                    />
-                    <span className="checkbox-label">
-                      {t('permissions.options.importUsers')}
-                    </span>
-                  </label>
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={importOptions.importUsers}
+                        onChange={(e) => setImportOptions(prev => ({
+                          ...prev,
+                          importUsers: e.target.checked
+                        }))}
+                      />
+                      <span>{t('permissions.options.importUsers')}</span>
+                    </label>
+                  </div>
 
-                  <label className="checkbox-option">
-                    <input
-                      type="checkbox"
-                      checked={importOptions.importTemplates}
-                      onChange={(e) => setImportOptions(prev => ({
-                        ...prev,
-                        importTemplates: e.target.checked
-                      }))}
-                    />
-                    <span className="checkbox-label">
-                      {t('permissions.options.importTemplates')}
-                    </span>
-                  </label>
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={importOptions.importTemplates}
+                        onChange={(e) => setImportOptions(prev => ({
+                          ...prev,
+                          importTemplates: e.target.checked
+                        }))}
+                      />
+                      <span>{t('permissions.options.importTemplates')}</span>
+                    </label>
+                  </div>
 
-                  <label className="checkbox-option">
-                    <input
-                      type="checkbox"
-                      checked={importOptions.clearExistingPermissions}
-                      onChange={(e) => setImportOptions(prev => ({
-                        ...prev,
-                        clearExistingPermissions: e.target.checked
-                      }))}
-                    />
-                    <span className="checkbox-label">
-                      {t('permissions.options.clearExistingPermissions')}
-                    </span>
-                  </label>
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={importOptions.clearExistingPermissions}
+                        onChange={(e) => setImportOptions(prev => ({
+                          ...prev,
+                          clearExistingPermissions: e.target.checked
+                        }))}
+                      />
+                      <span>{t('permissions.options.clearExistingPermissions')}</span>
+                    </label>
+                  </div>
 
-                  <div className="radio-group">
-                    <label className="radio-group-title">{t('permissions.options.duplicateHandling')}</label>
-                    <div className="radio-options">
-                      <label className="radio-option">
+                  <div className="form-group">
+                    <label className="form-label">{t('permissions.options.duplicateHandling')}</label>
+                    <div className="radio-group">
+                      <label className="radio-label">
                         <input
                           type="radio"
                           name="duplicateHandling"
@@ -362,7 +362,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                         />
                         <span>{t('permissions.options.duplicateHandlingError')}</span>
                       </label>
-                      <label className="radio-option">
+                      <label className="radio-label">
                         <input
                           type="radio"
                           name="duplicateHandling"
@@ -375,7 +375,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                         />
                         <span>{t('permissions.options.duplicateHandlingSkip')}</span>
                       </label>
-                      <label className="radio-option">
+                      <label className="radio-label">
                         <input
                           type="radio"
                           name="duplicateHandling"
@@ -398,7 +398,7 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
                     onClick={handleImport}
                     disabled={loading}
                   >
-                    {loading ? t('permissions.importing') : t('permissions.actions.import')}
+                    {loading ? t('permissions.importing') : t('permissions.importTitle')}
                   </button>
                 </div>
               </div>
@@ -408,9 +408,11 @@ export const PermissionManagementView: React.FC<PermissionManagementViewProps> =
               <div
                 className={`import-result ${importResult.errors.length > 0 && importResult.importedPermissions === 0 && importResult.updatedPermissions === 0 ? 'error' : 'success'}`}>
                 <div className="result-header">
-                  <span className="result-icon">
-                    {importResult.errors.length > 0 && importResult.importedPermissions === 0 ? '❌' : '✅'}
-                  </span>
+                  {importResult.errors.length > 0 && importResult.importedPermissions === 0 ? (
+                    <IoCloseCircle className="result-icon error-color"/>
+                  ) : (
+                    <IoCheckmarkCircle className="result-icon success-color"/>
+                  )}
                   <span className="result-message">
                     {importResult.errors.length > 0 && importResult.importedPermissions === 0
                       ? t('permissions.importFailed')

@@ -491,8 +491,8 @@
     "connectionInfo": "{{host}}:{{port}} ({{type}})",
     "tabs": {
       "bulkSetup": "Bulk Permission Setup",
-      "export": "Export",
-      "import": "Import"
+      "export": "Permission Export",
+      "import": "Permission Import"
     },
     "exportTitle": "Export Permissions",
     "exportDescription": "Download current permission settings as YAML configuration file",
@@ -631,7 +631,7 @@
       "importSuccess": "Imported permissions for {{connection}}: {{users}} users, {{templates}} templates, {{permissions}} permissions",
       "importError": "Failed to import permissions",
       "validateSuccess": "YAML file is valid",
-      "validateError": "YAML validation failed: {{message}}",
+      "validateError": "YAML validation failed",
       "bulkGrantSuccess": "Bulk permissions applied successfully: {{users}} users, {{tables}} tables, {{permissions}} permissions",
       "bulkGrantError": "Failed to apply bulk permissions"
     }
