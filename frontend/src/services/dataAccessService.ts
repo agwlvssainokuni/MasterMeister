@@ -145,7 +145,7 @@ class DataAccessService {
     data: RecordUpdateData
   ): Promise<RecordUpdateResponse> {
     const requestBody: RecordUpdateRequest = {
-      updateData: data.updateData,
+      data: data.updateData,
       whereConditions: data.whereConditions
     }
 
@@ -168,7 +168,8 @@ class DataAccessService {
     data: RecordDeleteData
   ): Promise<RecordDeleteResponse> {
     const requestBody: RecordDeleteRequest = {
-      whereConditions: data.whereConditions
+      whereConditions: data.whereConditions,
+      skipReferentialIntegrityCheck: false
     }
 
     const response = await apiClient.post<ApiResponse<ApiRecordDeleteResponse>>(

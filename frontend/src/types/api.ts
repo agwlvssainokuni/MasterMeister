@@ -194,7 +194,7 @@ export interface RecordCreateResponse {
 }
 
 export interface RecordUpdateRequest {
-  updateData: Record<string, unknown>
+  data: Record<string, unknown>
   whereConditions: Record<string, unknown>
 }
 
@@ -206,6 +206,7 @@ export interface RecordUpdateResponse {
 
 export interface RecordDeleteRequest {
   whereConditions: Record<string, unknown>
+  skipReferentialIntegrityCheck: boolean
 }
 
 export interface RecordDeleteResponse {
