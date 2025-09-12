@@ -182,6 +182,7 @@ export const RecordEditModal: React.FC<RecordEditModalProps> = (
         <input
           type="checkbox"
           id={column.columnName}
+          className="form-input"
           checked={Boolean(value)}
           onChange={(e) => handleInputChange(column.columnName, e.target.checked)}
           disabled={loading}
@@ -193,6 +194,7 @@ export const RecordEditModal: React.FC<RecordEditModalProps> = (
       return (
         <textarea
           id={column.columnName}
+          className={`form-textarea ${errors[column.columnName] ? 'error' : ''}`}
           value={value}
           onChange={(e) => handleInputChange(column.columnName, e.target.value)}
           disabled={loading || (column.autoIncrement && mode === 'create')}
@@ -205,6 +207,7 @@ export const RecordEditModal: React.FC<RecordEditModalProps> = (
       <input
         type={inputType}
         id={column.columnName}
+        className={`form-input ${errors[column.columnName] ? 'error' : ''}`}
         value={value}
         onChange={(e) => handleInputChange(column.columnName, e.target.value)}
         disabled={loading || (column.autoIncrement && mode === 'create')}
@@ -216,8 +219,8 @@ export const RecordEditModal: React.FC<RecordEditModalProps> = (
   if (!isOpen) return null
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-content record-edit-modal">
+    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal modal-lg record-edit-modal">
         <div className="modal-header">
           <h3>
             {mode === 'create'
@@ -228,10 +231,10 @@ export const RecordEditModal: React.FC<RecordEditModalProps> = (
           <button type="button" className="modal-close" onClick={onClose}>×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-body">
+        <form onSubmit={handleSubmit} className="modal-body form">
           <div className="form-fields">
             {columns.map(column => (
-              <div key={column.columnName} className="form-field">
+              <div key={column.columnName} className="form-group">
                 <label htmlFor={column.columnName} className="form-label">
                   <span className="field-name">{column.columnName}</span>
                   <span className="field-info">
@@ -245,11 +248,11 @@ export const RecordEditModal: React.FC<RecordEditModalProps> = (
                 {renderInput(column)}
 
                 {errors[column.columnName] && (
-                  <span className="field-error">{errors[column.columnName]}</span>
+                  <span className="error-message">{errors[column.columnName]}</span>
                 )}
 
                 {column.comment && (
-                  <span className="field-comment">{column.comment}</span>
+                  <span className="form-hint">{column.comment}</span>
                 )}
               </div>
             ))}

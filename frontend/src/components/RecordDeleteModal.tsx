@@ -99,8 +99,8 @@ export const RecordDeleteModal: React.FC<RecordDeleteModalProps> = (
   if (!isOpen) return null
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-content record-delete-modal">
+    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal modal-confirm record-delete-modal">
         <div className="modal-header">
           <h3>{t('recordDelete.title')}</h3>
           <button type="button" className="modal-close" onClick={onClose}>×</button>
@@ -150,7 +150,7 @@ export const RecordDeleteModal: React.FC<RecordDeleteModalProps> = (
         <div className="modal-footer">
           <button
             type="button"
-            className="btn btn-secondary"
+            className="button button-secondary"
             onClick={onClose}
             disabled={loading}
           >
@@ -158,7 +158,7 @@ export const RecordDeleteModal: React.FC<RecordDeleteModalProps> = (
           </button>
           <button
             type="button"
-            className="btn btn-danger"
+            className="button button-danger"
             onClick={handleDelete}
             disabled={loading}
           >
