@@ -104,7 +104,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({child
               {notification.title && (
                 <div className="notification-title">{notification.title}</div>
               )}
-              <div className="notification-message">{notification.message}</div>
+              <div className="notification-message" dangerouslySetInnerHTML={{__html: notification.message}}></div>
             </div>
             <button
               className="notification-close"

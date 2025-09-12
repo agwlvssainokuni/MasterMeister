@@ -563,12 +563,17 @@
     "bulkSetup": {
       "permissionType": "権限種別",
       "scope": "権限範囲",
+      "schemaNames": "スキーマ名",
+      "schemaNamesPlaceholder": "schema1, schema2, schema3",
+      "schemaNamesHint": "スキーマ名をカンマ区切りで入力",
+      "tableNames": "テーブル名",
+      "tableNamesPlaceholder": "schema1.table1, schema2.table2",
+      "tableNamesHint": "テーブル名をスキーマ名.テーブル名の形式でカンマ区切りで入力",
       "userEmails": "ユーザーメールアドレス",
       "userEmailsPlaceholder": "user1@example.com, user2@example.com",
       "userEmailsHint": "メールアドレスをカンマ区切りで入力、または空欄で全アクティブユーザー対象",
       "description": "説明",
       "descriptionPlaceholder": "一括権限設定",
-      "includeSystemTables": "システムテーブルを含む",
       "apply": "権限適用",
       "result": "実行結果",
       "defaultDescription": {
@@ -590,9 +595,12 @@
     "bulkResult": {
       "processedUsers": "処理ユーザー数",
       "processedTables": "処理テーブル数",
+      "processedItems": "処理項目数",
       "createdPermissions": "作成権限数",
       "updatedPermissions": "更新権限数",
       "skippedExisting": "スキップ済み権限数",
+      "completedSuccessfully": "権限適用が正常に完了しました",
+      "completedWithErrors": "権限適用が完了しましたが、エラーがあります",
       "errors": "エラー"
     },
     "confirmDialog": {

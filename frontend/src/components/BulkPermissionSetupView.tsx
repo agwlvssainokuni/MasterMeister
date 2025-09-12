@@ -51,7 +51,6 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
   const [schemaNames, setSchemaNames] = useState('')
   const [tableNames, setTableNames] = useState('')
   const [description, setDescription] = useState('')
-  const [bulkResult, setBulkResult] = useState<BulkPermissionResult | null>(null)
 
 
   const handleCustomSetup = () => {
@@ -81,8 +80,7 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
 
     onShowConfirmDialog(selectedTypes, options, async () => {
       try {
-        const result = await onBulkGrant(connection.id, options)
-        setBulkResult(result)
+        await onBulkGrant(connection.id, options)
       } catch (error) {
         console.error('Custom bulk permission setup failed:', error)
       }
@@ -121,47 +119,52 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
 
           <div className="form-group">
             <label>{t('permissions.bulkSetup.scope')}</label>
-            <select
-              value={selectedScope}
-              onChange={(e) => setSelectedScope(e.target.value as BulkPermissionScope)}
-              className="form-select"
-            >
-              <option value="CONNECTION">{t('permissions.scopes.connection')}</option>
-              <option value="SCHEMA">{t('permissions.scopes.schema')}</option>
-              <option value="TABLE">{t('permissions.scopes.table')}</option>
-            </select>
+            <div className="radio-group">
+              {(['CONNECTION', 'SCHEMA', 'TABLE'] as BulkPermissionScope[]).map(scope => (
+                <label key={scope} className="radio-label">
+                  <input
+                    type="radio"
+                    name="permission-scope"
+                    value={scope}
+                    checked={selectedScope === scope}
+                    onChange={(e) => setSelectedScope(e.target.value as BulkPermissionScope)}
+                  />
+                  <span>{t(`permissions.scopes.${scope.toLowerCase()}`)}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {selectedScope === 'SCHEMA' && (
             <div className="form-group">
-              <label htmlFor="schema-names">Schema Names</label>
+              <label htmlFor="schema-names">{t('permissions.bulkSetup.schemaNames')}</label>
               <textarea
                 id="schema-names"
                 value={schemaNames}
                 onChange={(e) => setSchemaNames(e.target.value)}
-                placeholder="schema1, schema2, schema3"
+                placeholder={t('permissions.bulkSetup.schemaNamesPlaceholder')}
                 className="form-textarea"
                 rows={2}
               />
               <small className="form-hint">
-                Enter schema names separated by commas
+                {t('permissions.bulkSetup.schemaNamesHint')}
               </small>
             </div>
           )}
 
           {selectedScope === 'TABLE' && (
             <div className="form-group">
-              <label htmlFor="table-names">Table Names</label>
+              <label htmlFor="table-names">{t('permissions.bulkSetup.tableNames')}</label>
               <textarea
                 id="table-names"
                 value={tableNames}
                 onChange={(e) => setTableNames(e.target.value)}
-                placeholder="schema1.table1, schema2.table2"
+                placeholder={t('permissions.bulkSetup.tableNamesPlaceholder')}
                 className="form-textarea"
                 rows={3}
               />
               <small className="form-hint">
-                Enter full table names (schema.table) separated by commas
+                {t('permissions.bulkSetup.tableNamesHint')}
               </small>
             </div>
           )}
@@ -193,58 +196,19 @@ export const BulkPermissionSetupView: React.FC<BulkPermissionSetupViewProps> = (
             />
           </div>
 
-
           <div className="form-actions">
             <button
               className="button button-primary"
               onClick={handleCustomSetup}
-              disabled={loading || selectedTypes.length === 0 || 
-                       (selectedScope === 'SCHEMA' && schemaNames.trim().length === 0) ||
-                       (selectedScope === 'TABLE' && tableNames.trim().length === 0)}
+              disabled={loading || selectedTypes.length === 0 ||
+                (selectedScope === 'SCHEMA' && schemaNames.trim().length === 0) ||
+                (selectedScope === 'TABLE' && tableNames.trim().length === 0)}
             >
               {loading ? t('permissions.applying') : t('permissions.bulkSetup.apply')}
             </button>
           </div>
         </div>
       </div>
-
-      {bulkResult && (
-        <div className="bulk-result">
-          <h5>{t('permissions.bulkSetup.result')}</h5>
-          <div className="result-stats">
-            <div className="stat-item">
-              <span className="stat-value">{bulkResult.processedUsers}</span>
-              <span className="stat-label">{t('permissions.bulkResult.processedUsers')}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">{bulkResult.processedTables}</span>
-              <span className="stat-label">{t('permissions.bulkResult.processedTables')}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">{bulkResult.createdPermissions}</span>
-              <span className="stat-label">{t('permissions.bulkResult.createdPermissions')}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">{bulkResult.updatedPermissions}</span>
-              <span className="stat-label">{t('permissions.bulkResult.updatedPermissions')}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">{bulkResult.skippedExisting}</span>
-              <span className="stat-label">{t('permissions.bulkResult.skippedExisting')}</span>
-            </div>
-          </div>
-          {bulkResult.errors.length > 0 && (
-            <div className="result-errors">
-              <h6>{t('permissions.bulkResult.errors')}</h6>
-              <ul>
-                {bulkResult.errors.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }

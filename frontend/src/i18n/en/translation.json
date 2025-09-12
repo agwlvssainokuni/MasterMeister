@@ -563,12 +563,17 @@
     "bulkSetup": {
       "permissionType": "Permission Type",
       "scope": "Permission Scope",
+      "schemaNames": "Schema Names",
+      "schemaNamesPlaceholder": "schema1, schema2, schema3",
+      "schemaNamesHint": "Enter schema names separated by commas",
+      "tableNames": "Table Names",
+      "tableNamesPlaceholder": "schema1.table1, schema2.table2",
+      "tableNamesHint": "Enter full table names (schema.table) separated by commas",
       "userEmails": "User Email Addresses",
       "userEmailsPlaceholder": "user1@example.com, user2@example.com",
       "userEmailsHint": "Enter email addresses separated by commas, or leave empty for all active users",
       "description": "Description",
       "descriptionPlaceholder": "Bulk permission setup",
-      "includeSystemTables": "Include system tables",
       "apply": "Apply Permissions",
       "result": "Operation Result",
       "defaultDescription": {
@@ -589,10 +594,13 @@
     },
     "bulkResult": {
       "processedUsers": "Processed Users",
-      "processedTables": "Processed Tables",
+      "processedTables": "Processed Tables", 
+      "processedItems": "Processed Items",
       "createdPermissions": "Created Permissions",
       "updatedPermissions": "Updated Permissions",
       "skippedExisting": "Skipped Existing",
+      "completedSuccessfully": "Permission application completed successfully",
+      "completedWithErrors": "Permission application completed with errors",
       "errors": "Errors"
     },
     "confirmDialog": {

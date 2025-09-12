@@ -89,6 +89,16 @@
   margin-top: var(--spacing-xl);
 }
 
+.permission-page .bulk-setup-section .form-group {
+  display: block;
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+}
+
+.permission-page .bulk-setup-section .form-group:last-child {
+  margin-bottom: 0;
+}
+
 /* Checkbox Group for Permission Types */
 .permission-page .checkbox-group {
   display: flex;
@@ -110,4 +120,53 @@
 
 .permission-page .checkbox-group .checkbox-label span {
   user-select: none;
+}
+
+/* Radio Group for Permission Scope */
+.permission-page .radio-group {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-xs);
+}
+
+.permission-page .radio-group .radio-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+}
+
+.permission-page .radio-group .radio-label input[type="radio"] {
+  margin: 0;
+}
+
+.permission-page .radio-group .radio-label span {
+  user-select: none;
+}
+
+/* Bulk Permission Confirm Modal */
+.bulk-permission-confirm-dialog .warning-icon {
+  margin-right: var(--spacing-sm);
+  vertical-align: middle;
+}
+
+.bulk-permission-confirm-dialog .warning-color {
+  color: var(--color-warning);
+}
+
+.bulk-permission-confirm-dialog .security-icon {
+  color: var(--color-primary);
+}
+
+.bulk-permission-confirm-dialog .security-warning {
+  margin-top: var(--spacing-lg);
+}
+
+.bulk-permission-confirm-dialog .confirmation-message {
+  margin-top: var(--spacing-lg);
+}
+
+.bulk-permission-confirm-dialog .security-warning ul {
+  margin: 0;
 }

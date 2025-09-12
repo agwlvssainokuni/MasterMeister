@@ -149,16 +149,36 @@ export const PermissionManagementPage: React.FC = () => {
       setLoading(true)
       const result = await permissionService.bulkGrantPermissions(connectionId, options)
 
-      const connection = connections.find(c => c.id === connectionId)
-      showSuccess(
-        t('permissions.messages.bulkGrantSuccess', {
-          connection: connection?.name || `ID ${connectionId}`,
-          created: result.createdPermissions,
-          skipped: result.skippedExisting,
-          users: result.processedUsers,
-          tables: result.processedTables
-        })
-      )
+      // Build detailed message with HTML formatting
+      const statsLines = [
+        `${t('permissions.bulkResult.processedUsers')}: ${result.processedUsers}`,
+        `${t('permissions.bulkResult.processedItems')}: ${result.processedTables}`,
+        `${t('permissions.bulkResult.createdPermissions')}: ${result.createdPermissions}`,
+        `${t('permissions.bulkResult.updatedPermissions')}: ${result.updatedPermissions}`,
+        `${t('permissions.bulkResult.skippedExisting')}: ${result.skippedExisting}`
+      ]
+
+      if (result.errors.length > 0) {
+        const errorLines = result.errors.map(error => `• ${error}`)
+        const message = [
+          t('permissions.bulkResult.completedWithErrors'),
+          '',
+          ...statsLines,
+          '',
+          `${t('common.errors')} (${result.errors.length}):`,
+          ...errorLines
+        ].join('<br>')
+
+        showError(message)
+      } else {
+        const message = [
+          t('permissions.bulkResult.completedSuccessfully'),
+          '',
+          ...statsLines
+        ].join('<br>')
+
+        showSuccess(message)
+      }
 
       return result
     } catch (error) {

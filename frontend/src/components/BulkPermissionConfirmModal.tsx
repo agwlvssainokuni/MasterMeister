@@ -16,6 +16,7 @@
 
 import React from 'react'
 import {useTranslation} from 'react-i18next'
+import {IoShieldCheckmark, IoWarning} from 'react-icons/io5'
 import type {BulkPermissionOptions, BulkPermissionType} from '../types/frontend'
 
 interface BulkPermissionConfirmModalProps {
@@ -51,7 +52,7 @@ export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProp
       <div className="modal modal-content bulk-permission-confirm-dialog">
         <div className="modal-header">
           <h3 className="modal-title">
-            {isWritePermission && <span className="warning-icon">⚠️</span>}
+            {isWritePermission && <IoWarning className="warning-icon warning-color"/>}
             {t('permissions.confirmDialog.title')}
           </h3>
         </div>
@@ -73,7 +74,7 @@ export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProp
             <div className="detail-row">
               <span className="detail-label">{t('permissions.confirmDialog.scope')}:</span>
               <span className="detail-value">
-                {t(`permissions.scopes.${options.scope}`)}
+                {t(`permissions.scopes.${options.scope.toLowerCase()}`)}
               </span>
             </div>
 
@@ -86,23 +87,14 @@ export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProp
                 }
               </span>
             </div>
-
-            {options.includeSystemTables && (
-              <div className="detail-row">
-                <span className="detail-label">{t('permissions.confirmDialog.systemTables')}:</span>
-                <span className="detail-value included">
-                  {t('permissions.confirmDialog.included')}
-                </span>
-              </div>
-            )}
           </div>
 
           {isWritePermission && (
             <div className="security-warning">
-              <div className="warning-header">
-                <span className="warning-icon">🔐</span>
-                <h4>{t('permissions.confirmDialog.securityWarning')}</h4>
-              </div>
+              <h4 className="warning-header">
+                <IoShieldCheckmark className="warning-icon security-icon"/>
+                {t('permissions.confirmDialog.securityWarning')}
+              </h4>
               <p>
                 {permissionTypes.includes('write') && t('permissions.confirmDialog.writeWarning')}
                 {permissionTypes.includes('delete') && t('permissions.confirmDialog.deleteWarning')}
@@ -138,7 +130,7 @@ export const BulkPermissionConfirmModal: React.FC<BulkPermissionConfirmModalProp
             className={`button ${isWritePermission ? 'button-warning' : 'button-primary'}`}
             onClick={onConfirm}
           >
-            {isWritePermission && <span className="button-icon">⚠️</span>}
+            {isWritePermission && <IoWarning className="button-icon warning-color"/>}
             {t('permissions.confirmDialog.confirmButton')}
           </button>
         </div>
