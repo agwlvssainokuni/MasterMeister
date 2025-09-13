@@ -19,6 +19,42 @@ import {API_BASE_URL, API_ENDPOINTS} from '../config/config'
 import type {ApiResponse, LoginResponse, RefreshTokenRequest} from "../types/api"
 import {isTokenExpiringSoon} from '../utils/jwt'
 
+class TokenManager {
+  private accessToken: string | null = null
+
+  setTokens(accessToken: string, refreshToken: string): void {
+    // アクセストークンはメモリのみに保存（XSS攻撃から保護）
+    this.accessToken = accessToken
+
+    // リフレッシュトークンのみ永続化
+    localStorage.setItem('refreshToken', refreshToken)
+  }
+
+  getAccessToken(): string | null {
+    return this.accessToken
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken')
+  }
+
+  clearTokens(): void {
+    this.accessToken = null
+    localStorage.removeItem('refreshToken')
+  }
+
+  hasValidAccessToken(): boolean {
+    return this.accessToken !== null && !isTokenExpiringSoon(this.accessToken)
+  }
+
+  hasRefreshToken(): boolean {
+    return this.getRefreshToken() !== null
+  }
+}
+
+// シングルトンインスタンス
+const tokenManager = new TokenManager()
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -45,9 +81,14 @@ let isRefreshing = false
 let refreshPromise: Promise<LoginResponse | undefined> | null = null
 
 // Background refresh function
-const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResponse | undefined> => {
+const refreshTokenInBackground = async (): Promise<LoginResponse | undefined> => {
   if (isRefreshing && refreshPromise) {
     return refreshPromise
+  }
+
+  const refreshToken = tokenManager.getRefreshToken()
+  if (!refreshToken) {
+    return undefined
   }
 
   isRefreshing = true
@@ -63,8 +104,9 @@ const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResp
       if (!data) {
         return undefined
       }
-      localStorage.setItem('accessToken', data.accessToken)
-      localStorage.setItem('refreshToken', data.refreshToken)
+
+      // TokenManagerを使用してセキュアに保存
+      tokenManager.setTokens(data.accessToken, data.refreshToken)
 
       // Notify AuthContext of successful refresh
       onTokenRefresh?.(data.accessToken, data.refreshToken)
@@ -73,8 +115,7 @@ const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResp
     } catch (error) {
       console.warn('Background token refresh failed:', error)
       // リフレッシュ失敗時はトークンをクリア
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
+      tokenManager.clearTokens()
       return undefined
     } finally {
       isRefreshing = false
@@ -87,27 +128,32 @@ const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResp
 
 apiClient.interceptors.request.use(
   async (config) => {
-    const token = localStorage.getItem('accessToken')
-    const refreshToken = localStorage.getItem('refreshToken')
+    // 有効なアクセストークンがある場合はそのまま使用
+    if (tokenManager.hasValidAccessToken()) {
+      const token = tokenManager.getAccessToken()
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+    }
 
-    // Proactively refresh if token is expiring soon
-    if (token && refreshToken && isTokenExpiringSoon(token)) {
+    // アクセストークンが期限切れまたは存在しない場合、リフレッシュトークンで取得を試行
+    if (tokenManager.hasRefreshToken()) {
       try {
-        const loginResult = await refreshTokenInBackground(refreshToken)
+        const loginResult = await refreshTokenInBackground()
         if (loginResult?.accessToken) {
           config.headers.Authorization = `Bearer ${loginResult.accessToken}`
           return config
         }
       } catch (error) {
         console.warn('Proactive token refresh failed in request interceptor:', error)
-        // Fall through to use existing token or no token
+        // 認証失敗を通知してログイン画面へ
+        onAuthFailure?.()
+        return Promise.reject(new Error('Authentication required'))
       }
     }
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-
+    // トークンが存在しない場合はそのまま送信（認証不要なエンドポイント用）
     return config
   },
   (error) => Promise.reject(error)
@@ -120,9 +166,8 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       console.warn('Authentication failed:', error.response?.status, error.response?.statusText)
 
-      // Clean up tokens
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
+      // TokenManagerでトークンをクリア
+      tokenManager.clearTokens()
 
       // Notify auth failure for redirect to login
       onAuthFailure?.()
@@ -131,5 +176,8 @@ apiClient.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+// TokenManagerインスタンスをエクスポート（外部からアクセス可能にする）
+export {tokenManager}
 
 export default apiClient
