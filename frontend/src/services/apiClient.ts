@@ -15,16 +15,20 @@
  */
 
 import axios from 'axios'
-import {API_BASE_URL, API_ENDPOINTS} from '../config/config'
+import {API_BASE_URL, API_CONFIG, API_ENDPOINTS} from '../config/config'
 import type {ApiResponse, LoginResponse, RefreshTokenRequest} from "../types/api"
 import {isTokenExpiringSoon} from '../utils/jwt'
 
 class TokenManager {
   private accessToken: string | null = null
+  private tokenValidUntil: number = 0 // トークン検証キャッシュ
 
   setTokens(accessToken: string, refreshToken: string): void {
     // アクセストークンはメモリのみに保存（XSS攻撃から保護）
     this.accessToken = accessToken
+
+    // トークン更新時はキャッシュをクリア
+    this.tokenValidUntil = 0
 
     // リフレッシュトークンのみ永続化
     localStorage.setItem('refreshToken', refreshToken)
@@ -40,11 +44,31 @@ class TokenManager {
 
   clearTokens(): void {
     this.accessToken = null
+    this.tokenValidUntil = 0 // キャッシュもクリア
     localStorage.removeItem('refreshToken')
   }
 
   hasValidAccessToken(): boolean {
-    return this.accessToken !== null && !isTokenExpiringSoon(this.accessToken)
+    if (!this.accessToken) {
+      return false
+    }
+
+    const now = Date.now()
+
+    // キャッシュが有効な場合はキャッシュ結果を使用
+    if (now < this.tokenValidUntil) {
+      return true
+    }
+
+    // トークン検証を実行
+    const isValid = !isTokenExpiringSoon(this.accessToken)
+
+    // 検証結果が有効な場合はキャッシュに保存
+    if (isValid) {
+      this.tokenValidUntil = now + API_CONFIG.VALIDATION_CACHE_DURATION_MS
+    }
+
+    return isValid
   }
 
   hasRefreshToken(): boolean {
@@ -60,7 +84,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30秒タイムアウト
+  timeout: API_CONFIG.DEFAULT_TIMEOUT_MS,
 })
 
 // Callbacks for handling auth events
@@ -97,7 +121,7 @@ const refreshTokenInBackground = async (): Promise<LoginResponse | undefined> =>
       const response = await axios.post<ApiResponse<LoginResponse>>(
         `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
         {refreshToken} as RefreshTokenRequest,
-        {timeout: 10000} // リフレッシュは10秒タイムアウト
+        {timeout: API_CONFIG.REFRESH_TIMEOUT_MS}
       )
 
       const {data} = response.data as ApiResponse<LoginResponse>

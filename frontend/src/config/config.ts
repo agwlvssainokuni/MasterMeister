@@ -16,6 +16,13 @@
 
 export const API_BASE_URL = '/api'
 
+// API Client configuration
+export const API_CONFIG = {
+  DEFAULT_TIMEOUT_MS: 30000,           // 一般APIリクエストタイムアウト（30秒）
+  REFRESH_TIMEOUT_MS: 10000,           // トークンリフレッシュタイムアウト（10秒）
+  VALIDATION_CACHE_DURATION_MS: 10000, // トークン検証キャッシュ持続時間（10秒）
+} as const
+
 // Authentication configuration
 export const AUTH_CONFIG = {
   /**
