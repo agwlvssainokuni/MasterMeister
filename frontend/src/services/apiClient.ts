@@ -24,6 +24,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30秒タイムアウト
 })
 
 // Callbacks for handling auth events
@@ -40,21 +41,28 @@ export const setTokenRefreshHandler = (handler: (accessToken: string, refreshTok
 
 // Global flag to prevent concurrent refresh attempts
 let isRefreshing = false
+// Promise to handle concurrent refresh requests
+let refreshPromise: Promise<LoginResponse | undefined> | null = null
 
 // Background refresh function
 const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResponse | undefined> => {
-  if (isRefreshing) return
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise
+  }
 
   isRefreshing = true
-  try {
-    const response = await axios.post<ApiResponse<LoginResponse>>(
-      `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
-        refreshToken
-      } as RefreshTokenRequest
-    )
+  refreshPromise = (async () => {
+    try {
+      const response = await axios.post<ApiResponse<LoginResponse>>(
+        `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
+        {refreshToken} as RefreshTokenRequest,
+        {timeout: 10000} // リフレッシュは10秒タイムアウト
+      )
 
-    const {data} = response.data as ApiResponse<LoginResponse>
-    if (data) {
+      const {data} = response.data as ApiResponse<LoginResponse>
+      if (!data) {
+        return undefined
+      }
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
 
@@ -62,32 +70,42 @@ const refreshTokenInBackground = async (refreshToken: string): Promise<LoginResp
       onTokenRefresh?.(data.accessToken, data.refreshToken)
 
       return data
+    } catch (error) {
+      console.warn('Background token refresh failed:', error)
+      // リフレッシュ失敗時はトークンをクリア
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      return undefined
+    } finally {
+      isRefreshing = false
+      refreshPromise = null
     }
-  } catch (error) {
-    console.warn('Background token refresh failed:', error)
-    return
-  } finally {
-    isRefreshing = false
-  }
+  })()
+
+  return refreshPromise
 }
 
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const token = localStorage.getItem('accessToken')
     const refreshToken = localStorage.getItem('refreshToken')
 
-    // Trigger background refresh if token is expiring soon
-    if (token && refreshToken && !isRefreshing && isTokenExpiringSoon(token)) {
-      refreshTokenInBackground(refreshToken).catch(() => {
-        // Ignore errors - response interceptor will handle them
-      })
+    // Proactively refresh if token is expiring soon
+    if (token && refreshToken && isTokenExpiringSoon(token)) {
+      try {
+        const loginResult = await refreshTokenInBackground(refreshToken)
+        if (loginResult?.accessToken) {
+          config.headers.Authorization = `Bearer ${loginResult.accessToken}`
+          return config
+        }
+      } catch (error) {
+        console.warn('Proactive token refresh failed in request interceptor:', error)
+        // Fall through to use existing token or no token
+      }
     }
 
     if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`,
-      }
+      config.headers.Authorization = `Bearer ${token}`
     }
 
     return config
@@ -97,29 +115,17 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config
+  (error) => {
+    // Handle authentication failures - clean up and redirect to login
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.warn('Authentication failed:', error.response?.status, error.response?.statusText)
 
-    // Handle 401 (unauthorized) and 403 (forbidden/expired token) - try token refresh
-    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
-      originalRequest._retry = true
+      // Clean up tokens
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
 
-      const refreshToken = localStorage.getItem('refreshToken')
-      if (refreshToken && !isRefreshing) {
-        const loginResult = await refreshTokenInBackground(refreshToken)
-        if (loginResult) {
-          originalRequest.headers.Authorization = `Bearer ${loginResult.accessToken}`
-          return apiClient(originalRequest)
-        } else {
-          // Token refresh failed - redirect to login
-          localStorage.removeItem('accessToken')
-          localStorage.removeItem('refreshToken')
-          onAuthFailure?.()
-        }
-      } else {
-        // No refresh token or already refreshing - redirect to login
-        onAuthFailure?.()
-      }
+      // Notify auth failure for redirect to login
+      onAuthFailure?.()
     }
 
     return Promise.reject(error)
