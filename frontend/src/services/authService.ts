@@ -22,6 +22,7 @@ import type {
   LoginRequest,
   LoginResponse,
   LogoutRequest,
+  RefreshTokenRequest,
   RegisterEmailRequest,
   RegisterEmailResponse as ApiRegisterEmailResult,
   RegisterUserRequest,
@@ -38,6 +39,57 @@ import type {
 
 class AuthService {
   // === Core Authentication Methods ===
+  async initializeFromRefreshToken(): Promise<AuthState> {
+    const refreshToken = tokenManager.getRefreshToken()
+
+    if (!refreshToken) {
+      return {
+        isAuthenticated: false,
+        user: null,
+        accessToken: null,
+        refreshToken: null
+      }
+    }
+
+    try {
+      const response = await apiClient.post<ApiResponse<LoginResponse>>(
+        API_ENDPOINTS.AUTH.REFRESH,
+        {refreshToken} as RefreshTokenRequest
+      )
+
+      if (!response.data.ok || !response.data.data) {
+        // リフレッシュトークンが無効な場合はクリア
+        tokenManager.clearTokens()
+        return {
+          isAuthenticated: false,
+          user: null,
+          accessToken: null,
+          refreshToken: null
+        }
+      }
+
+      const loginResult = response.data.data
+
+      // Store tokens using TokenManager
+      tokenManager.setTokens(loginResult.accessToken, loginResult.refreshToken)
+
+      return tokenManager.createAuthStateFromTokens(
+        loginResult.accessToken,
+        loginResult.refreshToken
+      )
+    } catch (error) {
+      console.warn('Failed to refresh token on initialization:', error)
+      // エラー時はトークンをクリア
+      tokenManager.clearTokens()
+      return {
+        isAuthenticated: false,
+        user: null,
+        accessToken: null,
+        refreshToken: null
+      }
+    }
+  }
+
   async login(credentials: LoginCredentials): Promise<AuthState> {
     const response = await apiClient.post<ApiResponse<LoginResponse>>(
       API_ENDPOINTS.AUTH.LOGIN,

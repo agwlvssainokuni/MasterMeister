@@ -58,9 +58,22 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
 
   // === Initialization ===
   useEffect(() => {
-    // Initialize auth state on mount
-    const currentState = tokenManager.getCurrentAuthState()
-    setAuthState(currentState)
+    const initializeAuth = async () => {
+      setIsLoading(true)
+
+      try {
+        // Try to initialize from refresh token first (for page reloads)
+        const authState = await authService.initializeFromRefreshToken()
+        setAuthState(authState)
+      } catch (error) {
+        console.warn('Failed to initialize auth from refresh token:', error)
+        // Fallback to current state (likely unauthenticated)
+        const currentState = tokenManager.getCurrentAuthState()
+        setAuthState(currentState)
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
     // Setup auth failure handler for API client
     setAuthFailureHandler(handleAuthFailure)
@@ -75,6 +88,9 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     }
 
     tokenManager.addRefreshListener(refreshListener)
+
+    // Initialize authentication state
+    initializeAuth()
 
     // Cleanup function to prevent memory leaks
     return () => {
