@@ -33,21 +33,18 @@ import type {
   RegisterEmailCredentials,
   RegisterEmailResult,
   RegisterUserCredentials,
-  RegisterUserResult,
-  User
+  RegisterUserResult
 } from '../types/frontend'
 
 class AuthService {
   // === Core Authentication Methods ===
   async login(credentials: LoginCredentials): Promise<AuthState> {
-    const loginRequest: LoginRequest = {
-      email: credentials.email,
-      password: credentials.password
-    }
-
     const response = await apiClient.post<ApiResponse<LoginResponse>>(
       API_ENDPOINTS.AUTH.LOGIN,
-      loginRequest
+      {
+        email: credentials.email,
+        password: credentials.password
+      } as LoginRequest
     )
 
     if (!response.data.ok || !response.data.data) {
@@ -59,18 +56,10 @@ class AuthService {
     // Store tokens using TokenManager
     tokenManager.setTokens(loginResult.accessToken, loginResult.refreshToken)
 
-    // Convert to frontend types
-    const user: User = {
-      email: loginResult.email,
-      role: loginResult.role as 'USER' | 'ADMIN'
-    }
-
-    return {
-      isAuthenticated: true,
-      user,
-      accessToken: loginResult.accessToken,
-      refreshToken: loginResult.refreshToken
-    }
+    return tokenManager.createAuthStateFromTokens(
+      loginResult.accessToken,
+      loginResult.refreshToken
+    )
   }
 
   async logout(): Promise<void> {
