@@ -68,7 +68,9 @@ class AuthService {
       try {
         await apiClient.post<ApiResponse<string>>(
           API_ENDPOINTS.AUTH.LOGOUT,
-          {refreshToken} as LogoutRequest
+          {
+            refreshToken
+          } as LogoutRequest
         )
       } catch (error) {
         // Continue with logout even if API call fails
@@ -82,14 +84,12 @@ class AuthService {
 
   // === User Registration Methods ===
   async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {
-    const request: RegisterEmailRequest = {
-      email: credentials.email,
-      language: credentials.language || 'ja',
-    }
-
     const response = await apiClient.post<ApiResponse<ApiRegisterEmailResult>>(
       API_ENDPOINTS.USERS.REGISTER_EMAIL,
-      request
+      {
+        email: credentials.email,
+        language: credentials.language || 'ja',
+      } as RegisterEmailRequest
     )
 
     if (!response.data.ok || !response.data.data) {
@@ -100,16 +100,14 @@ class AuthService {
   }
 
   async registerUser(credentials: RegisterUserCredentials): Promise<RegisterUserResult> {
-    const request: RegisterUserRequest = {
-      token: credentials.token,
-      email: credentials.email,
-      password: credentials.password,
-      language: credentials.language || 'ja',
-    }
-
     const response = await apiClient.post<ApiResponse<ApiRegisterUserResult>>(
       API_ENDPOINTS.USERS.REGISTER,
-      request
+      {
+        token: credentials.token,
+        email: credentials.email,
+        password: credentials.password,
+        language: credentials.language || 'ja',
+      } as RegisterUserRequest
     )
 
     if (!response.data.ok || !response.data.data) {
