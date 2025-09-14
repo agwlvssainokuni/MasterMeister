@@ -19,7 +19,8 @@ import {createContext, useContext, useEffect, useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import type {AuthState, LoginCredentials} from '../types/frontend'
 import {authService} from '../services/authService'
-import {setAuthFailureHandler, setTokenRefreshHandler} from '../services/apiClient'
+import {setAuthFailureHandler} from '../services/apiClient'
+import {tokenManager} from '../services/tokenManager'
 import {useNotification} from './NotificationContext'
 
 interface AuthContextValue extends AuthState {
@@ -35,16 +36,18 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({children}: AuthProviderProps) => {
+  // === State Management ===
   const [authState, setAuthState] = useState<AuthState>(() =>
-    authService.getCurrentAuthState()
+    tokenManager.getCurrentAuthState()
   )
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const {showError} = useNotification()
 
+  // === Initialization ===
   useEffect(() => {
     // Initialize auth state on mount
-    const currentState = authService.getCurrentAuthState()
+    const currentState = tokenManager.getCurrentAuthState()
     setAuthState(currentState)
 
     // Setup auth failure handler for API client
@@ -59,18 +62,17 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
       navigate('/login', {replace: true})
     })
 
-    // Setup token refresh handler for API client
-    setTokenRefreshHandler(() => {
-      // Get updated auth state after successful token refresh
-      const updatedState = authService.getCurrentAuthState()
-      if (updatedState.isAuthenticated) {
-        setAuthState(updatedState)
+    // Setup token refresh listener with TokenManager
+    tokenManager.addRefreshListener((newAuthState: AuthState) => {
+      if (newAuthState.isAuthenticated) {
+        setAuthState(newAuthState)
         // Optionally show success message (commented out to avoid noise)
         // showInfo('Session refreshed successfully.')
       }
     })
   }, [navigate, showError])
 
+  // === Authentication Actions ===
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true)
     try {
@@ -113,6 +115,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     }
   }
 
+  // === Context Value ===
   const contextValue: AuthContextValue = {
     ...authState,
     login,

@@ -15,20 +15,15 @@
  */
 
 import apiClient from './apiClient'
-import { API_ENDPOINTS } from '../config/config'
+import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
+  ColumnMetadataResponse,
   SchemaMetadataResponse,
   SchemaUpdateLogResponse,
-  TableMetadataResponse,
-  ColumnMetadataResponse
+  TableMetadataResponse
 } from '../types/api'
-import type {
-  SchemaMetadata,
-  SchemaUpdateLog,
-  TableMetadata,
-  ColumnMetadata
-} from '../types/frontend'
+import type {ColumnMetadata, SchemaMetadata, SchemaUpdateLog, TableMetadata} from '../types/frontend'
 
 class SchemaService {
 
@@ -48,9 +43,9 @@ class SchemaService {
       }
 
       return this.convertToFrontendSchema(response.data.data)
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 204は正常状態なので、他のHTTPエラーのみをthrow
-      if (error.response?.status === 204) {
+      if ((error as { response?: { status: number } }).response?.status === 204) {
         return null
       }
       throw error

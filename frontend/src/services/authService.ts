@@ -15,13 +15,13 @@
  */
 
 import apiClient from './apiClient'
+import {tokenManager} from './tokenManager'
 import {API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
   LoginRequest,
   LoginResponse,
   LogoutRequest,
-  RefreshTokenRequest,
   RegisterEmailRequest,
   RegisterEmailResponse as ApiRegisterEmailResult,
   RegisterUserRequest,
@@ -36,9 +36,9 @@ import type {
   RegisterUserResult,
   User
 } from '../types/frontend'
-import {extractUserFromToken, isTokenExpired} from '../utils/jwt'
 
 class AuthService {
+  // === Core Authentication Methods ===
   async login(credentials: LoginCredentials): Promise<AuthState> {
     const loginRequest: LoginRequest = {
       email: credentials.email,
@@ -56,9 +56,8 @@ class AuthService {
 
     const loginResult = response.data.data
 
-    // Store tokens
-    localStorage.setItem('accessToken', loginResult.accessToken)
-    localStorage.setItem('refreshToken', loginResult.refreshToken)
+    // Store tokens using TokenManager
+    tokenManager.setTokens(loginResult.accessToken, loginResult.refreshToken)
 
     // Convert to frontend types
     const user: User = {
@@ -75,14 +74,12 @@ class AuthService {
   }
 
   async logout(): Promise<void> {
-    const refreshToken = localStorage.getItem('refreshToken')
+    const refreshToken = tokenManager.getRefreshToken()
     if (refreshToken) {
-      const logoutRequest: LogoutRequest = {refreshToken}
-
       try {
         await apiClient.post<ApiResponse<string>>(
           API_ENDPOINTS.AUTH.LOGOUT,
-          logoutRequest
+          {refreshToken} as LogoutRequest
         )
       } catch (error) {
         // Continue with logout even if API call fails
@@ -90,57 +87,11 @@ class AuthService {
       }
     }
 
-    // Clear local storage
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
+    // Clear tokens using TokenManager
+    tokenManager.clearTokens()
   }
 
-  async refreshAccessToken(): Promise<AuthState> {
-    const refreshToken = localStorage.getItem('refreshToken')
-    if (!refreshToken) {
-      throw new Error('No refresh token available')
-    }
-
-    const refreshRequest: RefreshTokenRequest = {
-      refreshToken
-    }
-
-    try {
-      const response = await apiClient.post<ApiResponse<LoginResponse>>(
-        API_ENDPOINTS.AUTH.REFRESH,
-        refreshRequest
-      )
-
-      if (!response.data.ok || !response.data.data) {
-        throw new Error(response.data.error?.[0] || 'Token refresh failed')
-      }
-
-      const loginResult = response.data.data
-
-      // Update stored tokens
-      localStorage.setItem('accessToken', loginResult.accessToken)
-      localStorage.setItem('refreshToken', loginResult.refreshToken)
-
-      // Convert to frontend types
-      const user: User = {
-        email: loginResult.email,
-        role: loginResult.role as 'USER' | 'ADMIN'
-      }
-
-      return {
-        isAuthenticated: true,
-        user,
-        accessToken: loginResult.accessToken,
-        refreshToken: loginResult.refreshToken
-      }
-    } catch (error) {
-      // Clear invalid tokens
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      throw error
-    }
-  }
-
+  // === User Registration Methods ===
   async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {
     const request: RegisterEmailRequest = {
       email: credentials.email,
@@ -182,44 +133,7 @@ class AuthService {
       email: apiResult.email
     }
   }
-
-  getCurrentAuthState(): AuthState {
-    const accessToken = localStorage.getItem('accessToken')
-    const refreshToken = localStorage.getItem('refreshToken')
-
-    if (!accessToken || !refreshToken) {
-      return {
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null
-      }
-    }
-
-    // Check if token is expired
-    if (isTokenExpired(accessToken)) {
-      return {
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null
-      }
-    }
-
-    // Extract user info from JWT
-    const userInfo = extractUserFromToken(accessToken)
-    const user: User | null = userInfo ? {
-      email: userInfo.email,
-      role: userInfo.role
-    } : null
-
-    return {
-      isAuthenticated: !!userInfo,
-      user,
-      accessToken,
-      refreshToken
-    }
-  }
 }
 
+// === Export ===
 export const authService = new AuthService()

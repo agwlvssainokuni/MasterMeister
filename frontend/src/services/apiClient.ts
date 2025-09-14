@@ -17,68 +17,9 @@
 import axios from 'axios'
 import {API_BASE_URL, API_CONFIG, API_ENDPOINTS} from '../config/config'
 import type {ApiResponse, LoginResponse, RefreshTokenRequest} from "../types/api"
-import {isTokenExpiringSoon} from '../utils/jwt'
+import {tokenManager} from './tokenManager'
 
-class TokenManager {
-  private accessToken: string | null = null
-  private tokenValidUntil: number = 0 // トークン検証キャッシュ
-
-  setTokens(accessToken: string, refreshToken: string): void {
-    // アクセストークンはメモリのみに保存（XSS攻撃から保護）
-    this.accessToken = accessToken
-
-    // トークン更新時はキャッシュをクリア
-    this.tokenValidUntil = 0
-
-    // リフレッシュトークンのみ永続化
-    localStorage.setItem('refreshToken', refreshToken)
-  }
-
-  getAccessToken(): string | null {
-    return this.accessToken
-  }
-
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken')
-  }
-
-  clearTokens(): void {
-    this.accessToken = null
-    this.tokenValidUntil = 0 // キャッシュもクリア
-    localStorage.removeItem('refreshToken')
-  }
-
-  hasValidAccessToken(): boolean {
-    if (!this.accessToken) {
-      return false
-    }
-
-    const now = Date.now()
-
-    // キャッシュが有効な場合はキャッシュ結果を使用
-    if (now < this.tokenValidUntil) {
-      return true
-    }
-
-    // トークン検証を実行
-    const isValid = !isTokenExpiringSoon(this.accessToken)
-
-    // 検証結果が有効な場合はキャッシュに保存
-    if (isValid) {
-      this.tokenValidUntil = now + API_CONFIG.VALIDATION_CACHE_DURATION_MS
-    }
-
-    return isValid
-  }
-
-  hasRefreshToken(): boolean {
-    return this.getRefreshToken() !== null
-  }
-}
-
-// シングルトンインスタンス
-const tokenManager = new TokenManager()
-
+// === API Client Configuration ===
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -87,24 +28,17 @@ const apiClient = axios.create({
   timeout: API_CONFIG.DEFAULT_TIMEOUT_MS,
 })
 
-// Callbacks for handling auth events
+// === Auth Event Handlers ===
 let onAuthFailure: (() => void) | null = null
-let onTokenRefresh: ((accessToken: string, refreshToken: string) => void) | null = null
 
 export const setAuthFailureHandler = (handler: () => void) => {
   onAuthFailure = handler
 }
 
-export const setTokenRefreshHandler = (handler: (accessToken: string, refreshToken: string) => void) => {
-  onTokenRefresh = handler
-}
-
-// Global flag to prevent concurrent refresh attempts
+// === Token Refresh Management ===
 let isRefreshing = false
-// Promise to handle concurrent refresh requests
 let refreshPromise: Promise<LoginResponse | undefined> | null = null
 
-// Background refresh function
 const refreshTokenInBackground = async (): Promise<LoginResponse | undefined> => {
   if (isRefreshing && refreshPromise) {
     return refreshPromise
@@ -129,11 +63,8 @@ const refreshTokenInBackground = async (): Promise<LoginResponse | undefined> =>
         return undefined
       }
 
-      // TokenManagerを使用してセキュアに保存
+      // TokenManagerを使用してセキュアに保存（自動的にリスナーに通知される）
       tokenManager.setTokens(data.accessToken, data.refreshToken)
-
-      // Notify AuthContext of successful refresh
-      onTokenRefresh?.(data.accessToken, data.refreshToken)
 
       return data
     } catch (error) {
@@ -150,6 +81,7 @@ const refreshTokenInBackground = async (): Promise<LoginResponse | undefined> =>
   return refreshPromise
 }
 
+// === Request Interceptor ===
 apiClient.interceptors.request.use(
   async (config) => {
     // 有効なアクセストークンがある場合はそのまま使用
@@ -183,6 +115,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
+// === Response Interceptor ===
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -201,7 +134,5 @@ apiClient.interceptors.response.use(
   }
 )
 
-// TokenManagerインスタンスをエクスポート（外部からアクセス可能にする）
-export {tokenManager}
-
+// === Exports ===
 export default apiClient
