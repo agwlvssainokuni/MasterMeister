@@ -28,6 +28,13 @@ class TokenManager {
     this.refreshListeners.push(listener)
   }
 
+  removeRefreshListener(listener: (authState: AuthState) => void): void {
+    const index = this.refreshListeners.indexOf(listener)
+    if (index > -1) {
+      this.refreshListeners.splice(index, 1)
+    }
+  }
+
   private notifyRefreshListeners(accessToken: string, refreshToken: string): void {
     const newAuthState = this.createAuthStateFromTokens(accessToken, refreshToken)
     this.refreshListeners.forEach(listener => listener(newAuthState))

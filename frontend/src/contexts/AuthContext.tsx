@@ -15,7 +15,7 @@
  */
 
 import type {ReactNode} from 'react'
-import {createContext, useContext, useEffect, useState} from 'react'
+import {createContext, useCallback, useContext, useEffect, useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import type {AuthState, LoginCredentials} from '../types/frontend'
 import {authService} from '../services/authService'
@@ -44,6 +44,18 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
   const navigate = useNavigate()
   const {showError} = useNotification()
 
+  // === Auth Failure Handler ===
+  const handleAuthFailure = useCallback(() => {
+    setAuthState({
+      isAuthenticated: false,
+      user: null,
+      accessToken: null,
+      refreshToken: null
+    })
+    showError('Session expired. Please log in again.')
+    navigate('/login', {replace: true})
+  }, [navigate, showError])
+
   // === Initialization ===
   useEffect(() => {
     // Initialize auth state on mount
@@ -51,26 +63,24 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     setAuthState(currentState)
 
     // Setup auth failure handler for API client
-    setAuthFailureHandler(() => {
-      setAuthState({
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null
-      })
-      showError('Session expired. Please log in again.')
-      navigate('/login', {replace: true})
-    })
+    setAuthFailureHandler(handleAuthFailure)
 
     // Setup token refresh listener with TokenManager
-    tokenManager.addRefreshListener((newAuthState: AuthState) => {
+    const refreshListener = (newAuthState: AuthState) => {
       if (newAuthState.isAuthenticated) {
         setAuthState(newAuthState)
         // Optionally show success message (commented out to avoid noise)
         // showInfo('Session refreshed successfully.')
       }
-    })
-  }, [navigate, showError])
+    }
+
+    tokenManager.addRefreshListener(refreshListener)
+
+    // Cleanup function to prevent memory leaks
+    return () => {
+      tokenManager.removeRefreshListener(refreshListener)
+    }
+  }, [handleAuthFailure])
 
   // === Authentication Actions ===
   const login = async (credentials: LoginCredentials) => {
