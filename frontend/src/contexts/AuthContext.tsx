@@ -36,7 +36,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({children}: AuthProviderProps) => {
-  // === State Management ===
+  // === State and Dependencies ===
   const [authState, setAuthState] = useState<AuthState>(() =>
     tokenManager.getCurrentAuthState()
   )
@@ -44,7 +44,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
   const navigate = useNavigate()
   const {showError} = useNotification()
 
-  // === Auth Failure Handler ===
+  // === Event Handlers ===
   const handleAuthFailure = useCallback(() => {
     setAuthState({
       isAuthenticated: false,
@@ -56,7 +56,6 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     navigate('/login', {replace: true})
   }, [navigate, showError])
 
-  // === Initialization ===
   const initializeAuth = useCallback(async () => {
     setIsLoading(true)
 
@@ -74,11 +73,14 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     }
   }, [])
 
+  // === Effects: Handler Setup ===
   useEffect(() => {
-
     // Setup auth failure handler for API client
     setAuthFailureHandler(handleAuthFailure)
+  }, [handleAuthFailure])
 
+  // === Effects: Initialization ===
+  useEffect(() => {
     // Setup token refresh listener with TokenManager
     const refreshListener = (newAuthState: AuthState) => {
       if (newAuthState.isAuthenticated) {
@@ -90,14 +92,14 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
 
     tokenManager.addRefreshListener(refreshListener)
 
-    // Initialize authentication state
+    // Initialize authentication state (only once)
     initializeAuth()
 
     // Cleanup function to prevent memory leaks
     return () => {
       tokenManager.removeRefreshListener(refreshListener)
     }
-  }, [handleAuthFailure, initializeAuth])
+  }, [initializeAuth])
 
   // === Authentication Actions ===
   const login = async (credentials: LoginCredentials) => {
