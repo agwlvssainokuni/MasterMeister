@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import apiClient from './apiClient'
+import axios from 'axios'
 import {tokenManager} from './tokenManager'
-import {API_ENDPOINTS} from '../config/config'
+import {API_BASE_URL, API_CONFIG, API_ENDPOINTS} from '../config/config'
 import type {
   ApiResponse,
   LoginRequest,
@@ -24,9 +24,9 @@ import type {
   LogoutRequest,
   RefreshTokenRequest,
   RegisterEmailRequest,
-  RegisterEmailResponse as ApiRegisterEmailResult,
+  RegisterEmailResponse,
   RegisterUserRequest,
-  RegisterUserResponse as ApiRegisterUserResult
+  RegisterUserResponse
 } from '../types/api'
 import type {
   AuthState,
@@ -36,6 +36,15 @@ import type {
   RegisterUserCredentials,
   RegisterUserResult
 } from '../types/frontend'
+
+// === Auth-specific API Client ===
+const authApiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: API_CONFIG.DEFAULT_TIMEOUT_MS,
+})
 
 class AuthService {
   // === Core Authentication Methods ===
@@ -52,9 +61,13 @@ class AuthService {
     }
 
     try {
-      const response = await apiClient.post<ApiResponse<LoginResponse>>(
+      // リフレッシュ専用の設定でAPI呼び出し
+      const response = await authApiClient.post<ApiResponse<LoginResponse>>(
         API_ENDPOINTS.AUTH.REFRESH,
-        {refreshToken} as RefreshTokenRequest
+        {refreshToken} as RefreshTokenRequest,
+        {
+          timeout: API_CONFIG.REFRESH_TIMEOUT_MS,
+        }
       )
 
       if (!response.data.ok || !response.data.data) {
@@ -91,7 +104,7 @@ class AuthService {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthState> {
-    const response = await apiClient.post<ApiResponse<LoginResponse>>(
+    const response = await authApiClient.post<ApiResponse<LoginResponse>>(
       API_ENDPOINTS.AUTH.LOGIN,
       {
         email: credentials.email,
@@ -118,11 +131,9 @@ class AuthService {
     const refreshToken = tokenManager.getRefreshToken()
     if (refreshToken) {
       try {
-        await apiClient.post<ApiResponse<string>>(
+        await authApiClient.post<ApiResponse<string>>(
           API_ENDPOINTS.AUTH.LOGOUT,
-          {
-            refreshToken
-          } as LogoutRequest
+          {refreshToken} as LogoutRequest
         )
       } catch (error) {
         // Continue with logout even if API call fails
@@ -136,7 +147,7 @@ class AuthService {
 
   // === User Registration Methods ===
   async registerEmail(credentials: RegisterEmailCredentials): Promise<RegisterEmailResult> {
-    const response = await apiClient.post<ApiResponse<ApiRegisterEmailResult>>(
+    const response = await authApiClient.post<ApiResponse<RegisterEmailResponse>>(
       API_ENDPOINTS.USERS.REGISTER_EMAIL,
       {
         email: credentials.email,
@@ -152,7 +163,7 @@ class AuthService {
   }
 
   async registerUser(credentials: RegisterUserCredentials): Promise<RegisterUserResult> {
-    const response = await apiClient.post<ApiResponse<ApiRegisterUserResult>>(
+    const response = await authApiClient.post<ApiResponse<RegisterUserResponse>>(
       API_ENDPOINTS.USERS.REGISTER,
       {
         token: credentials.token,

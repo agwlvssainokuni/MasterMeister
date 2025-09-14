@@ -57,23 +57,24 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
   }, [navigate, showError])
 
   // === Initialization ===
-  useEffect(() => {
-    const initializeAuth = async () => {
-      setIsLoading(true)
+  const initializeAuth = useCallback(async () => {
+    setIsLoading(true)
 
-      try {
-        // Try to initialize from refresh token first (for page reloads)
-        const authState = await authService.initializeFromRefreshToken()
-        setAuthState(authState)
-      } catch (error) {
-        console.warn('Failed to initialize auth from refresh token:', error)
-        // Fallback to current state (likely unauthenticated)
-        const currentState = tokenManager.getCurrentAuthState()
-        setAuthState(currentState)
-      } finally {
-        setIsLoading(false)
-      }
+    try {
+      // Try to initialize from refresh token first (for page reloads)
+      const authState = await authService.initializeFromRefreshToken()
+      setAuthState(authState)
+    } catch (error) {
+      console.warn('Failed to initialize auth from refresh token:', error)
+      // Fallback to current state (likely unauthenticated)
+      const currentState = tokenManager.getCurrentAuthState()
+      setAuthState(currentState)
+    } finally {
+      setIsLoading(false)
     }
+  }, [])
+
+  useEffect(() => {
 
     // Setup auth failure handler for API client
     setAuthFailureHandler(handleAuthFailure)
@@ -96,7 +97,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     return () => {
       tokenManager.removeRefreshListener(refreshListener)
     }
-  }, [handleAuthFailure])
+  }, [handleAuthFailure, initializeAuth])
 
   // === Authentication Actions ===
   const login = async (credentials: LoginCredentials) => {
