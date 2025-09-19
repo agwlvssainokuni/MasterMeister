@@ -40,7 +40,10 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
   const [authState, setAuthState] = useState<AuthState>(() =>
     tokenManager.getCurrentAuthState()
   )
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(() => {
+    // リフレッシュトークンがある場合は初期化が必要なのでローディング状態にする
+    return tokenManager.hasRefreshToken()
+  })
   const navigate = useNavigate()
   const {showError} = useNotification()
 
